@@ -70,7 +70,7 @@ class My_User implements Zend_Acl_Role_Interface {
             
             $_id,
             $_email,
-            $_auth_token,
+            $_secret_key,
             /**
              * the actual user role
              * 
@@ -83,13 +83,13 @@ class My_User implements Zend_Acl_Role_Interface {
      *
      * @param integer $id the unique user ID or NULL for non persistent users
      * @param string $email the user name
-     * @param string $auth_token the SX auth token
+     * @param string $secret_key the SX user secret key
      * @param string $role the user role
      */
-    public function __construct($id, $email = '', $auth_token = '', $role = self::ROLE_GUEST) {
+    public function __construct($id, $email = '', $secret_key = '', $role = self::ROLE_GUEST) {
         $this->_id = $id;
         $this->_email = $email;
-        $this->_auth_token = $auth_token;
+        $this->_secret_key = $secret_key;
         $this->_role = ($role !== self::ROLE_REGISTERED ? self::ROLE_GUEST : $role);
         $this->_prefs = new My_Preferences(array(
             self::PREF_FILE_SORT_ORDER => 0,
@@ -134,12 +134,12 @@ class My_User implements Zend_Acl_Role_Interface {
     }
     
     /**
-     * Return the user auth token to interact with Skylable services
-     * 
-     * @return string the auth token
+     * Returns the secret key used to interact with Skylable services
+     *
+     * @return string the secret key
      */
-    public function getAuthToken() {
-        return $this->_auth_token;
+    public function getSecretKey() {
+        return $this->_secret_key;
     }
     
     /**

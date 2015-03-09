@@ -338,7 +338,7 @@ class AjaxController extends My_BaseAction {
         $this->getLogger()->debug(__METHOD__.': path is: '.print_r($path, TRUE) );
 
         try {
-            $access_sx = new Skylable_AccessSxNG(array( 'autoken' => Zend_Auth::getInstance()->getIdentity()->getAuthToken(), 'cluster' => parse_url(Zend_Registry::get('skylable')->get('cluster'), PHP_URL_HOST) ));
+            $access_sx = new Skylable_AccessSxNG(array( 'secret_key' => Zend_Auth::getInstance()->getIdentity()->getSecretKey(), 'cluster' => parse_url(Zend_Registry::get('skylable')->get('cluster'), PHP_URL_HOST) ));
             $validate_path = new My_ValidateSxPath( $access_sx, My_ValidateSxPath::FILE_TYPE_FILE );
             if (!$validate_path->isValid($path)) {
                 $this->sendErrorResponse('<p>File not found or invalid.</p>');
@@ -354,8 +354,8 @@ class AjaxController extends My_BaseAction {
         try {
             $sh = new My_Shared();
             $key = '';
-            if (!$sh->fileExists($path, Zend_Auth::getInstance()->getIdentity()->getAuthToken(), $key)) {
-                $key = $sh->add($path, Zend_Auth::getInstance()->getIdentity()->getAuthToken(), Zend_Registry::get('skylable')->get('shared_file_expire_time') );
+            if (!$sh->fileExists($path, Zend_Auth::getInstance()->getIdentity()->getSecretKey(), $key)) {
+                $key = $sh->add($path, Zend_Auth::getInstance()->getIdentity()->getSecretKey(), Zend_Registry::get('skylable')->get('shared_file_expire_time') );
                 if ($key === FALSE) {
                     $this->sendErrorResponse('<p>Failed to create file link.</p>');
                     return FALSE;
@@ -438,7 +438,7 @@ class AjaxController extends My_BaseAction {
                     * */
                     $base_dir = NULL;
                     if (Zend_Auth::getInstance()->hasIdentity()) {
-                        if ( strcmp(Zend_Auth::getInstance()->getIdentity()->getAuthToken(), $file_data['user_auth_token']) == 0 ) {
+                        if ( strcmp(Zend_Auth::getInstance()->getIdentity()->getSecretKey(), $file_data['user_auth_token']) == 0 ) {
                             $this->getLogger()->debug(__METHOD__.': logged in user, reusing identity.');
                             $the_user = Zend_Auth::getInstance()->getIdentity();
                         }

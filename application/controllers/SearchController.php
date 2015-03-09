@@ -60,7 +60,7 @@ class SearchController extends My_BaseAction {
 
 		$access_sx = new Skylable_AccessSxNG(array(
 			'cluster' => Zend_Registry::get('skylable')->get('cluster'),
-			'autoken' => Zend_Auth::getInstance()->getIdentity()->getAuthToken()
+			'secret_key' => Zend_Auth::getInstance()->getIdentity()->getSecretKey()
 		));
 		$validate_volume = new My_ValidateSxPath($access_sx, My_ValidateSxPath::FILE_TYPE_VOLUME);
 
@@ -131,7 +131,7 @@ class SearchController extends My_BaseAction {
 
 		$access_sx = new Skylable_AccessSxNG(array(
 			'cluster' => Zend_Registry::get('skylable')->get('cluster'),
-			'autoken' => Zend_Auth::getInstance()->getIdentity()->getAuthToken()
+			'secret_key' => Zend_Auth::getInstance()->getIdentity()->getSecretKey()
 		));
 		$validate_volume = new My_ValidateSxPath($access_sx, My_ValidateSxPath::FILE_TYPE_VOLUME);
 

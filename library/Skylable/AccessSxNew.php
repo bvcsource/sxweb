@@ -190,12 +190,12 @@ class Skylable_AccessSxNew {
         // Corner case: directory already exists
         if (@is_dir($path)) {
             $this->getLogger()->debug(__METHOD__.': sxinit into already existing path: '.$path);
-            return $this->sxinit($path, $this->_user->getAuthToken(), TRUE);
+            return $this->sxinit($path, $this->_user->getSecretKey(), TRUE);
         }
 
         if (@mkdir($path, 0775) === TRUE) {
             $this->getLogger()->debug(__METHOD__.': sxinit into: '.$path);
-            return $this->sxinit($path, $this->_user->getAuthToken());
+            return $this->sxinit($path, $this->_user->getSecretKey());
         }
         return FALSE;
     }
@@ -221,7 +221,7 @@ class Skylable_AccessSxNew {
         if (@file_exists($path)) {
             $authkey = file_get_contents($path);
             if ($authkey !== FALSE) {
-                return (strcmp($authkey, $this->_user->getAuthToken()) == 0);
+                return (strcmp($authkey, $this->_user->getSecretKey()) == 0);
             }
         }
         return FALSE;

@@ -79,7 +79,7 @@ class My_Accounts extends Zend_Db_Table_Abstract  {
             $data = array(
                 'email' => $params['email'],
                 'passwd' => $password,
-                'autoken' => $params['auth_token'],
+                'secret_key' => $params['secret_key'],
                 'active' => ($params['is_active'] ? 1 : 0),
                 'preferences' => ''
             );
@@ -190,7 +190,7 @@ class My_Accounts extends Zend_Db_Table_Abstract  {
         if (is_array($row)) {
             $row = (object)$row;
         }
-        $user = new My_User($row->id, $row->email, $row->autoken, ($row->active == 1 ? My_User::ROLE_REGISTERED : My_User::ROLE_GUEST));
+        $user = new My_User($row->id, $row->email, $row->secret_key, ($row->active == 1 ? My_User::ROLE_REGISTERED : My_User::ROLE_GUEST));
         
         try {
             $json = Zend_Json::decode($row->preferences);
@@ -202,26 +202,6 @@ class My_Accounts extends Zend_Db_Table_Abstract  {
         }
         return $user;
     }
-
-
-    /**
-     * Retrieve an user using its unique auth token.
-     *
-     * I the user is not found returns NULL.
-     *
-     * @param string $token the auth token
-     * @return My_User|boolean FALSE on errors or the user.
-     * @throws Exception
-     */
-	public function getUserByAuthToken($token) {
-        if (empty($token)) {
-            return FALSE;
-        }
-        $row = $this->fetchRow( $this->select()->where('autoken = ?', $token) );
-        $user = $this->getUserFromDBRow($row);
-        return $user;
-	}
-
 
     /**
      * Update the user password.
@@ -263,7 +243,7 @@ class My_Accounts extends Zend_Db_Table_Abstract  {
 		} catch (Exception $e) {
             $this->getAdapter()->rollBack();
             Zend_Controller_Front::getInstance()->getParam('bootstrap')->getResource('log')->err($e->getMessage());
-        }		
+        }
 	}
     
     /**

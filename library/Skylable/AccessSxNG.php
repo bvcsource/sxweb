@@ -52,7 +52,7 @@ class Skylable_AccessSxNG {
         $_response,
         $_node_list = array(),
 
-        $_auth_token = NULL,
+        $_secret_key = NULL,
         $_cluster = NULL;
 
     const
@@ -67,14 +67,14 @@ class Skylable_AccessSxNG {
      * Initialize the object to use.
      *
      * Mandatory parameters:
-     * 'autoken' - the user authorization token (the user key)
+     * 'secret_key' - the user secret key (the authorization token)
      * 'cluster' - the cluster on which operate
      *
      * @param array $options
      */
     public function __construct(array $options = array()) {
-        if (array_key_exists('autoken', $options)) {
-            $this->_auth_token = $options['autoken'];
+        if (array_key_exists('secret_key', $options)) {
+            $this->_secret_key = $options['secret_key'];
         }
 
         if (array_key_exists('cluster', $options)) {
@@ -312,7 +312,7 @@ class Skylable_AccessSxNG {
             array(
                 'url' => 'https://'.$this->_cluster.'/?nodeList',
                 'date' => $date,
-                'authorization' => $this->getRequestSignature($this->_auth_token, 'GET', '?nodeList', $date, sha1(''))
+                'authorization' => $this->getRequestSignature($this->_secret_key, 'GET', '?nodeList', $date, sha1(''))
             )
         )) {
             // Parse the reply and saves internally for caching
@@ -347,7 +347,7 @@ class Skylable_AccessSxNG {
             array(
                 'url' => 'https://'.$this->_cluster.'/'.$volume.'?o=locate',
                 'date' => $date,
-                'authorization' => $this->getRequestSignature($this->_auth_token, 'GET', $volume.'?o=locate', $date, sha1(''))
+                'authorization' => $this->getRequestSignature($this->_secret_key, 'GET', $volume.'?o=locate', $date, sha1(''))
             )
         )) {
 
@@ -381,7 +381,7 @@ class Skylable_AccessSxNG {
             array(
                 'url' => 'https://'.$this->_cluster.'/'.$volume.'?o=acl',
                 'date' => $date,
-                'authorization' => $this->getRequestSignature($this->_auth_token, 'GET', $volume.'?o=acl', $date, sha1(''))
+                'authorization' => $this->getRequestSignature($this->_secret_key, 'GET', $volume.'?o=acl', $date, sha1(''))
             )
         )) {
 
@@ -411,7 +411,7 @@ class Skylable_AccessSxNG {
             array(
                 'url' => 'https://'.$this->_cluster.'/?volumeList',
                 'date' => $date,
-                'authorization' => $this->getRequestSignature($this->_auth_token, 'GET', '?volumeList', $date, sha1(''))
+                'authorization' => $this->getRequestSignature($this->_secret_key, 'GET', '?volumeList', $date, sha1(''))
             )
         )) {
 
@@ -468,7 +468,7 @@ class Skylable_AccessSxNG {
                     array(
                         'url' => 'https://'.$node.'/'.$req,
                         'date' => $date,
-                        'authorization' => $this->getRequestSignature($this->_auth_token, 'GET', $req, $date, sha1(''))
+                        'authorization' => $this->getRequestSignature($this->_secret_key, 'GET', $req, $date, sha1(''))
                     )
                 )) {
 
@@ -586,7 +586,7 @@ class Skylable_AccessSxNG {
                     array(
                         'url' => 'https://'.$node.'/'.$req,
                         'date' => $date,
-                        'authorization' => $this->getRequestSignature($this->_auth_token, 'DELETE', $req, $date, sha1('')),
+                        'authorization' => $this->getRequestSignature($this->_secret_key, 'DELETE', $req, $date, sha1('')),
                         'verb' => self::REQUEST_VERB_DELETE
                     )
                 )) {
@@ -628,7 +628,7 @@ class Skylable_AccessSxNG {
                     array(
                         'url' => 'https://'.$node.'/'.$req,
                         'date' => $date,
-                        'authorization' => $this->getRequestSignature($this->_auth_token, 'GET', $req, $date, sha1(''))
+                        'authorization' => $this->getRequestSignature($this->_secret_key, 'GET', $req, $date, sha1(''))
                     )
                 )) {
 

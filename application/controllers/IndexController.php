@@ -111,7 +111,7 @@ class IndexController extends My_BaseAction {
             'email' => $values['frm_email'],
             'password' => $values['frm_password'],
             'password_is_plain' => TRUE,
-            'auth_token' => $values['frm_user_key'],
+            'secret_key' => $values['frm_user_key'],
             'is_active' => FALSE,
             'activation_key' => My_Utils::rndStr(20)
         );
@@ -121,8 +121,6 @@ class IndexController extends My_BaseAction {
         
         try {
             $user_id = $accounts_model->createAccount($new_account_data);
-            // $account_key_model->sendNewAccountMail($new_account_data['activation_key'], $new_account_data['email'], $user_id);
-
 
             $view = Zend_Layout::getMvcInstance()->getView();
             $view->hash  = $account_key_model->getAccountActivationHash($new_account_data['activation_key'], $new_account_data['email'], $user_id);

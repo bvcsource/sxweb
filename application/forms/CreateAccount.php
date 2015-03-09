@@ -73,7 +73,7 @@ class Application_Form_CreateAccount extends Zend_Form {
                     ->addValidator(new My_ValidateUserKey())
                     ->setRequired(TRUE)
                     ->setAllowEmpty(FALSE)
-                    ->setLabel('User key')
+                    ->setLabel('Secret key')
         );
         
         $this->addElement( $this->createElement('submit', 'frm_do_create_login'));

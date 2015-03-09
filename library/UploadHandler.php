@@ -408,7 +408,7 @@ class UploadHandler {
 
         $access_sx_ng = new Skylable_AccessSxNG(array(
             'cluster' => Zend_Registry::get('skylable')->get('cluster'),
-            'autoken' => Zend_Auth::getInstance()->getIdentity()->getAuthToken()
+            'secret_key' => Zend_Auth::getInstance()->getIdentity()->getAuthToken()
         ));
 
         if (!is_string($path) || !is_string($volume)) {
