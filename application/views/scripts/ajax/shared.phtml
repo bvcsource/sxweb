@@ -1,0 +1,41 @@
+<?php
+    if (isset($this->error_msg)):
+
+        echo '<p>',$this->error_msg,'</p>';
+
+    else:
+?>
+<script type="text/javascript" >
+var SharedDownloader = function() {
+    var iter = document.getElementById("iter");
+    _this = this;
+    this.download = function() {
+        clearInterval(_this.interval);
+        iter.innerHTML = "<?php echo $this->translate('Downloading...'); ?>";
+        document.getElementById("shared_download_form").submit();
+    };
+    this.update = function() {
+        if (_this.counter > 0) {
+            iter.innerHTML = "<?php echo $this->translate('Download will start in');?> " + _this.counter;
+            _this.counter--;
+        } else {
+            _this.download();
+        }
+    };
+    this.counter = 5;
+    this.interval = setInterval(this.update, 1000);
+    var button = document.getElementById("download_button");
+    button.onclick = function() {
+        clearInterval(_this.interval);
+        return true;
+    };
+};
+    $(document).ready(SharedDownloader);
+</script>
+<?php printf( $this->translate('Start downloading file: <b>%s</b> ?'), $this->escape($this->file) );?><br />
+<span id="iter" ></span>
+<form action="" method="post" id="shared_download_form">
+	<input type="hidden" name="download" value="true" >
+	<input type="submit" value="Download now" id="download_button" class="button btwid" />
+</form>
+<?php endif; ?>

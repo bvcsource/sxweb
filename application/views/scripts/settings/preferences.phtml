@@ -1,0 +1,51 @@
+<div class="wrap">
+    <h1><?php echo $this->translate('SXWeb Preferences'); ?></h1>
+    <hr/>
+    <form action="" class="styled-form">
+        <?php
+
+        $page_size = 20;
+        $user_page_size = Zend_Auth::getInstance()->getIdentity()->getPreferences()->get(My_User::PREF_PAGE_SIZE, -1);
+        if (is_numeric($user_page_size)) {
+            if ($user_page_size > 0) {
+                $page_size = $user_page_size;
+            }
+        }
+
+        ?>
+        <p><label for="frm_file_list_size"><?php echo $this->translate('File list size:'); ?></label><input name="frm_file_list_size" type="text" placeholder="<?php echo $this->translate('File list size'); ?>" value="<?php echo $page_size; ?>"> <input type="submit" id="frm_view_settings_launch" value="Save!"></p>
+    </form>
+    <script type="text/javascript">
+        $(document).ready(function(){
+            $('#frm_view_settings_launch').click(function(e){
+                e.preventDefault();
+                var size = $('input[name="frm_file_list_size"]').val();
+                if (size.match(/^\d+$/)) {
+                    $.ajax({
+                        url: '/settings/view',
+                        type: 'POST',
+                        data: 'page_size='+size,
+                        dataType : 'json',
+                        success:function(data, status, xhr) {
+                            if (data.status) {
+                                window.alert(Skylable_Lang.settingsPageSizeChangeSuccess);
+                            } else {
+                                window.alert(data.reason);
+                            }
+                        },
+                        error: function(xhr, status) {
+                            window.alert(Skylable_Lang.settingsPageSizeChangeFailure);
+                        }
+                    });
+                } else {
+                    window.alert(Skylable_Lang.settingsPageSizeInvalid);
+                }
+            });
+        });
+
+    </script>
+    <hr />
+    <p>
+        <a href="#" onclick="window.alert('Currently not implemented... ;)'); return false;" class="styled-button"><?php echo $this->translate('Clear cache');?></a>
+    </p>
+</div>

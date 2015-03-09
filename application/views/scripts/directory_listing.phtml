@@ -1,0 +1,131 @@
+<ol id="selectable" class="file-list">
+<?php
+/**
+ *
+ * Required variables:
+ *
+ * url - the current path
+ * list - the file list
+ * paginator - the paginator
+ */
+
+if(!empty($this->url)) {
+    $parent_path = dirname( My_Utils::removeSlashes($this->url, TRUE) );
+
+    if($parent_path !== '.' && strlen($parent_path) > 0):
+?>
+        <li class="ui-widget-content">
+		    <span class="name">
+			    <span class="ir icon-folder-parent"></span><a href="/vol/<?php echo $this->sxUrlEncode($parent_path);?>"><?php echo $this->translate('Parent directory'); ?></a>
+            </span>
+            <span class="size"></span>
+		    <span class="date"></span>
+        </li>
+<?php
+    endif;
+}
+
+if(isset($this->list)) {
+    if (is_array($this->list) || ($this->list instanceof Iterator) ) {
+        foreach ($this->list as $file) {
+            $file_name = basename($file['path']);
+
+            if ($file['type'] == "DIR") {
+                ?>
+                <li class="ui-widget-content">
+		        <span class="name">
+                    <input type="hidden" name="file_basename" value="<?php echo $this->escape($file_name); ?>"/>
+			        <span class="ir icon-folder"></span>
+			        <a href="/vol<?php echo $this->sxUrlEncode($file['path']); ?>">
+                        <?php echo $this->escape($this->cutString($file_name, 60)); ?>
+                    </a>
+		        </span>
+                    <span class="size"></span>
+		        <span class="date">
+			        <span>--</span>
+                    <?php if ($this->canWriteToVolume()): ?>
+                        <input name="file_element" type="checkbox" value="<?php echo $this->escape($file['path']); ?>"/>
+                    <?php endif; ?>
+		        </span>
+                    <?php if ($this->canWriteToVolume()): ?>
+                        <a class="ir actions-trigger"></a>
+                        <ul class="actions">
+                            <li><a href="javascript:void(0)"
+                                   class="elmrename"><?php echo $this->translate('Rename'); ?></a>
+                            </li>
+                            <li><a href="javascript:void(0)" class="elmcopy"><?php echo $this->translate('Copy'); ?></a>
+                            </li>
+                            <li><a href="javascript:void(0)" class="elmmove"><?php echo $this->translate('Move'); ?></a>
+                            </li>
+                            <li><a href="javascript:void(0)"
+                                   class="elmdelete delete"><?php echo $this->translate('Delete'); ?></a></li>
+                        </ul>
+                    <?php endif; ?>
+                </li>
+            <?php
+            }
+        }
+
+        foreach ($this->list as $file) {
+            $file_name = basename($file['path']);
+
+            if ($file['type'] == "FILE") {
+                ?>
+                <li class="ui-widget-content">
+                <span class="name">
+                    <input type="hidden" name="file_basename" value="<?php echo $this->escape($file_name); ?>"/>
+                    <span class="ir <?php echo $this->mimeTypeIcon($file['path']); ?>"></span>
+                    <a href="/open<?php echo $this->escape($this->sxUrlEncode($file['path'])); ?>"
+                       class="<?php echo $this->mimeTypeIcon($file['path']); ?>">
+                        <?php echo $this->escape($this->cutString($file_name, 60)); ?>
+                    </a>
+                </span>
+                    <span class="size"><?php echo $this->fileSizeFormat($file['size']); ?></span>
+		        <span class="date"><span><?php echo $file['date']; ?></span>
+                    <?php if ($this->canWriteToVolume()): ?>
+                        <input name="file_element" type="checkbox" value="<?php echo $this->escape($file['path']); ?>"/>
+                    <?php endif; ?>
+		        </span>
+                    <a class="ir actions-trigger"></a>
+                    <ul class="actions">
+                        <?php
+                        if ($this->hasReadAccess()) {
+                            $file_type = My_Utils::getFileType($file['path']);
+                            if ($file_type != 'data') {
+                                echo '<li><a href="/open', $this->escape($this->sxUrlEncode($file['path'])), '" class="elmpreview" data-fileurl="/open', $this->escape($this->sxUrlEncode($file['path'])), '" data-filetype="', $file_type, '">', $this->translate('Preview'), '</a></li>', PHP_EOL;
+                            }
+                            ?>
+                            <li><a href="javascript:void(0)"
+                                   class="elmshare"><?php echo $this->translate('Create Link'); ?></a></li>
+                        <?php
+                        }
+                        ?>
+
+                        <?php if ($this->canWriteToVolume()): ?>
+                            <li><a href="javascript:void(0)"
+                                   class="elmrename"><?php echo $this->translate('Rename'); ?></a></li>
+                            <li><a href="javascript:void(0)" class="elmcopy"><?php echo $this->translate('Copy'); ?></a>
+                            </li>
+                            <li><a href="javascript:void(0)" class="elmmove"><?php echo $this->translate('Move'); ?></a>
+                            </li>
+                            <li><a href="javascript:void(0)"
+                                   class="elmdelete delete"><?php echo $this->translate('Delete'); ?></a></li>
+                        <?php endif; ?>
+                    </ul>
+                </li>
+            <?php
+            }
+        }
+    } else {
+        ?><li class="ui-widget-content"><?php echo $this->translate('No files found.'); ?></li><?php
+    }
+}
+?>
+</ol>
+<?php
+if (isset($this->paginator)) {
+    if (is_object($this->paginator)) {
+        echo $this->paginationControl($this->paginator, 'Sliding', 'directory_listing_paginator.phtml', array('path' => $this->url));
+    }
+}
+?>

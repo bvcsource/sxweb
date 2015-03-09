@@ -1,0 +1,43 @@
+<?php
+
+$this->declareVars(
+        array(
+            'show_success' => FALSE
+        )
+        );
+?>
+<div class="wrap">
+<h1><?php echo $this->translate('Manage Account'); ?></h1>
+<hr>
+    <p><?php echo $this->translate('Change your login password here.');?></p>
+<?php
+    // Should show the success message?
+    if ($this->show_success):
+    echo '<p>',$this->translate('Account info successfully updated.'),'</p>';
+?>    
+<?php
+    else:
+        if ($this->form->hasErrors()) {
+            echo '<div class="styled-form-failure">';
+            echo $this->form->renderErrors();
+            echo '</div>';
+        }
+        echo $this->form('', array(
+            'class' => 'styled-form',
+            'method' => 'post',
+            'action' => $this->url( array(), 'account_settings', FALSE, FALSE )
+        ), FALSE);
+?>
+<p><label for="frm_password"><?php echo $this->translate('Current Password'); ?></label><input name="frm_password" type="password" placeholder="<?php echo $this->translate('Current Password'); ?>" value=""></p>
+<p><label for="frm_new_password"><?php echo $this->translate('New Password'); ?></label><input type="password" name="frm_new_password" placeholder="<?php echo $this->translate('New Password'); ?>" value=""></p>
+<p><label for="frm_new_cpassword"><?php echo $this->translate('Confirm Password'); ?></label><input type="password" name="frm_new_cpassword" placeholder="<?php echo $this->translate('Confirm Password'); ?>" value=""></p>
+<p><input type="submit" name="frm_launch" value="Save!"></p>
+</form>
+<?php    
+    endif;
+?>
+<hr>
+<h2><?php echo $this->translate('Delete Account'); ?></h2>
+<p>
+    <a class="styled-button" href="<?php echo $this->url( array('controller' => 'remove', 'action' => 'account'), 'default', TRUE ); ?>" ><?php echo $this->translate('Delete my account');?></a></p>
+</div>

@@ -1,0 +1,69 @@
+html {
+overflow:auto;
+}	
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 300;
+  src: local('Open Sans Light'), local('OpenSans-Light'), url(/layouts/skylable/js/DXI1ORHCpsQm3Vp6mXoaTRa1RVmPjeKy21_GQJaLlJI.woff) format('woff');
+}
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Open Sans'), local('OpenSans'), url(/layouts/skylable/js/u-WUoqrET9fUeobQW7jkRT8E0i7KZn-EPnyo3HZu7kw.woff) format('woff');
+}
+#container {
+  display: none;
+}
+#dialog {
+  display: none;
+}	
+#dialog2 {
+  display: none;
+}
+#fileupload {
+  display: none;
+}
+#files {
+  float:left;
+  width:100%;
+  margin-top:10px;
+}
+#files p {
+  margin-top:1px;
+  margin-bottom:1px;
+  padding:2px;
+}
+#files p b {
+  float:right;
+  text-align:right;
+}
+.sidebar-tools {
+	background-color:#212636;
+}
+.icon-failure, .icon-success {
+	cursor:pointer;
+}
+.ui-progressbar {
+	position: relative;
+	}
+	
+.progress-label {
+	position: absolute;
+	top: 4px;
+	font-weight: bold;
+	text-shadow: 1px 1px 0 #fff;
+	text-align:left;
+	padding-left:15px;
+	float:left;
+	}
+
+#renameFile input[type=text] {
+    width: 95%;
+}
+#dialog2 .createdir {
+	
+	width: 96%;
+}
+

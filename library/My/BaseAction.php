@@ -1,0 +1,236 @@
+<?php
+
+/*
+    The contents of this file are subject to the Common Public Attribution License
+    Version 1.0 (the "License"); you may not use this file except in compliance with
+    the License. You may obtain a copy of the License at
+    http://opensource.org/licenses/cpal_1.0. The License is based on the Mozilla
+    Public License Version 1.1 but Sections 14 and 15 have been added to cover use
+    of software over a computer network and provide for limited attribution for the
+    Original Developer. In addition, Exhibit A has been modified to be consistent with
+    Exhibit B.
+    
+    Software distributed under the License is distributed on an "AS IS" basis, WITHOUT
+    WARRANTY OF ANY KIND, either express or implied. See the License for the
+    specific language governing rights and limitations under the License.
+    
+    The Original Code is the SXWeb project.
+    
+    The Original Developer is the Initial Developer.
+    
+    The Initial Developer of the Original Code is Skylable Ltd (info-copyright@skylable.com). 
+    All portions of the code written by Initial Developer are Copyright (c) 2013 - 2015
+    the Initial Developer. All Rights Reserved.
+
+    Contributor(s):    
+
+    Alternatively, the contents of this file may be used under the terms of the
+    Skylable White-label Commercial License (the SWCL), in which case the provisions of
+    the SWCL are applicable instead of those above.
+    
+    If you wish to allow use of your version of this file only under the terms of the
+    SWCL and not to allow others to use your version of this file under the CPAL, indicate
+    your decision by deleting the provisions above and replace them with the notice
+    and other provisions required by the SWCL. If you do not delete the provisions
+    above, a recipient may use your version of this file under either the CPAL or the
+    SWCL.
+*/
+
+/**
+ * Base action for all the frontend controllers.
+ * 
+ * Holds informations about:
+ * - sort order
+ * - last visited volume and path
+ * 
+ *
+ */
+class My_BaseAction extends Zend_Controller_Action {
+    protected
+            /**
+             * @var My_Accounts the user model
+             */
+            $_user_model = NULL;
+
+    /**
+     * Disable the view
+     */
+    public function disableView() {
+        $this->_helper->viewRenderer->setNoRender(TRUE);
+        $this->_helper->layout()->disableLayout();
+    }
+
+    /**
+     * Enable the view
+     */
+    public function enableView() {
+        $this->_helper->viewRenderer->setNoRender(FALSE);
+        $this->_helper->layout()->enableLayout();
+    }
+
+    /**
+     * Return the logger
+     *
+     * @return Zend_Log
+     */
+    public function getLogger() {
+        return $this->getInvokeArg('bootstrap')->getResource('log');
+    }
+
+    /**
+     * Returns the User model singleton.
+     * 
+     * @return My_Accounts the user model
+     */
+    public function getUserModel() {
+        if (!is_object($this->_user_model)) {
+            $this->_user_model = new My_Accounts();
+        }
+        return $this->_user_model;
+    }
+    
+    /**
+     * Returns the last visited path by a user, this includes the volume
+     * which is the first component of the path.
+     * 
+     * Example: in '/foo/bar/baz'
+     * /foo is the volume
+     * /bar/baz the path on the volume
+     * 
+     * @return string
+     */
+    public function getLastVisitedPath() {
+        if (Zend_Auth::getInstance()->hasIdentity()) {
+            return Zend_Auth::getInstance()->getIdentity()->getPreferences()->get(My_User::PREF_LAST_VISITED_PATH);
+        } else {
+            return '';
+        }
+    }
+    
+    /**
+     * Returns the file sort order or NULL if none is defined
+     * 
+     * @return integer
+     */
+    public function getFileSortOrder() {
+        if (Zend_Auth::getInstance()->hasIdentity()) {
+            return Zend_Auth::getInstance()->getIdentity()->getPreferences()->get(My_User::PREF_FILE_SORT_ORDER);
+        } else {
+            return 0;
+        }
+    }
+
+    /**
+     * Sets the file sort order.
+     * 
+     * @param Integer $order
+     */
+    public function setFileSortOrder($order) {
+        if (Zend_Auth::getInstance()->hasIdentity()) {
+            Zend_Auth::getInstance()->getIdentity()->getPreferences()->set(My_User::PREF_FILE_SORT_ORDER, (int)$order);
+            $this->updateStorage();
+        }
+    }
+    
+    /**
+     * Sets the last visited user path.
+     * 
+     * @param string $path the last visited path
+     */
+    public function setLastVisitedPath($path) {
+        if (Zend_Auth::getInstance()->hasIdentity()) {
+            Zend_Auth::getInstance()->getIdentity()->getPreferences()->set(My_User::PREF_LAST_VISITED_PATH, strval($path));
+            $this->updateStorage();
+        }
+    }
+     
+    /**
+     * Update the stored datas
+     */
+    protected function updateStorage() {
+        if (Zend_Auth::getInstance()->hasIdentity()) {
+            try {
+                if ($this->getUserModel()->updateUserPreferences( Zend_Auth::getInstance()->getIdentity() )) {
+                    $this->getInvokeArg('bootstrap')->getResource('log')->debug(__METHOD__ . ': success for ID: ' . strval( Zend_Auth::getInstance()->getIdentity()->getId() ) );
+                } else {
+                    $this->getInvokeArg('bootstrap')->getResource('log')->debug(__METHOD__ . ': failure for ID: ' . strval( Zend_Auth::getInstance()->getIdentity()->getId() ) );
+                }
+            }
+            catch(Exception $e) {
+                $this->getInvokeArg('bootstrap')->getResource('log')->err(__METHOD__ . ': exception: ' . $e->getMessage() );
+            }
+        }
+    }
+
+    /**
+     * Show a path using a paginator.
+     *
+     * Prepare the paginator and puts it into the $view_paginator view slot.
+     * The file list goes into the $view_slot.
+     *
+     * @param string $path the path to show
+     * @param Skylable_AccessSxNew $access_sx
+     * @param string $view_slot
+     * @param string $view_paginator
+     * @throws Zend_Paginator_Exception
+     */
+    protected function paginateFiles($path, Skylable_AccessSxNew $access_sx, $view_slot = 'list', $view_paginator = 'paginator') {
+        // Get view configuration from user
+        $page_size = 20;
+        $user_page_size = Zend_Auth::getInstance()->getIdentity()->getPreferences()->get(My_User::PREF_PAGE_SIZE, -1);
+        if (is_numeric($user_page_size)) {
+            if ($user_page_size > 0) {
+                $page_size = $user_page_size;
+            }
+        }
+
+        try {
+            $file_list = $access_sx->sxls($path, $this->getFileSortOrder() );    
+        }
+        catch(Exception $e) {
+            if ($e instanceof Skylable_AccessSxException) {
+                $file_list = FALSE;
+                $this->view->putMessage()->addError($e->getMessage());
+            } else {
+                throw $e;
+            }
+        }
+        
+        if (is_array($file_list)) {
+            // Puts dirs before files
+            $file_list_dirs = array_filter($file_list, function($f){ return ($f['type'] == 'DIR'); });
+            $file_list_files = array_filter($file_list, function($f){ return ($f['type'] == 'FILE'); });
+
+            $paginator = Zend_Paginator::factory(array_merge($file_list_dirs, $file_list_files));
+            $paginator->setItemCountPerPage( $page_size );
+            $paginator->setPageRange( 9 );
+
+            $current_page = $this->_getParam('page');
+            if (preg_match('/^\d+$/', $current_page) == 1) {
+                $current_page = abs(intval($current_page));
+            } else {
+                $current_page = 1;
+            }
+
+            $paginator->setCurrentPageNumber($current_page);
+
+            $this->view->assign($view_paginator, $paginator);
+
+            $this->view->assign($view_slot, $paginator->getCurrentItems());
+        } else {
+            $this->view->assign($view_slot, $file_list);
+            $this->view->assign($view_paginator, NULL);
+        }
+    }
+
+    /**
+     * Tells if we are in demo mode.
+     * 
+     * @return bool
+     */
+    public function isDemoMode() {
+        if (defined('SXWEB_DEMO_MODE')) {
+            return (bool)SXWEB_DEMO_MODE;
+        }
+    }
+}

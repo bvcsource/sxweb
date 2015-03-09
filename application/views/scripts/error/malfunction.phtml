@@ -1,0 +1,10 @@
+<?php
+
+if (isset($this->error_title)) { ?>
+    <h1><?php echo $this->escape($this->error_title); ?></h1>
+<?php
+}
+if (isset($this->error_message)) { ?>
+<p><?php echo $this->error_message; ?></p>
+<?php
+}

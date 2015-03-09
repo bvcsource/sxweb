@@ -1,0 +1,46 @@
+### SITE DIRECTORY STRUCTURE
+This site follows the Zend Framework raccomended directory structure:
+
+http://framework.zend.com/manual/1.12/en/project-structure.project.html
+
+At a glance:
+
+<project name>/
+    application/
+        configs/
+            application.ini
+        controllers/
+            helpers/
+        forms/
+        layouts/
+            filters/
+            helpers/
+            scripts/
+        models/
+        modules/
+        services/
+        views/
+            filters/
+            helpers/
+            scripts/
+        Bootstrap.php
+    data/
+        cache/
+        indexes/
+        locales/
+        logs/
+        sessions/
+        uploads/
+    docs/
+    library/
+    public/
+        css/
+        images/
+        js/
+        .htaccess
+        index.php
+    scripts/
+        jobs/
+        build/
+    temp/
+    tests/

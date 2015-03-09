@@ -1,0 +1,10 @@
+### APPLICATION CONFIGURATION
+The application configuration follows the Zend Frameworks standards. All config files are into the directory 'application/configs'.
+To configure the application edit the file 'application/configs/application.ini'.
+You can find information about the available resources here:
+http://framework.zend.com/manual/1.12/en/zend.application.available-resources.html
+http://framework.zend.com/manual/1.12/en/zend.application.quick-start.html
+
+### SKYLABLE SERVICES CONFIGURATION
+The Skylable services configuration is stored into the 
+application/configs/skylable.ini file.

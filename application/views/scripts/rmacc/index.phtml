@@ -1,0 +1,21 @@
+<?php
+    $this->headLink()->appendStylesheet($this->ServerUrl()."/layouts/skylable/css/pagedialog.css");
+?>
+<div class="dialog-box" > 
+	<div class="dialog-box-logo">
+		<span class="dialog-box-logo-icon ir"></span><h1><?php echo $this->translate('Remove account?'); ?></h1>
+	</div>
+	<div class="dialog-box-body"> 
+		<p><?php echo $this->translate('Are you sure you want to remove your account?'); ?></p>
+        <p><?php echo $this->translate('Beware! This operation cannot be undone!'); ?></p>
+        <div class="dialog-box-buttons">
+            <a class="styled-button" href="/remove/account?remove=yes">Yes</a>
+            <a class="styled-button" href="/account_settings" >No</a>    
+        </div>    
+        
+
+	</div>
+<?php 
+echo $this->render('index/messages.phtml');
+?>	
+</div>	

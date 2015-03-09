@@ -1,0 +1,32 @@
+<div class="login-box">
+    <div class="login-logo">
+        <span class="icon-logo ir"></span><h1>Login</h1>
+    </div>
+
+    <div class="login-form">
+    <?php echo $this->form('', $this->form->getAttribs()); ?>
+        <input type="email" value="" name="frm_login" placeholder="Email address" />
+        <input type="password" value="" name="frm_password" placeholder="Password" />
+        <label for="confirm"><input type="checkbox" name="frm_remember_me" value="yes" id="confirm" />Remember me</label>
+        <input type="submit" value="Sign in" />
+    </form>
+    </div>
+
+    <div class="login-utils">
+        <a href="<?php echo $this->url(array( 'controller' => 'index', 'action' => 'resetpassword' ), 'recover', TRUE, TRUE );  ?>">Forgot Your Password?</a>
+        <a href="<?php echo $this->url(array( 'controller' => 'index', 'action' => 'create' ), 'create', TRUE, TRUE );  ?>">Create an account</a>
+    </div>
+<?php
+    
+    if ($this->form->hasErrors()):
+?>
+    <div class="failure notification-fix"><span class="inf" ><span class="icon-failure ir"></span></span>
+    <?php echo $this->form->renderErrors(); ?>
+    </div>
+<?php
+        
+    endif;
+
+    echo $this->render('index/messages.phtml');
+?>
+</div>

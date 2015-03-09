@@ -1,0 +1,39 @@
+# DEPLOY INSTRUCTIONS
+
+## DATABASE
+All database schema are into the `sql/` directory. Create the database using sxweb.sql, then apply all the update_DDMMYYY.sql files
+you'll find into that dir in time order (the DDMMYYY part of the file name stands for date-month-year).
+
+## DIRECTORIES
+Create and make writable by the web server the dirs:
+
+ - data/
+ - data/session/
+ - data/logs/
+
+## APPLICATION
+1) Edit the file public/config.inc.php setting the application environment to 'production', search the line:
+
+<?php
+define('APPLICATION_ENV','development');
+?>
+
+And change it to:
+
+<?php
+define('APPLICATION_ENV','production');
+?>
+
+In this file you can also put all PHP settings you need.
+
+2) Edit the file application/configs/skylable.ini to suits your needs.
+Remember that all the settings into the 'production' profile will be use into the production environment.
+Unless you are developing, leave as is the 'development' section.
+
+IMPORTANT: the 'auth_salt' is the salt used to crypt and decrypt, once generated one, don't change it, or 
+users will not be able to login
+
+3) Edit the application/configs/application.ini
+Here you can define your SMTP settings, the DB connection parameters, the logging level and in general application parameters.
+
+I suggest to change only the SMTP and DB settings.

@@ -1,0 +1,207 @@
+<?php
+
+/*
+    The contents of this file are subject to the Common Public Attribution License
+    Version 1.0 (the "License"); you may not use this file except in compliance with
+    the License. You may obtain a copy of the License at
+    http://opensource.org/licenses/cpal_1.0. The License is based on the Mozilla
+    Public License Version 1.1 but Sections 14 and 15 have been added to cover use
+    of software over a computer network and provide for limited attribution for the
+    Original Developer. In addition, Exhibit A has been modified to be consistent with
+    Exhibit B.
+    
+    Software distributed under the License is distributed on an "AS IS" basis, WITHOUT
+    WARRANTY OF ANY KIND, either express or implied. See the License for the
+    specific language governing rights and limitations under the License.
+    
+    The Original Code is the SXWeb project.
+    
+    The Original Developer is the Initial Developer.
+    
+    The Initial Developer of the Original Code is Skylable Ltd (info-copyright@skylable.com). 
+    All portions of the code written by Initial Developer are Copyright (c) 2013 - 2015
+    the Initial Developer. All Rights Reserved.
+
+    Contributor(s):    
+
+    Alternatively, the contents of this file may be used under the terms of the
+    Skylable White-label Commercial License (the SWCL), in which case the provisions of
+    the SWCL are applicable instead of those above.
+    
+    If you wish to allow use of your version of this file only under the terms of the
+    SWCL and not to allow others to use your version of this file under the CPAL, indicate
+    your decision by deleting the provisions above and replace them with the notice
+    and other provisions required by the SWCL. If you do not delete the provisions
+    above, a recipient may use your version of this file under either the CPAL or the
+    SWCL.
+*/
+
+
+/***
+ * Shows the welcome modal dialog.
+ *
+ * Sends an AJAX request to /welcome on dismiss.
+ */
+
+$this->headLink(array(
+    'href' => 'https://fonts.googleapis.com/css?family=Roboto+Condensed:400,300,300italic,400italic,700,700italic',
+    'rel'=>'stylesheet',
+    'type'=>'text/css'
+)); ?>
+<style type="text/css">
+
+    .welcome-window-overlay {
+        position: fixed;
+        top:0;
+        left:0;
+        width: 100%;
+        height: 100%;
+        z-index: 99999;
+
+        background: #000;
+        opacity: 0;
+
+        display: none;
+    }
+
+    .welcome-window {
+        position: absolute;
+        background: url("<?php echo $this->ServerUrl(); ?>/layouts/skylable/images/bg.jpg") center center no-repeat;
+        font-family: "Roboto Condensed", sans-serif !important;
+        font-weight: 200 !important;
+        color: #006bb0;
+        z-index: 999999;
+        text-align: center;
+
+        display: none;
+    }
+
+    .welcome-window-wrapper {
+        margin-left: auto;
+        margin-right: auto;
+        width: 800px;
+        height: 450px;
+        position: relative;
+    }
+
+    .welcome-window-wrapper a {
+        color: #0077c1;
+        text-decoration: none;
+    }
+
+    .welcome-window-wrapper a img {
+        transition: all 0.3s ease;
+    }
+
+    .welcome-window-wrapper a img:hover {
+        transform: scale(1.1,1.1);
+        -webkit-transform: scale(1.1,1.1);
+        transition: all 0.3s ease;
+    }
+
+    .welcome-window-wrapper img {
+        margin-top: 10px;
+    }
+
+    .welcome-window-wrapper h1 {
+        font-size: 51px;
+        padding-top: 51px;
+        margin-bottom: 0;
+    }
+
+    .welcome-window-wrapper p {
+        font-size: 18px;
+        font-weight: normal;
+        width: 50%;
+        margin: 20px auto;
+        color: #006bb0;
+    }
+
+    .dismissbox {
+        cursor: pointer;
+    }
+
+    .welcome-window-quit {
+        position: absolute;
+        top: -30px;
+        right: -10px;
+    }
+</style>
+<div class="welcome-window-overlay"></div>
+<div class="welcome-window">
+    <div class="welcome-window-wrapper">
+        <a class="welcome-window-quit" href="#"><img src="<?php echo $this->ServerUrl(); ?>/layouts/skylable/images/quit.png"></a>
+
+        <h1>Welcome to SXWeb!</h1>
+
+        <p>This web interface safely stores your data in the
+            <b>Skylable S<sup>X</sup></b> cluster running at <?php echo $this->escape(Zend_Registry::get('skylable')->get('cluster')); ?>.<br><br>
+
+            You can access your data anywhere, anytime using
+            this web interface or one of the following applications:</p>
+
+        <a style="margin-right:15px;" href="http://www.skylable.com/products#sxdrive" onclick="window.open(this.href); return false;"><img src="<?php echo $this->ServerUrl(); ?>/layouts/skylable/images/desktop_app.png"></a>
+        <a style="margin-right:15px;" href="https://play.google.com/store/apps/details?id=com.skylable.sx&hl=en" onclick="window.open(this.href); return false;"><img src="<?php echo $this->ServerUrl(); ?>/layouts/skylable/images/google_play.png"></a>
+        <a><img src="<?php echo $this->ServerUrl(); ?>/layouts/skylable/images/appstore_app.png"></a><br><br>
+        <div style="font-weight: normal; text-align: right;padding-right: 40px;">
+            <form class="styled-form"><label class="inline"><input class="dismissbox" type="checkbox" name="dont_show_welcome" value="yes"> Do not display again</label> <button id="welcome-dismiss" class="no-margin" type="button">Great, thanks!</button></form>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    function removeWelcomeWindow() {
+        var checkbox = $('input:checkbox[name="dont_show_welcome"]');
+
+        $('div.welcome-window-overlay, div.welcome-window').fadeOut(function(){
+            $(this).remove();
+            $('body').css('overflow-y', 'auto');
+        });
+
+        $.ajax({
+            type: "GET",
+            url: "<?php echo $this->url(array('controller' => 'ajax', 'action' => 'welcome'), 'welcome', TRUE, FALSE); ?>",
+            data: "welcome_dialog_viewed=yes" + ($(checkbox).prop('checked') ? '&dont_show_welcome=' + $(checkbox).val() : '')
+        });
+    }
+
+    $(document).ready(function(){
+
+        if ($(window).width() < 800) {
+            $('div.welcome-window-overlay, div.welcome-window').hide();
+            removeWelcomeWindow();
+        } else {
+            $('div.welcome-window-overlay, div.welcome-window').show();
+
+            $('body').css('overflow-y', 'hidden');
+            $('div.welcome-window-overlay')
+                .click(function (event) {
+                    removeWelcomeWindow();
+                    event.preventDefault();
+                })
+                .animate({'opacity': '0.5'}, 'slow')
+                .appendTo('body');
+            var welcome_window = $('div.welcome-window');
+            welcome_window.appendTo('body');
+
+            var top = ($(window).height() - $(welcome_window).height()) / 2;
+            var left = ($(window).width() - $(welcome_window).width()) / 2;
+            $(welcome_window).css({
+                'top': top + $(document).scrollTop(),
+                'left': left
+            });
+            $('#welcome-dismiss, .welcome-window-quit').click(function (event) {
+                removeWelcomeWindow();
+                event.preventDefault();
+            });
+
+            var keyevent = function (event) {
+                if (event.which == 27) {
+                    removeWelcomeWindow();
+                    $(document).unbind('keydown', this);
+                }
+            };
+
+            $(document).keydown(keyevent);
+        }
+    });
+</script>

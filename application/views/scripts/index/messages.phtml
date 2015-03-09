@@ -1,0 +1,27 @@
+<?php
+
+    /**
+     * Shows the messages from the FlashMessenger Action Helper.
+     * 
+     * The layout should load the flashmessenger.js script.
+     */
+
+    $context = array(
+        'success' => 'success',
+        'info' => 'info',
+        'error' => 'failure'
+    );
+    
+    foreach($context as $namespace => $css_class) {
+        $flash_msg_obj = $this->flashMessages($namespace);
+        
+        foreach($flash_msg_obj as $msg) {
+?>
+    <div class="<?php echo $css_class; ?> notification-fix"><span class="inf" ><span class="icon-failure ir"></span><?php echo $this->escape($msg);?></span></div>
+<?php
+        }
+        
+        $flash_msg_obj->clearMessages();
+    }
+    
+   

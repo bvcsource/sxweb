@@ -1,0 +1,70 @@
+Skylable SXWeb
+--------------
+
+Copyright (C) 2012-2015 Skylable Ltd. <info-copyright@skylable.com>
+
+This software contains multiple components, some of which are covered
+by different licenses. By using Skylable SXWeb you agree to be bound by
+the conditions of the license for each respective component.
+
+Skylable SXWeb
+-----------------------------------------------------
+
+Skylable SXWeb source code is distributed under the Common Public 
+Attribution License Version 1.0 (see LICENSE.txt).
+
+Other components
+----------------
+
+The following components or their parts are used in this software:
+
+Zend Framework
+--------------
+
+See the included file library/Zend/LICENSE.txt
+
+Elasticsearch-PHP
+-----------------
+
+Elasticsearch-PHP is available under two licenses: Apache v2.0 and LGPL v2.1. 
+See here for the license: https://github.com/elasticsearch/elasticsearch-php/blob/master/LICENSE 
+
+Some components used by Eleasticsearch-PHP have different licenses, please look under library/es/
+for specific licenses.
+
+Google Code Prettify
+--------------------
+
+See the included file public/google-code-prettify/COPYING for license informations.
+
+
+jQuery
+------
+
+See http://jquery.org/license for license information.
+
+PDF.js
+------
+
+See the included file public/pdfjs/LICENSE
+
+jQuery slimscroll
+-----------------
+
+Copyright (c) 2011 Piotr Rochala (http://rocha.la) 
+Dual licensed under the MIT (http://www.opensource.org/licenses/mit-license.php) 
+and GPL (http://www.opensource.org/licenses/gpl-license.php) licenses.
+
+MIT licensed components
+-----------------------
+
+The following included components are licensed under the MIT 
+license http://www.opensource.org/licenses/mit-license.php
+
+jQuery Upload - Copyright 2014, Sebastian Tschan
+jQuery UI - Copyright 2014 jQuery Foundation and other contributors
+jQuery Cookie - Copyright 2006, 2014 Klaus Hartl
+jQuery QRCode - Copyright (c) 2014 Lars Jung (http://larsjung.de)
+jQuery zClip - Copyright 2011, SteamDev
+jQuery Placeholder - Copyright Mathias Bynens <http://mathiasbynens.be/>
+Modernizr - Copyright (c) 2009–2015, http://modernizr.com/license/

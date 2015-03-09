@@ -1,0 +1,7 @@
+<h1>Account was created</h1>
+<p>
+Congratulations, your account on SxWeb was successfully created.<br />
+For security reasons it is disabled: follow this link to activate your account:
+<a href="<?php echo $this->url, $this->url( array( 'controller' => 'activateaccount', 'action' => 'index', 'hash' => $this->hash ), NULL, TRUE, TRUE); ?>">
+<?php echo $this->url, $this->url( array( 'controller' => 'activateaccount', 'action' => 'index', 'hash' => $this->hash ), NULL, TRUE, TRUE); ?></a>
+</p>

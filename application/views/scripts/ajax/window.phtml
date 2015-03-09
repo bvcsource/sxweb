@@ -1,0 +1,44 @@
+<?php
+	// There are errors...
+	if (isset($this->has_error)) {
+?>
+		<p><?php echo $this->error; ?></p>
+<?php
+	} else {
+?>
+		<label><?php echo $this->translate('From:'); ?></label>
+		<div id="index_ajax_from" class="share-file-link"></div>
+		<div id="index_ajax_msg"></div>
+		<label style="padding-top:10px;"><?php echo $this->translate('To:'); ?></label>
+		<div id="ajax_line" class="share-file-link">
+			<select id="index_ajax_vols">
+				<?php
+				foreach ($this->vol as $k => $e) {
+
+					$vol = My_Utils::getRootFromPath($e['path']);
+					?>
+					<option value="<?php echo $this->escape($vol); ?>"><?php echo $this->escape($vol); ?></option>
+				<?php } ?>
+			</select>
+			<input type="text" id="index_ajax_patch" value=""/>
+			<div class="mang_butt">
+				<span id="shfiles"></span>
+			</div>
+		</div>
+		<ul id="index_ajax_list">
+			<li url="<?php echo $this->escape( $this->sxUrlEncode( dirname( My_Utils::skipPath($this->path, 2) ) ) ); ?>" class="ax dir">
+				<span><?php echo $this->translate('Parent directory'); ?></span>
+			</li>
+<?php
+		foreach ($this->list as $k => $e) {
+			$the_path = My_Utils::skipPath($e['path'], 2);
+?>
+			<li class="ax dir" url="<?php echo $this->escape( $this->sxUrlEncode($the_path)); ?>">
+				<label class="ir icon-folder"></label><span><?php echo $this->escape($the_path); ?></span>
+			</li>
+<?php
+		}
+?>
+		</ul>
+<?php
+	}

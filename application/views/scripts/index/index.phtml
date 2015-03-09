@@ -1,0 +1,54 @@
+<div class="sticked">
+	<div class="wrap">
+	<?php echo $this->render('index/messages.phtml'); ?>
+        <?php echo $this->putMessage(); ?>
+	<div id="search" >
+		<form action="/search,<?php echo $this->escape(My_Utils::getRootFromPath($this->url));?>" method="get" >
+			<input type="submit" class="ir icon-search"  />
+			<input type="search" placeholder="Search..." class="search" name="q"  />
+		</form>
+		<hr />		
+	</div>
+	<hr />
+        <p class="bread-crumbs"><?php echo $this->breadcrumbs($this->url);?></p>
+		<div class="bulk-actions">
+			<?php if($this->canWriteToVolume()): ?>
+			<ul>
+				<li>Bulk Actions</li>
+				<li><a class="share-trigger"  id="actioncopy"   >Copy</a></li>
+				<li><a class="move-trigger"   id="actionmove"   >Move</a></li>
+				<li><a class="delete-trigger" id="actiondelete" >Delete</a></li>
+			</ul>
+			<?php endif; ?>
+		</div>
+		<div class="default-actions">
+			<?php if($this->canWriteToVolume()): ?>
+			<a href="javascript:void(0)" class="add-folder create-trigger" id="createdir" >
+				<span class="icon-add-folder ir"></span>
+				<span>New Folder</span>
+			</a>
+			<a href="javascript:void(0)" class="upload" id="addfile" >
+				<span class="icon-upload ir"></span>
+				<span>Upload</span>
+			</a>
+			<?php endif; ?>
+		</div>
+		<p class="table-title">
+			<span class="name"><a href="?sort=<?php echo ($this->sort == Skylable_AccessSxNew::SORT_BY_NAME_DESC ? Skylable_AccessSxNew::SORT_BY_NAME_ASC : Skylable_AccessSxNew::SORT_BY_NAME_DESC ); ?>" class="sort-name">Name<span class="icon-sort<?php echo ($this->sort == Skylable_AccessSxNew::SORT_BY_NAME_DESC ? ' down' : ($this->sort == Skylable_AccessSxNew::SORT_BY_NAME_ASC ? ' up' : '' ) ); ?>"></span></a>
+            </span><span class="size"><a href="?sort=<?php echo ($this->sort == Skylable_AccessSxNew::SORT_BY_SIZE_DESC ? Skylable_AccessSxNew::SORT_BY_SIZE_ASC : Skylable_AccessSxNew::SORT_BY_SIZE_DESC ); ?>" class="sort-size">Size<span class="icon-sort<?php echo ($this->sort == Skylable_AccessSxNew::SORT_BY_SIZE_DESC ? ' down' : ($this->sort == Skylable_AccessSxNew::SORT_BY_SIZE_ASC ? ' up' : '' ) ); ?>"></span></a>
+            </span><span class="date"><a href="?sort=<?php echo ($this->sort == Skylable_AccessSxNew::SORT_BY_DATE_DESC ? Skylable_AccessSxNew::SORT_BY_DATE_ASC : Skylable_AccessSxNew::SORT_BY_DATE_DESC ); ?>" class="sort-date">Date<span class="icon-sort<?php echo ($this->sort == Skylable_AccessSxNew::SORT_BY_DATE_DESC ? ' down' : ($this->sort == Skylable_AccessSxNew::SORT_BY_DATE_ASC ? ' up' : '' ) ); ?>"></span></a></span>
+		</p>
+	</div>
+</div>	
+<div class="wrap">
+	<div id="main-file-list">
+		<?php echo $this->render('directory_listing.phtml'); ?>
+	</div>
+	<?php echo $this->render('footer.phtml'); ?>
+</div>
+<?php
+if (isset($this->show_welcome_window)) {
+	if ($this->show_welcome_window) {
+		echo $this->render('index/welcome.phtml');
+	}
+}

@@ -1,0 +1,129 @@
+<?php 
+/*
+    The contents of this file are subject to the Common Public Attribution License
+    Version 1.0 (the "License"); you may not use this file except in compliance with
+    the License. You may obtain a copy of the License at
+    http://opensource.org/licenses/cpal_1.0. The License is based on the Mozilla
+    Public License Version 1.1 but Sections 14 and 15 have been added to cover use
+    of software over a computer network and provide for limited attribution for the
+    Original Developer. In addition, Exhibit A has been modified to be consistent with
+    Exhibit B.
+    
+    Software distributed under the License is distributed on an "AS IS" basis, WITHOUT
+    WARRANTY OF ANY KIND, either express or implied. See the License for the
+    specific language governing rights and limitations under the License.
+    
+    The Original Code is the SXWeb project.
+    
+    The Original Developer is the Initial Developer.
+    
+    The Initial Developer of the Original Code is Skylable Ltd (info-copyright@skylable.com). 
+    All portions of the code written by Initial Developer are Copyright (c) 2013 - 2015
+    the Initial Developer. All Rights Reserved.
+
+    Contributor(s):    
+
+    Alternatively, the contents of this file may be used under the terms of the
+    Skylable White-label Commercial License (the SWCL), in which case the provisions of
+    the SWCL are applicable instead of those above.
+    
+    If you wish to allow use of your version of this file only under the terms of the
+    SWCL and not to allow others to use your version of this file under the CPAL, indicate
+    your decision by deleting the provisions above and replace them with the notice
+    and other provisions required by the SWCL. If you do not delete the provisions
+    above, a recipient may use your version of this file under either the CPAL or the
+    SWCL.
+*/
+
+?><!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+    <?php echo $this->headTitle(); ?>
+	<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
+	<link href="<?php echo $this->ServerUrl(); ?>/layouts/skylable/css/_jqueryui.css" rel="stylesheet" />
+	<link href="<?php echo $this->ServerUrl(); ?>/layouts/skylable/css/_jqueryuistructure.css" rel="stylesheet" />
+	<link href="<?php echo $this->ServerUrl(); ?>/layouts/skylable/css/main.css" rel="stylesheet" />
+	<link href="<?php echo $this->ServerUrl(); ?>/layouts/skylable/css/css.css" rel="stylesheet" />
+<?php echo $this->headLink(); ?>
+	<script src="<?php echo $this->ServerUrl(); ?>/layouts/skylable/js/modernizr.js"></script>
+	<script src="<?php echo $this->ServerUrl(); ?>/js/jquery.min.js"></script>
+
+	<script src="<?php echo $this->ServerUrl(); ?>/layouts/skylable/js/lang/lang.en.js"></script>
+	<script src="<?php echo $this->ServerUrl(); ?>/layouts/skylable/js/jquery.cookie.js"></script>
+	<script src="<?php echo $this->ServerUrl(); ?>/layouts/skylable/js/jquery-ui.js"></script>
+	<script src="<?php echo $this->ServerUrl(); ?>/js/jquery.slimscroll.min.js"></script>
+	<script src="<?php echo $this->ServerUrl(); ?>/layouts/skylable/js/placeholder.js"></script>
+	<script src="<?php echo $this->ServerUrl(); ?>/layouts/skylable/js/scripts.js"></script>
+<?php if($this->canWriteToVolume()): ?>
+	<script type="text/javascript" src="<?php echo $this->ServerUrl(); ?>/up/js/jquery.fileupload.js"></script>
+	<script type="text/javascript" src="<?php echo $this->ServerUrl(); ?>/up/js/jquery.iframe-transport.js"></script>
+
+	<script src="<?php echo $this->ServerUrl(); ?>/layouts/skylable/js/upload.js" type="text/javascript" ></script>
+<?php endif; ?>
+<?php if($this->canWriteToVolume() || $this->hasReadAccess()): ?>
+	<script src="<?php echo $this->ServerUrl(); ?>/layouts/skylable/js/file_operations.js" type="text/javascript" ></script>
+	<script src="<?php echo $this->ServerUrl(); ?>/layouts/skylable/js/jquery.zclip.min.js" type="text/javascript" ></script>
+<?php endif; ?>
+	<script src="<?php echo $this->ServerUrl(); ?>/layouts/skylable/js/autocomplete.js"></script>
+<?php echo $this->headScript(), PHP_EOL, $this->headStyle(); ?>
+</head>
+<?php
+$req = Zend_Controller_Front::getInstance()->getRequest();
+$params = $req->getParams();
+$bar = $req->getCookie('bar', 'pressed'); // show bar?
+
+$vol = My_Utils::getRootFromPath($this->url);
+$name = Zend_Controller_Front::getInstance()->getRequest()->getActionName();
+?>
+<body id="main-screen">
+<?php 
+try {
+    $lielm = $this->action('volmobile', 'index', 'menu', array('vol' => $vol));
+} catch(Exception $e) {
+	Zend_Controller_Front::getInstance()->getParam('bootstrap')->getResource('log')->debug('layout.phtml - mobile volume listing exception - '.$e->getMessage());
+}
+?>
+<div class="mobile-header">
+	<?php if(!empty($lielm)): ?>
+	<script type="text/javascript">
+	$(function(){
+		$('.volume-select select').change(function(){
+			window.open("/vol/"+$(this).val(),"_parent");
+			});
+		});
+	</script>
+		<div class="volume-select">
+		   <select>
+			<?php echo($lielm); ?>
+		   </select>
+		</div>
+	<?php endif;?>	
+	<?php if(Zend_Auth::getInstance()->hasIdentity()):  ?>
+	<a href="javascript:void(0)" class="upload" id="addfile_mobile">
+		<span class="icon-upload ir"></span>
+		<span>Upload</span>
+	</a>
+	<?php endif; ?>
+</div>
+
+<?php echo $this->render('sidebar.phtml'); ?>	
+
+<div class="drag-drop-wrap<?php echo ($bar === "pressed" ? ' sidebar-margin' : '' ); ?>">
+    <!-- main -->
+    <?php echo $this->layout()->content; ?>
+    <!--  bottom -->
+</div>
+
+<!-- dialog boxes -->
+<script type="text/javascript">
+var url = '<?php echo $this->sxUrlEncode($this->slashPath( $this->url ));?>';
+var current_path = '<?php echo $this->slashPath( $this->url );?>';
+var current_volume = '<?php echo My_Utils::getRootFromPath($this->url); ?>';
+var maxFileSize =<?php echo Zend_Registry::get('skylable')->get('max_upload_filesize'); ?>;
+var upload_url = '/upload'+url;
+</script>
+<div id="dialog"></div>
+<input id="fileupload" type="file" name="files[]" multiple />
+</body>
+</html>

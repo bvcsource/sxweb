@@ -1,0 +1,70 @@
+# SPECIAL COOKIES
+
+Here is the list of the special cookies:
+
+'bar' - tells if the sidebar is open or closed
+
+# USER LOGIN
+Upon login the user is stored into the session as an instance of My_User class,
+the standard Zend_Auth class to manage the process is used.
+
+So:
+
+<?php
+$user = Zend_Auth::getInstance()->getIdentity();
+
+echo ($user instanceof My_User); // returns TRUE
+?>
+
+Special preferences keys:
+'whoami' - a string who tells you who you are on the server: is set upon login
+
+# Application Registry
+
+Various things are saved into the Zend_Registry.
+
+Here are the keys:
+ 'skylable' - holds a Zend_Config object with the skylable.ini file
+
+
+# SHARE API
+
+Manages the share API, letting an user share a file using its credentials. Accepts a JSON string and returns a JSON string.
+
+The entry point is 'https://sxweb.skylable.com/api/share' and every call must be a POST.
+
+Input JSON:
+
+ {
+  "access_key" : "...",
+  "path" : "/a/b/c"
+  "expire_time" : NN
+  "password" : "..."
+ }
+
+Where "access_key" is the auth token of the user, "path" a complete path of a file on the SX cluster,
+"expire_time" the (non mandatory) expire time in seconds of the file, "password" the non mandatory password
+with which protect the file access.
+
+Because they aren't HTTP parameters remember to use rawurldecode() to get rid of %20 and other special chars.
+
+Output JSON:
+
+On success returns a JSON so formed:
+
+  {
+   "status" : true,
+   "publink" : "sx://..."
+  }
+
+Where "publink" is the URL to use to access the file. The URL is treated with rawurlencode() to convert spaces and other chars to valid URL elements, and can be used as is.
+
+On error returns the JSON:
+
+{
+ "status": false,
+ "error" : "error reason"
+}
+
+In some cases it can set a HTTP error code, but usually it tries to prevent this.
+

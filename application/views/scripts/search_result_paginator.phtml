@@ -1,0 +1,56 @@
+<?php
+/**
+ * Template vars:
+ * 'volume' - string, the searched volume
+ * 'query_str' - string, the query string
+ */
+
+$search_url = '/search,'.$this->escape($this->volume).'?q='.urlencode($this->query_str);
+?>
+<?php if ($this->pageCount > 1): ?>
+<div class="paginator">
+    <?php if (isset($this->previous)): ?>
+    <a href="<?php echo $search_url,'&amp;page=',$this->first; ?>" class="styled-button">
+        <?php echo $this->translate('First'); ?>
+    </a> 
+<?php else: ?>
+    <span class="styled-button-disabled"><?php echo $this->translate('First'); ?></span>
+<?php endif; ?>
+    <?php if (isset($this->previous)): ?>
+    <a href="<?php echo $search_url,'&amp;page=',$this->previous; ?>" class="styled-button">
+        <?php echo $this->translate('&lt; Previous'); ?>
+    </a> 
+<?php else: ?>
+    <span class="styled-button-disabled"><?php echo $this->translate('&lt; Previous'); ?></span>
+<?php endif;
+
+    foreach($this->pagesInRange as $p) {
+        if ($this->current == $p) {
+            echo '<span class="styled-button-disabled">',$p, '</span> ';
+        } else {
+            ?>
+            <a href="<?php echo $search_url,'&amp;page=', $p; ?>" >
+                <?php echo $p; ?>
+            </a> 
+        <?php
+        }
+    }
+
+    if (isset($this->next)): ?>
+    <a href="<?php echo $search_url,'&amp;page=',$this->next; ?>" class="styled-button">
+        <?php echo $this->translate('Next &gt;'); ?>
+    </a> 
+<?php else: ?>
+    <span class="styled-button-disabled"><?php echo $this->translate('Next &gt;'); ?></span>
+<?php endif;
+
+    if (isset($this->next)): ?>
+    <a href="<?php echo $search_url,'&amp;page=',$this->last; ?>" class="styled-button">
+        <?php echo $this->translate('Last'); ?>
+    </a>
+<?php else: ?>
+    <span class="styled-button-disabled"><?php echo $this->translate('Last'); ?></span>
+<?php endif; ?>
+
+    </div>
+    <?php endif; ?>

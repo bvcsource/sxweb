@@ -1,0 +1,26 @@
+<div class="login-box register">
+<div class="login-logo"><span class="icon-logo ir"></span><h1><?php echo $this->translate('Create account'); ?></h1></div>
+<div class="login-form">
+<?php echo $this->form('', $this->form->getAttribs() ); ?>
+	<input type="email" placeholder="Email address" name="frm_email" value="<?php echo $this->escape($this->form->getValue('frm_email')); ?>" />
+    <input type="password" placeholder="Password" name="frm_password" value="" />
+	<input type="password" placeholder="Confirm password" name="frm_passwordv" value="" />
+	<input type="<?php echo (isset($this->has_user_key) ? 'hidden' : 'text') ?>" placeholder="User key" name="frm_user_key" value="<?php echo $this->escape($this->form->getValue('frm_user_key')); ?>" />
+	<p><?php echo $this->translate('Already have an account?'); ?> <a href="<?php echo $this->url( array('controller' => 'index', 'action' => 'login'), 'login', TRUE, TRUE ); ?>"><?php echo $this->translate('Sign in.'); ?></a></p>
+	<input type="submit" name="frm_do_create_login" value="Create Your Account" />
+</form>
+</div>
+<?php
+    
+    if ($this->form->hasErrors()):
+?>
+    <div class="failure notification-fix"><span class="inf" ><span class="icon-failure ir"></span></span>
+    <?php echo $this->form->renderErrors(); ?>
+    </div>
+<?php
+        
+    endif;
+
+    echo $this->render('index/messages.phtml');
+?>
+</div>
