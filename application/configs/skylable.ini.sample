@@ -1,0 +1,74 @@
+; This file holds all the application configuration
+; related to Skylable services interaction
+
+[production] 
+;sx cluster url sx://...
+cluster = "sx://cluster.example.com"
+
+; Base URL used to generate other URLS, ie the shared file URL
+url = "https://sxweb.example.com"
+
+;local directory with SXWeb 
+;Main directory - used for uploads!
+local = "/var/www/sxweb"
+
+;local directory where you will store your sx keys
+sx_local = "/var/www/sxweb/data" 
+
+; Dowload limits
+; maximum concurrent downloads per logged user
+downloads = 5
+; maximum concurrent downloads per IP address (used for shared files)
+downloads_ip = 30
+; time window in seconds per single user
+downloads_time_window = 20
+; time window in seconds per IP address
+downloads_time_window_ip = 20
+
+; Update upload_max_filesize, memory_limit, post_max_size, max_execution_time accordingly
+max_upload_filesize = 50000000
+
+; shared file expire time in seconds
+; default 1 week = 60*60*24*7
+shared_file_expire_time = 604800
+
+; salt for password hash
+auth_salt = ""
+
+;how long cookie is valid?
+;3600*24*15 - 1296000 - 15 days
+remember_me_cookie_seconds = 1296000
+
+; The cookie domain
+; remember to put a dot where needed
+; ie: is ".example.com" and not "example.com"
+cookie_domain = ".example.com"
+
+; Elastic search hosts
+elastic_hosts[] = "localhost"
+
+; URL to use to contact the tech support
+tech_support_url = "http://www.skylable.com/company/#contact-us"
+
+; DB configuration
+db.adapter = "pdo_mysql"
+db.params.host = "localhost"
+db.params.username = "db_user_name"
+db.params.password = "db_user_password"
+db.params.dbname = "sxweb"
+db.params.charset = "utf8"
+db.isDefaultTableAdapter = true
+
+; Email
+mail.transport.type = "smtp"
+mail.transport.host = "localhost"
+;mail.transport.auth = login
+;mail.transport.username = myUsername
+;mail.transport.password = myPassword
+mail.transport.register = true 
+
+mail.defaultFrom.email = "noreply@example.com"
+mail.defaultFrom.name = "SXWeb"
+;mail.defaultReplyTo.email = Jane@example.com
+;mail.defaultReplyTo.name = "Jane Doe"
+
