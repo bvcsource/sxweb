@@ -1,4 +1,4 @@
--- SXWeb Version 0.2 and later
+-- SXWeb Version 0.3 and later
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -75,9 +75,10 @@ CREATE TABLE `users` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `email` varchar(50) NOT NULL,
   `passwd` varchar(50) NOT NULL,
-  `autoken` varchar(255) NOT NULL,
+  `secret_key` varchar(255) NOT NULL,
   `active` tinyint(4) NOT NULL DEFAULT '0',
   `preferences` text NOT NULL,
+  `user_role` enum('guest','registered','admin') NOT NULL DEFAULT 'registered',
   PRIMARY KEY (`id`),
   UNIQUE KEY `email` (`email`),
   UNIQUE KEY `autoken` (`autoken`)
@@ -110,5 +111,3 @@ CREATE TABLE `users_act_keys` (
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
-
--- Dump completed on 2015-01-22 15:52:25
