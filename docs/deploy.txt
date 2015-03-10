@@ -40,3 +40,10 @@ define('APPLICATION_ENV','development');
 
 Your web server webroot must point to the public/ directory.
 
+## CAVEAT
+
+If you get 403 Forbidden, make sure that SELinux is not interfering with the application. 
+Check /var/log/audit.log and if required run:
+
+# chcon -Rt httpd_sys_content_t /path/to/sxweb
+
