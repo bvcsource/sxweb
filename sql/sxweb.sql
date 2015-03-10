@@ -81,7 +81,7 @@ CREATE TABLE `users` (
   `user_role` enum('guest','registered','admin') NOT NULL DEFAULT 'registered',
   PRIMARY KEY (`id`),
   UNIQUE KEY `email` (`email`),
-  UNIQUE KEY `autoken` (`autoken`)
+  UNIQUE KEY `secret_key` (`secret_key`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
