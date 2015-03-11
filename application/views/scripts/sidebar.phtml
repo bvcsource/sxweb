@@ -40,9 +40,8 @@
  * TODO: enhance this code
  */
 
-// The sidebar settings are into a cookie shared between all the users
-// if this is good for you, original dev, it is also for me! \o/
-$this->assign('show_sidebar', (Zend_Controller_Front::getInstance()->getRequest()->getCookie('bar', FALSE) === 'pressed') );
+// FIXME: The sidebar settings are into a cookie shared between all the users
+$this->assign('show_sidebar', (Zend_Controller_Front::getInstance()->getRequest()->getCookie('bar', 'pressed') === 'pressed') );
 
 try {
     // Get the rendered volume list from an external action
