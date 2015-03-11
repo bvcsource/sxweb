@@ -1,6 +1,11 @@
 <div class="wrap">
 <h1><?php echo $this->translate('Connect with SXDrive'); ?></h1>
     <hr/>
+    <?php 
+    if ($this->demoMode()) {
+        echo '<h3>',$this->translate('This is a demo: SXDrive cannot be used to access this cluster.'), '</h3>';    
+    } 
+    ?>
 <script src="<?php echo $this->ServerUrl(); ?>/layouts/skylable/js/jquery.qrcode-0.9.4.min.js" type="text/javascript" ></script>
 <script type="text/javascript" >
     $(document).ready(function(){
