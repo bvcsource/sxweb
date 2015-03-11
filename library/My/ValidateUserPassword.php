@@ -43,8 +43,12 @@
 class My_ValidateUserPassword extends Zend_Validate_StringLength {
 
     public function __construct() {
-        parent::__construct( array('min' => 6, 'max' => 36) );
-        $this->setMessage("Invalid password: should be between 6 and 36 alphanumeric chars.");
+        $minl = 6;
+        if (defined('SXWEB_DEMO_MODE')) {
+            if (((bool)SXWEB_DEMO_MODE)) $minl = 4;
+        }
+        parent::__construct( array('min' => $minl, 'max' => 36) );
+        $this->setMessage("Invalid password: should be between " . strval($minl) . " and 36 alphanumeric chars.");
     }
     
 }
