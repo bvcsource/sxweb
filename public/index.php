@@ -94,8 +94,16 @@ try {
         if (!empty($path)) {
             if (!@file_exists($path)) {
                 if (!@mkdir($path, 0775)) {
-                    throw new Zend_Exception('Internal error: failed to create session save path ' . $path);
+                    throw new Zend_Exception('Internal error: failed to create session save path: ' . $path);
                 }
+            }
+
+            if (!@is_dir($path)) {
+                throw new Zend_Exception('Internal error: session save path is not a directory. Path is: ' . $path);
+            }
+            
+            if (!@is_writable($path)) {
+                throw new Zend_Exception('Internal error: session save path is not writable. Path is: ' . $path);
             }
         }
     }
