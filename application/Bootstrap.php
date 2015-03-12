@@ -48,6 +48,61 @@ require_once 'My/User.php';
 class Bootstrap extends Zend_Application_Bootstrap_Bootstrap {
 
     /**
+     * Initializes the application execution environment
+     * @throws Zend_Exception
+     */
+    protected function _initApp() {
+
+        $this->bootstrap('Config');
+        $cfg = Zend_Registry::get('skylable');
+        
+        // Checks the upload dir
+        $upload_dir = $cfg->get('upload_dir');
+        if (strlen(trim($upload_dir)) == 0) {
+            throw new Zend_Exception('Internal error: upload dir not defined!');
+        }
+        
+        if (!@file_exists($upload_dir)) {
+            if (!@mkdir($upload_dir, 0775)) {
+                throw new Zend_Exception('Internal error: failed to create upload dir. Path is: '.$upload_dir);
+            }
+        }
+        
+        $upload_dir = realpath($upload_dir);
+        
+        if (!@is_writeable($upload_dir) || !@is_dir($upload_dir)) {
+            throw new Zend_Exception('Internal error: upload dir is not writable or is not a directory. Path is: '.$upload_dir);
+        }
+        
+        // We have to check for free disk space
+        $disk_free_space = @disk_free_space(realpath($upload_dir));
+        if ($disk_free_space !== FALSE) {
+            $upload_size = Zend_Registry::get('skylable')->get('max_upload_filesize', 0);
+            if ($disk_free_space < $upload_size) {
+                throw new Zend_Exception('Internal error: not enough free disk space into upload dir: ' . $upload_dir .'. Required at least: '.strval($upload_size).' free: '.strval($disk_free_space));
+            }
+        }
+        
+        // Checks the SX data dir
+        $sx_dir = $cfg->get('sx_local');
+        if (strlen(trim($sx_dir)) == 0) {
+            throw new Zend_Exception('Internal error: SX dir not defined!');
+        }
+
+        if (!@file_exists($sx_dir)) {
+            if (!@mkdir($sx_dir, 0775)) {
+                throw new Zend_Exception('Internal error: failed to create SX data dir. Path is: '.$sx_dir);
+            }
+        }
+
+        $sx_dir = realpath($sx_dir);
+
+        if (!@is_writeable($sx_dir) || !@is_dir($sx_dir)) {
+            throw new Zend_Exception('Internal error: SX data dir is not writable or is not a directory. Path is: '.$sx_dir);
+        }
+    }
+
+    /**
      * Initializes the database.
      * 
      * The configuration options are taken from the skylable.ini config file.
@@ -107,7 +162,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap {
                 $path = dirname($res['log']['stream']['writerParams']['stream']);
                 if (!@file_exists($path)) {
                     if (!@mkdir($path, 0775)) {
-                        throw new Zend_Log_Exception('Internal error: failed to create log directory ' . $path);
+                        throw new Zend_Log_Exception('Internal error: failed to create log directory: ' . $path);
                     }
                 }
             }

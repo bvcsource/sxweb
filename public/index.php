@@ -110,15 +110,6 @@ try {
 
     $application->bootstrap();
 
-    // We have to check for free disk space
-    $disk_free_space = @disk_free_space(realpath($data_dir));
-    if ($disk_free_space !== FALSE) {
-        $upload_size = Zend_Registry::get('skylable')->get('max_upload_filesize', 0);
-        if ($disk_free_space < $upload_size) {
-            throw new Zend_Exception('Internal error: not enough free disk space. Required at least: '.strval($upload_size).' free: '.strval($disk_free_space));
-        }
-    }
-
 }
 catch (Zend_Application_Exception $e) {
     header($_SERVER['SERVER_PROTOCOL'] . ' 500 Internal Server Error', TRUE, 500);

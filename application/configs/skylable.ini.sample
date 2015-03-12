@@ -8,14 +8,16 @@ cluster = "sx://cluster.example.com"
 ; Base URL used to generate other URLS, ie the shared file URL
 url = "https://sxweb.example.com"
 
-;local directory with SXWeb 
-;Main directory - used for uploads!
-local = "/var/www/sxweb"
+; Main directory 
+local = APPLICATION_PATH "/../"
 
-;local directory where you will store your sx keys
-sx_local = "/var/www/sxweb/data" 
+; Directory used for uploads
+upload_dir = APPLICATION_PATH "/../data/files"
 
-; Dowload limits
+; SX data dir: local directory where SX commands data will be stored
+sx_local = APPLICATION_PATH "/../data/sx" 
+
+; Download limits
 ; maximum concurrent downloads per logged user
 downloads = 5
 ; maximum concurrent downloads per IP address (used for shared files)
@@ -48,11 +50,12 @@ cookie_domain = ".example.com"
 elastic_hosts[] = "localhost"
 
 ; URL to use to contact the tech support
-tech_support_url = "http://www.skylable.com/company/#contact-us"
+tech_support_url = "http://skylable.zendesk.com"
 
 ; DB configuration
 db.adapter = "pdo_mysql"
 db.params.host = "localhost"
+; db.params.port = 3306
 db.params.username = "db_user_name"
 db.params.password = "db_user_password"
 db.params.dbname = "sxweb"
@@ -72,3 +75,4 @@ mail.defaultFrom.name = "SXWeb"
 ;mail.defaultReplyTo.email = Jane@example.com
 ;mail.defaultReplyTo.name = "Jane Doe"
 
+[development : production]

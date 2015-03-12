@@ -54,11 +54,12 @@ class UploadController extends My_BaseAction {
 
         require_once 'UploadHandler.php';
 
-        $dir = Zend_Registry::get('skylable')->get('local');
+        $dir = Zend_Registry::get('skylable')->get('upload_dir');
 
         if (strlen(trim($dir)) > 0) {
+            $dir = My_Utils::slashPath( $dir );
             if (Zend_Auth::getInstance()->hasIdentity()) {
-                $upload_path = My_Utils::slashPath( $dir . '/files/'.strval(Zend_Auth::getInstance()->getIdentity()->getId()) );
+                $upload_path = My_Utils::slashPath( $dir . strval(Zend_Auth::getInstance()->getIdentity()->getId()) ) ;
             } else {
                 $upload_path = NULL;
             }
