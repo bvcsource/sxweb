@@ -127,7 +127,11 @@ class IndexController extends My_BaseAction {
             $view->url = Zend_Registry::get('skylable')->url;
 
             $mail = new Zend_Mail();
-            $mail->setBodyHtml($view->render("create_account_mail.phtml"));
+
+            $html_msg = $view->render("create_account_mail.phtml");
+            $mail->setBodyText( strip_tags( $html_msg ) );
+            $mail->setBodyHtml( $html_msg );
+            
             $mail->addTo($new_account_data['email']);
 
             $mail->setSubject($view->translate("SXWeb - The new account has been created."));
@@ -657,7 +661,9 @@ class IndexController extends My_BaseAction {
                     try {
 
                         $mail = new Zend_Mail();
-                        $mail->setBodyHtml($view->render("mail.phtml"));
+                        $html_msg = $view->render("mail.phtml");
+                        $mail->setBodyText( strip_tags( $html_msg ) );
+                        $mail->setBodyHtml( $html_msg );
                         $mail->addTo($the_email);
                         $mail->setSubject($view->translate('SXWeb - Password Reset Request'));
                         
