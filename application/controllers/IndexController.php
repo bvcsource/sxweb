@@ -212,18 +212,15 @@ class IndexController extends My_BaseAction {
             Zend_Session::forgetMe();
         }
         
-        $authdb = new My_Model_UserAuth( $this->getInvokeArg('bootstrap')->getResource('db') );
-        $authdb->setIdentity($values['frm_login']);
-        $authdb->setCredential(My_Accounts::getPasswordHash( $values['frm_password'] ) );
-        $auth_res = Zend_Auth::getInstance()->authenticate($authdb);
-        if ( !$auth_res->isValid() ) {
-            $form->addError("Email address or password are wrong, please retry.");
-            return $this->render('login');
-        }
-        
-        // Stores the My_User as the identity
         try {
-            $user = $this->getUserModel()->getUserFromAuth($authdb);
+            // Store the user identity, if credentials are ok.
+            
+            $user = $this->getUserModel()->checkUserCredentials( $values['frm_login'], $values['frm_password'] );
+            if (!is_object($user)) {
+                $form->addError("Email address or password are wrong, please retry.");
+                return $this->render('login');
+            }
+            
             Zend_Auth::getInstance()->getStorage()->write($user);
         }
         catch(Exception $e) {

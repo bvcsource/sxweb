@@ -176,6 +176,38 @@ class My_Accounts extends Zend_Db_Table_Abstract  {
             return $user;
         }
     }
+
+    /**
+     * Check user credentials.
+     * 
+     * Check if a user exists and is active, then authenticate it using some credentials.
+     *
+     * Use this method to do the user login: when everything is ok, you'll get the 
+     * requested user. 
+     * 
+     * @param string $login the user login
+     * @param string $plain_password the user password
+     * @return bool|My_User FALSE if the user is not valid or credentials are wrong
+     */
+    public function checkUserCredentials($login, $plain_password) {
+        $row = $this->fetchRow( $this->select()->where('email = ?', $login)->where('active = 1') );
+        
+        if (!empty($row)) {
+            
+            // Check if the user is active
+            if (is_array($row)) {
+                $row = (object)$row;
+            }
+            
+            $pass_hash = $this->getPasswordHash( $plain_password, array( 'salt' => $row->passwd ) );
+            
+            if (strcmp($pass_hash, $row->passwd) == 0) {
+                $user = $this->getUserFromDBRow($row);
+                return $user;    
+            }
+        }
+        return FALSE;
+    }
     
     /**
      * Create a user from data extracted from DB.
@@ -251,15 +283,27 @@ class My_Accounts extends Zend_Db_Table_Abstract  {
      * 
      * Every password stored into the DB is a hash obtained with this method.
      * 
+     * Current options:
+     * 'salt' - use this salt instead of a random generated one
+     * 
      * @param string $plain_password the plain password
      * @param array $options
-     * @return string the password hash
+     * @return string|boolean the password hash, FALSE on errors
      */
     public static function getPasswordHash($plain_password, $options = array()) {
-        // Uses the Blowfish hashing with a 22 char salt 
-        $salt = Zend_Registry::get('skylable')->get('auth_salt');
-        if (strlen($salt) < 22) str_pad($salt, 22, 'abcdefghijklmnopqrstyuwxyz1234567890', STR_PAD_RIGHT);
-        return crypt($plain_password, '$2y$10$' . $salt);
+        if (array_key_exists('salt', $options)) {
+            $salt = $options['salt'];
+        } else {
+            $salt = openssl_random_pseudo_bytes(16);
+
+            $base64_digits =  'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+            $bcrypt64_digits = './ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            $base64_string = base64_encode($salt);
+            $salt = strtr(rtrim($base64_string, '='), $base64_digits, $bcrypt64_digits);
+            $salt = '$2y$10$' . base64_encode($salt);
+        }
+
+        return crypt($plain_password, $salt);
     }
     
     /**
