@@ -256,7 +256,10 @@ class My_Accounts extends Zend_Db_Table_Abstract  {
      * @return string the password hash
      */
     public static function getPasswordHash($plain_password, $options = array()) {
-        return md5($plain_password . Zend_Registry::get('skylable')->get('auth_salt'));
+        // Uses the Blowfish hashing with a 22 char salt 
+        $salt = Zend_Registry::get('skylable')->get('auth_salt');
+        if (strlen($salt) < 22) str_pad($salt, 22, 'abcdefghijklmnopqrstyuwxyz1234567890', STR_PAD_RIGHT);
+        return crypt($plain_password, '$2y$10$' . $salt);
     }
     
     /**
@@ -331,7 +334,7 @@ class My_Accounts extends Zend_Db_Table_Abstract  {
                     return FALSE;
                 }
 
-                $hash = md5($res['id'] . $res['email'] . strval(time()) . strval(mt_rand()) );
+                $hash = hash_hmac('sha256', $res['id'] . bin2hex( openssl_random_pseudo_bytes(50) ), Zend_Registry::get('skylable')->get('auth_salt') );
                 
                 if ($cnt['cnt'] > 0) {
                     // Updates existing info

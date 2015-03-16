@@ -44,7 +44,7 @@
  */
 class My_ValidateResetPasswordHash extends Zend_Validate_Regex {
     public function __construct() {
-        parent::__construct('/^[a-fA-F0-9]{32}$/'); 
+        parent::__construct('/^[a-fA-F0-9]{64}$/'); 
     }
 
 }

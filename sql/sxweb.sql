@@ -53,7 +53,7 @@ DROP TABLE IF EXISTS `user_reset_password`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `user_reset_password` (
-  `hash` varchar(50) NOT NULL,
+  `hash` varchar(255) NOT NULL,
   `uid` int(10) unsigned NOT NULL,
   `date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `counter` tinyint(3) unsigned NOT NULL DEFAULT '1',
@@ -74,7 +74,7 @@ DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `email` varchar(50) NOT NULL,
-  `passwd` varchar(50) NOT NULL,
+  `passwd` varchar(255) NOT NULL,
   `secret_key` varchar(255) NOT NULL,
   `active` tinyint(4) NOT NULL DEFAULT '0',
   `preferences` text NOT NULL,
