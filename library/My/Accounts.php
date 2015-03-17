@@ -122,60 +122,6 @@ class My_Accounts extends Zend_Db_Table_Abstract  {
         $user = $this->getUserFromDBRow($row);
         return $user;
     }
-   
-    /**
-     * Return an hash that you can use to retrieve an user.
-     * 
-     * Returns FALSE when:
-     * - the user don't exists
-     * - the users isn't active
-     * 
-     * @param integer $user_id
-     * @return string|boolean the hash or FALSE on error
-     * @throws Exception
-     */
-    public function getUserIdentityHash($user_id) {
-        $row = $this->fetchRow( $this->select()
-                ->from($this->info(self::NAME),
-                       array('id_hash' => new Zend_Db_Expr('SHA1(CONCAT(id,email,passwd,'. $this->getAdapter()->quote(Zend_Registry::get('skylable')->get('auth_salt')) .'))') )
-                 )
-                ->where('id = ?', $user_id)
-                ->where('active = 1')
-                );
-        if (empty($row)) {
-            return FALSE;
-        } else {
-            return $row['id_hash'];
-        }
-    }
-    
-    /**
-     * Retrieve an user using the identity hash generated with {@link getUserIdentityHash}.
-     * 
-     * Returns FALSE when:
-     * - the user doesn't exists
-     * - the users isn't active
-     * 
-     * @param string $identity_hash the identity hash
-     * @return boolean|\My_User The user or FALSE on error.
-     */
-    public function getUserByIdentityHash($identity_hash) {
-        $row = $this->fetchRow( 
-                $this->select()
-                ->from($this->info(self::NAME),
-                       array('*', 'id_hash' => new Zend_Db_Expr('SHA1(CONCAT(id,email,passwd,'. $this->getAdapter()->quote(Zend_Registry::get('skylable')->get('auth_salt')) .'))') )
-                )
-                ->where('active = 1')
-                ->having('id_hash = ?', $identity_hash )
-                );
-      
-        if (empty($row)) {
-            return FALSE;
-        } else {
-            $user = $this->getUserFromDBRow($row);
-            return $user;
-        }
-    }
 
     /**
      * Check user credentials.
@@ -377,8 +323,7 @@ class My_Accounts extends Zend_Db_Table_Abstract  {
                     $this->getAdapter()->commit();
                     return FALSE;
                 }
-
-                $hash = hash_hmac('sha256', $res['id'] . bin2hex( openssl_random_pseudo_bytes(50) ), Zend_Registry::get('skylable')->get('auth_salt') );
+                $hash = hash_hmac('sha256', $res['id'] . bin2hex( openssl_random_pseudo_bytes(50) ), openssl_random_pseudo_bytes(20) );
                 
                 if ($cnt['cnt'] > 0) {
                     // Updates existing info

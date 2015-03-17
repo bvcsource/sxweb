@@ -34,9 +34,6 @@ max_upload_filesize = 50000000
 ; default 1 week = 60*60*24*7
 shared_file_expire_time = 604800
 
-; salt for password hash: must be at least 22 chars long from the alphabet "./a-zA-Z0-9"  
-auth_salt = ""
-
 ;how long cookie is valid?
 ;3600*24*15 - 1296000 - 15 days
 remember_me_cookie_seconds = 1296000
