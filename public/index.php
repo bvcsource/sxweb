@@ -58,6 +58,13 @@ set_include_path(implode(PATH_SEPARATOR, array(
     get_include_path(),
 )));
 
+
+// Before continuing checks if the application is properly configured
+if (!file_exists(APPLICATION_PATH . '/configs/skylable.ini')) {
+    header('Location: /install.php');
+    exit();
+}
+
 /** Zend_Application */
 require_once 'Zend/Application.php';
 
