@@ -36,6 +36,14 @@
 */
 class IndexController extends Zend_Controller_Action {
     
+    public
+        /**
+         * Flag to tell our custom front controller if we want to
+         * render the current action using the default renderer 
+         * @var bool
+         */
+        $render_the_script = TRUE;
+    
     public function getBaseConfig() {
         
         $app_path = 'APPLICATION_PATH ';
@@ -105,15 +113,15 @@ class IndexController extends Zend_Controller_Action {
             'mail.transport.type' => "smtp",
             'mail.transport.name' => "example.com",
             'mail.transport.host' => "localhost",
-            ';mail.transport.auth' => 'login',
-            ';mail.transport.username' => 'myUsername',
-            ';mail.transport.password' => 'myPassword',
+            'mail.transport.auth' => 'none',
+            'mail.transport.username' => '',
+            'mail.transport.password' => '',
             'mail.transport.register' => true, 
     
             'mail.defaultFrom.email' => "noreply@example.com",
             'mail.defaultFrom.name' => "SXWeb",
-            ';mail.defaultReplyTo.email' => 'Jane@example.com',
-            ';mail.defaultReplyTo.name' => "Jane Doe"
+            'mail.defaultReplyTo.email' => '',
+            'mail.defaultReplyTo.name' => ''
         );
         
         return $cfg;
@@ -240,7 +248,26 @@ class IndexController extends Zend_Controller_Action {
                 $output = '';
             }
         }
+        
+        // Check the data dir
+        if (!@file_exists(APPLICATION_DATA_PATH)) {
+            
+            if (!@mkdir(APPLICATION_DATA_PATH, 0775)) {
+                $this->view->can_proceed = FALSE;
+                $this->view->data_path_problem = $this->view->translate('Can&apos;t create the directory.');
+            }
 
+        } else {
+            if (@is_dir(APPLICATION_DATA_PATH)) {
+                if (!@is_writable(APPLICATION_DATA_PATH)) {
+                    $this->view->can_proceed = FALSE;
+                    $this->view->data_path_problem = $this->view->translate('Data path is not writable.');
+                }
+            } else {
+                $this->view->can_proceed = FALSE;
+                $this->view->data_path_problem = $this->view->translate('Data path is not a directory.');
+            }
+        }
         
         if ($this->view->can_proceed) {
             $session->last_step = 'step1';   
@@ -311,12 +338,62 @@ class IndexController extends Zend_Controller_Action {
 
                 foreach($data_map as $field => $param) {
                     $session->config[$param] = $values[$field];
+                    
+                    $this->view->$field = $session->config[$param];
                 }
                 
-                $session->last_step = 'step2';
+                // Test the connection
+                try {
+                    $db_conn = Zend_Db::factory('Pdo_Mysql', array(
+                        'username' => $session->config['db.params.username'],
+                        'password' => $session->config['db.params.password'],
+                        'dbname' => $session->config['db.params.dbname'],
+                        'host' => $session->config['db.params.host'],
+                        'port' => (empty($session->config['db.params.port']) ? '3306' : $session->config['db.params.port'] ),
+                        'charset' => 'utf8'
+                    ));
+                    
+                    if (is_null($db_conn->getConnection())) {
+                        $session->last_step = 'step1';
+                        $this->render_the_script = FALSE;
+                        $this->view->error = $this->view->translate('Connection failed.');
+                        echo $this->view->render('step2b.phtml');
+                    } else {
+                        $session->last_step = 'step2';
+                        $this->render_the_script = FALSE;
+                        
+                        // If already populated skip creation
+                        $tables = $db_conn->listTables();
+                        if (empty($tables)) {
+                            $sql = @file_get_contents(INSTALLER_SQL_PATH . '/sxweb.sql');
+                            if ($sql !== FALSE) {
+                                try {
+                                    $db_conn->query($sql);
+                                    $this->view->message = $this->view->translate('Successfully created database tables.');
+                                }
+                                catch(Exception $e) {
+                                    $session->last_step = 'step1';
+                                    $this->view->error = $e->getMessage();
+                                    $this->view->message = $this->view->translate('Database creation failed!');
+                                }
+                                
+                            } else {
+                                $this->view->error = $this->view->translate('Failed to load <code>sxweb.sql</code>.');
+                            }
+                        } else {
+                            $this->view->message = $this->view->translate('Database is already populated and is leaved as is.');
+                        }
+                        
+                        echo $this->render('step2b');
+                    }
+                }
+                catch(Exception $e) {
+                    $session->last_step = 'step1';
+                    $this->render_the_script = FALSE;
+                    $this->view->error = $e->getMessage();
+                    echo $this->view->render('step2b.phtml');
+                }
 
-                $this->redirect($this->view->ServerUrl() . '/install.php?step=step3');
-                
             } else {
                 $this->view->errors = $form->getMessages();
                 $values = $form->getValues();
@@ -344,18 +421,186 @@ class IndexController extends Zend_Controller_Action {
         
     }
 
+    /**
+     * Cluster configuration.
+     * 
+     * @throws Zend_Form_Exception
+     */
     public function step3Action() {
-        $session = new Zend_Session_Namespace();
         if (!$this->sessionIsValid('step2')) {
             $this->redirect($this->view->ServerUrl() . '/install.php?step=step1');
         }
+
+        $session = new Zend_Session_Namespace();
+        $session->last_step = 'step2';
+
+        // Always populate from session, then update from request
+        $this->view->frm_sx_cluster = $session->config['cluster'];
+
+        $form = new Zend_Form();
+        $form->addElement( 'text', 'frm_sx_cluster', array(
+            'validators' => array( 
+                new Zend_Validate_StringLength(array('min' => 1, 'max' => 255)),
+                new Zend_Validate_Regex('/^sx:\/\/[a-zA-Z0-9]+/')
+            ),
+            'filters' => array(
+                'StringTrim'
+            ),
+            'required' => TRUE
+        ));
+
+
+        if ($this->getRequest()->isPost()) {
+
+            if ($form->isValid($this->getRequest()->getParams())) {
+                $values = $form->getValues();
+
+                $session->config['cluster'] = $values['frm_sx_cluster'];
+
+                $this->view->frm_sx_cluster = $values['frm_sx_cluster'];
+                
+                $session->last_step = 'step3';
+
+                $this->redirect($this->view->ServerUrl() . '/install.php?step=step4');
+            } else {
+                $this->view->frm_sx_cluster = '';
+                // $this->view->errors = $form->getMessages();
+                $this->view->errors = array( 'frm_sx_cluster' => array( $this->view->translate('Invalid cluster address')));
+            }
+            
+        }
+        
         
     }
 
     public function noneAction() {
 
     }
+    
+    public function step4Action() {
+        /*
+        if (!$this->sessionIsValid('step3')) {
+            $this->redirect($this->view->ServerUrl() . '/install.php?step=step1');
+        }*/
 
+        $session = new Zend_Session_Namespace();
+
+        $data_map = array(
+            
+            
+            'frm_mail_type' => 'mail.transport.type',
+            'frm_mail_smtp_host' => 'mail.transport.host',
+            'frm_mail_sender_host' => 'mail.transport.name',
+                
+            'frm_mail_auth' => 'mail.transport.auth',
+            'frm_mail_username' => 'mail.transport.username',
+            'frm_mail_password' => 'mail.transport.password',
+                
+            'frm_default_from_mail' => 'mail.defaultFrom.email',
+            'frm_default_from_name' => 'mail.defaultFrom.name',
+            'frm_default_replyto_mail' => 'mail.defaultReplyTo.email',
+            'frm_default_replyto_name' => 'mail.defaultReplyTo.name'
+        );
+
+        $form = new Zend_Form();
+        $form->addElement( 'text', 'frm_mail_type', array(
+            'validators' => array(
+                new Zend_Validate_InArray( array('smtp', 'sendmail') )
+            ),
+            'filters' => array(
+                'StringTrim'
+            ),
+            'required' => TRUE
+        ));
+        
+        $form->addElement( 'text', 'frm_mail_smtp_host', array(
+            'validators' => array( new Zend_Validate_StringLength(array('min' => 1, 'max' => 255)) ),
+            'filters' => array( 'StringTrim' ),
+            'required' => TRUE
+        ));
+
+        $form->addElement( 'text', 'frm_mail_sender_host', array(
+            'validators' => array( new Zend_Validate_StringLength(array('min' => 0, 'max' => 255)) ),
+            'filters' => array( 'StringTrim' ),
+            'required' => FALSE
+        ));
+
+        $form->addElement( 'text', 'frm_mail_auth', array(
+            'validators' => array( new Zend_Validate_InArray( array('none', 'plain', 'login', 'crammd5' ) ) ),
+            'filters' => array( 'StringTrim' ),
+            'required' => TRUE
+        ));
+
+        $form->addElement( 'text', 'frm_mail_username', array(
+            'validators' => array( new Zend_Validate_StringLength(array('min' => 0, 'max' => 255)) ),
+            'filters' => array( 'StringTrim' ),
+            'required' => FALSE
+        ));
+
+        $form->addElement( 'text', 'frm_mail_password', array(
+            'validators' => array( new Zend_Validate_StringLength(array('min' => 0, 'max' => 255)) ),
+            'filters' => array( 'StringTrim' ),
+            'required' => FALSE
+        ));
+
+        $form->addElement( 'text', 'frm_default_from_mail', array(
+            'validators' => array( new Zend_Validate_EmailAddress() ),
+            'filters' => array( 'StringTrim' ),
+            'required' => TRUE
+        ));
+        $form->addElement( 'text', 'frm_default_from_name', array(
+            'validators' => array( new Zend_Validate_StringLength(array('min' => 1, 'max' => 255)) ),
+            'filters' => array( 'StringTrim' ),
+            'required' => TRUE
+        ));
+        
+        $form->addElement( 'text', 'frm_default_replyto_mail', array(
+            'validators' => array( new Zend_Validate_EmailAddress() ),
+            'filters' => array( 'StringTrim' ),
+            'required' => FALSE
+        ));
+        $form->addElement( 'text', 'frm_default_replyto_name', array(
+            'validators' => array( new Zend_Validate_StringLength(array('min' => 0, 'max' => 255)) ),
+            'filters' => array( 'StringTrim' ),
+            'required' => FALSE
+        ));
+
+
+        if ($this->getRequest()->isPost()) {
+
+            if ($form->isValid($this->getRequest()->getParams())) {
+                $values = $form->getValues();
+
+                foreach($data_map as $field => $param) {
+                    $this->view->$field = $values[$field];
+
+                    $session->config[$param] = $values[$field];
+                }
+                
+            } else {
+                
+                $this->view->errors = $form->getMessages();
+                $values = $form->getValues();
+
+                foreach($values as $vk => $vv) {
+                    if (array_key_exists($vk, $this->view->errors)) {
+                        $this->view->$vk = '';
+                    } else {
+                        $this->view->$vk = $vv;
+                    }
+                }
+                foreach($data_map as $field => $param) {
+                    $session->config[$param] = $this->view->$field;
+                }
+            }
+
+        } else {
+            foreach($data_map as $field => $param) {
+                $this->view->$field = $session->config[$param];
+            }
+        }
+    }
+ 
     /**
      * Clears the session vars
      */
