@@ -59,8 +59,9 @@ $this->headTitle('Requirements');
 </table>
 
 <div class="page-header">
-    <h2><?php echo $this->translate('PHP ini settings for uploads'); ?></h2>
+    <h2><?php echo $this->translate('PHP settings for uploads'); ?></h2>
 </div>
+<p><?php echo $this->translate('All these settings can be found into the <code>php.ini</code> configuration file.'); ?></p>
 <table class="table">
     <thead>
     <tr><th><?php echo $this->translate('INI Setting'); ?></th><th><?php echo $this->translate('Value'); ?></th><th><?php echo $this->translate('Suggested'); ?></th></tr>
@@ -78,6 +79,7 @@ $this->headTitle('Requirements');
 <div class="page-header">
     <h2><?php echo $this->translate('SX Commands'); ?></h2>
     </div>
+<p><?php echo $this->translate('You must have installed all the Skylable SX commands to run SXWeb.'); ?></p>
 <table class="table">
     <thead>
     <tr><th><?php echo $this->translate('Command'); ?></th><th><?php echo $this->translate('Path'); ?></th><th><?php echo $this->translate('Status'); ?></th></tr>
@@ -90,6 +92,13 @@ $this->headTitle('Requirements');
     ?>
     </tbody>
 </table>
+
+<div class="page-header">
+    <h2><?php echo $this->translate('SXWeb Data directory'); ?></h2>
+</div>
+<p><?php printf($this->translate('SXWeb uses the directory <code>%s</code> to store log files, session data, temporary uploads and user informations. This directory must be writable.'), APPLICATION_DATA_PATH); ?></p>
+<p><?php echo $this->translate('<strong>Status</strong>: '), (isset($this->data_path_problem) ? $this->data_path_problem : $this->translate('OK!') ); ?> </p>
+
 <p><?php if ($this->can_proceed): ?>
         <a class="btn btn-default" href="<?php echo $this->ServerUrl(); ?>/install.php?step=step2"><?php echo $this->translate('Continue');?></a>
     <?php else: ?>

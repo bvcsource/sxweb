@@ -54,6 +54,10 @@ set_include_path(implode(PATH_SEPARATOR, array(
     get_include_path(),
 )));
 
+// Where all app data will be stored
+define('APPLICATION_DATA_PATH', realpath(dirname(__FILE__).'/..').'/data');
+define('INSTALLER_SQL_PATH', realpath(dirname(__FILE__).'/..').'/sql');
+
 // Set up the autoloader
 require_once 'Zend/Loader/Autoloader.php';
 Zend_Loader_Autoloader::getInstance();
@@ -72,11 +76,12 @@ if (is_null($step)) {
 
 $action_map = array(
     // step -> controller file, controller class,  action, view
-    'index' => array('IndexController.php', 'IndexController', 'index', 'index.phtml'),
-    'step1' => array('IndexController.php', 'IndexController', 'step1', 'step1.phtml'),
-    'step2' => array('IndexController.php', 'IndexController', 'step2', 'step2.phtml'),
-    'step3' => array('IndexController.php', 'IndexController', 'step3', 'step3.phtml'),
-    'none' => array('IndexController.php', 'IndexController', 'none', 'none.phtml'),
+    'index' => array('IndexController.php', 'IndexController', 'index', '/index.phtml'),
+    'step1' => array('IndexController.php', 'IndexController', 'step1', '/step1.phtml'),
+    'step2' => array('IndexController.php', 'IndexController', 'step2', '/step2.phtml'),
+    'step3' => array('IndexController.php', 'IndexController', 'step3', '/step3.phtml'),
+    'step4' => array('IndexController.php', 'IndexController', 'step4', '/step4.phtml'),
+    'none' => array('IndexController.php', 'IndexController', 'none', '/none.phtml'),
 );
 
 if (!array_key_exists(strval($step), $action_map)) {
@@ -88,6 +93,7 @@ $layout->setLayout('layout');
 ob_start();
 
 include APPLICATION_PATH . '/controllers/'.$action_map[$step][0];
+$front->getRequest()->setActionName( $step );
 $front->getRequest()->setDispatched(TRUE);
 $the_class = $action_map[$step][1];
 $action = new $the_class ($front->getRequest(), $front->getResponse(), array(
@@ -99,9 +105,24 @@ $layout->setView( $action->view );
 $action->view->headTitle('Skylable SXWeb Install')->setSeparator(' - ');
 
 $action->dispatch($action_map[$step][2] . 'Action');
-echo $action->view->render($action_map[$step][3]);
+
+if (isset($action->render_the_script)) {
+    if ($action->render_the_script) {
+        // echo $action->view->render($action_map[$step][3]);
+        echo $action->view->render( $action->getViewScript() );        
+    } else {
+        // When the action uses render()
+        // the output is appended to the response body
+        echo $front->getResponse()->getBody();
+        $front->getResponse()->clearBody();
+    }
+} else {
+    echo $action->view->render( $action->getViewScript($step) );
+}
+
 
 $layout->content = ob_get_clean();
+
 
 $front->getResponse()->appendBody( $layout->render() );
 
