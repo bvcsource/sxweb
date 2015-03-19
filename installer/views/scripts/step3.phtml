@@ -49,7 +49,10 @@ if (isset($this->errors)): ?>
         <div class="panel-body">
             <?php
             $map = array(
-                'frm_sx_cluster' => 'SX Cluster Address'
+                'frm_cluster' => 'SX Cluster Address',
+                'frm_cluster_ssl' => 'Use SSL',
+                'frm_cluster_port' => 'Cluster Port',
+                'frm_cluster_ip' => 'Cluster IP'
             );
 
             echo '<p>',$this->translate('The following field(s) have errors, please correct them:'),'</p>',PHP_EOL;
@@ -71,13 +74,44 @@ if (isset($this->errors)): ?>
 endif;
 ?>
 <form method="post" class="form-horizontal" action="<?php echo $this->escape( $this->ServerUrl() . '/install.php?step=step3' )?>">
-    <div class="form-group<?php if (isset($this->errors['frm_sx_cluster'])) echo ' has-error'; ?>">
-        <label for="frm_sx_cluster" class="col-sm-2 control-label"><?php echo $this->translate('SX Cluster Address'); ?></label>
+    <div class="form-group<?php if (isset($this->errors['frm_cluster'])) echo ' has-error'; ?>">
+        <label for="frm_cluster" class="col-sm-2 control-label"><?php echo $this->translate('SX Cluster Address'); ?></label>
         <div class="col-sm-10">
-            <input name="frm_sx_cluster" class="form-control" id="frm_sx_cluster" type="text" size="25" value="<?php echo $this->escape( $this->frm_sx_cluster ); ?>" />
+            <input name="frm_cluster" class="form-control" id="frm_cluster" type="text" size="25" value="<?php echo $this->escape( $this->frm_cluster ); ?>" />
             <span class="help-block"><?php echo $this->translate('The address of the SX cluster you want to use. Format: <code>sx://somecluster.com</code>'); ?></span>
         </div>
     </div>
+    
+    <fieldset>
+        <legend><?php echo $this->translate('Advanced settings'); ?></legend>
+        <p><?php echo $this->translate('Leave these settings as is, unless you know what you are doing.'); ?></p>
+
+        <div class="form-group<?php if (isset($this->errors['frm_cluster_ssl'])) echo ' has-error'; ?>">
+            <label for="frm_cluster_ssl" class="col-sm-2 control-label"><?php echo $this->translate('Use SSL'); ?></label>
+            <div class="col-sm-10">
+                <input type="checkbox" name="frm_cluster_ssl" id="frm_cluster_ssl" value="y" <?php echo ($this->frm_cluster_ssl ? 'checked="checked"' : '' ) ?> />
+                <span class="help-block"><?php echo $this->translate('Default is to use SSL.'); ?></span>
+            </div>
+        </div>
+
+        <div class="form-group<?php if (isset($this->errors['frm_cluster_port'])) echo ' has-error'; ?>">
+            <label for="frm_cluster_port" class="col-sm-2 control-label"><?php echo $this->translate('SX Cluster Port'); ?></label>
+            <div class="col-sm-10">
+                <input name="frm_cluster_port" class="form-control" id="frm_cluster_port" type="text" size="25" value="<?php echo $this->escape( $this->frm_cluster_port ); ?>" />
+                <span class="help-block"><?php echo $this->translate('The port on which connect to the server.'); ?></span>
+            </div>
+        </div>
+
+
+        <div class="form-group<?php if (isset($this->errors['frm_cluster_ip'])) echo ' has-error'; ?>">
+            <label for="frm_cluster_ip" class="col-sm-2 control-label"><?php echo $this->translate('SX Cluster IP Address'); ?></label>
+            <div class="col-sm-10">
+                <input name="frm_cluster_ip" class="form-control" id="frm_cluster_ip" type="text" size="25" value="<?php echo $this->escape( $this->frm_cluster_ip ); ?>" />
+                <span class="help-block"><?php echo $this->translate('The IP address of non-DNS SX Clusters.'); ?></span>
+            </div>
+        </div>
+        
+    </fieldset>
 
     <button type="submit" class="btn btn-default"><?php echo $this->translate('Submit') ?></button>
 
