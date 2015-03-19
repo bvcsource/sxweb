@@ -34,40 +34,23 @@
     above, a recipient may use your version of this file under either the CPAL or the
     SWCL.
 */
-?><!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
-    <?php echo $this->headTitle(); ?>
-
-    <!-- Bootstrap -->
-    <link href="<?php echo $this->ServerUrl(); ?>/css/bootstrap.min.css" rel="stylesheet">
-    <link href="<?php echo $this->ServerUrl(); ?>/css/bootstrap-theme.min.css" rel="stylesheet">
-    <link href="<?php echo $this->ServerUrl(); ?>/css/installer.css" rel="stylesheet">
-
-    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
-    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
-    <!--[if lt IE 9]>
-    <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
-    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
-    <![endif]-->
-
-    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-    <script src="<?php echo $this->ServerUrl(); ?>/js/jquery.min.js"></script>
-    <!-- Include all compiled plugins (below), or include individual files as needed -->
-    <script src="<?php echo $this->ServerUrl(); ?>/js/bootstrap.min.js"></script>
-</head>
-<body>
-
-    <div class="container">
-        <h1 class="text-hide text-center"><a href="http://www.skylable.com/sxweb" tabindex="-1"><img src="<?php echo $this->ServerUrl(); ?>/img/logo.png"><?php echo $this->translate('Skylable SXWeb'); ?></a></h1>
-        <?php echo $this->layout()->content; ?>
-        <hr>
-        <p class="copyright text-center">Copyright &copy; 2012-2015 Skylable Ltd. All Rights Reserved. Version: <?php echo SXWEB_VERSION; ?></p>
-    </div>
-
-</body>
-</html>
+?>
+<div class="page-header">
+    <h1><?php echo $this->translate('Final step'); ?></h1>
+</div>
+<?php
+    if ($this->write_success):
+?>
+        <div class="alert alert-success"><?php echo $this->translate('<strong>Success!</strong> You have successfully configured your Skylable SXWeb installation!'); ?></div>
+        <p><?php printf($this->translate('You can find the <code>skylable.ini</code> file here: <code>%s</code>.'), $this->skylable_ini_path); ?></p>
+        <p><a href="<?php echo $this->ServerUrl(); ?>" class="btn btn-default"><?php echo $this->translate('Start using it!'); ?></a></p>
+<?php
+    else:
+?><div class="alert alert-danger"><?php printf($this->translate('<strong>Ops!</strong> There is a problem: %s'), $this->reason); ?></div>
+        <p><?php echo $this->translate('Failed to write the configuration file, but you can copy and paste the code below.'); ?></p>
+        <p><?php printf($this->translate('You must put the <code>skylable.ini</code> file here: <code>%s</code>.'), $this->skylable_ini_path); ?></p>
+        <textarea class="form-control" id="skylable_ini_text" rows="15" readonly><?php echo $this->escape( $this->skylable_ini ); ?></textarea>
+        <script type="text/javascript"> $(document).ready(function(){ $('#skylable_ini_text').select();  }); </script>
+    <?php
+    endif;
+?>

@@ -43,7 +43,11 @@ class IndexController extends Zend_Controller_Action {
          * @var bool
          */
         $render_the_script = TRUE;
-    
+
+    /**
+     * Returns an associative array with the base configuration 
+     * @return array
+     */
     public function getBaseConfig() {
         
         $app_path = 'APPLICATION_PATH ';
@@ -51,18 +55,22 @@ class IndexController extends Zend_Controller_Action {
         $cfg = array(
             //sx cluster url sx://...
             'cluster' => "sx://cluster.example.com",
+            
+            'cluster_ssl' => true,
+            'cluster_port' => '',
+            'cluster_ip' => '',
 
-            // Base URL used to generate other URLS, ie the shared file URL
-            'url' => "https://sxweb.example.com",
+            // Base URL used to generate other URLs, ie the shared file URL
+            'url' => $this->view->ServerUrl(),
             
             // Main directory 
-            'local' => $app_path . '/../',
+            'local' => $app_path . '"/../"',
 
             // Upload directory
-            'upload_dir' => $app_path . '/../data/files',
+            'upload_dir' => $app_path . '"/../data/files"',
 
                 // local directory where you will store your sx keys
-            'sx_local' => $app_path . "/../data/sx",
+            'sx_local' => $app_path . '"/../data/sx"',
             
             // Dowload limits
             //  maximum concurrent downloads per logged user
@@ -156,25 +164,14 @@ class IndexController extends Zend_Controller_Action {
         $session = new Zend_Session_Namespace();
         $session->config = $this->getBaseConfig();
         $session->last_step = 'index';
-
-        /*
-         * TODO:
-         * controlla se sia presente il file di configurazione skylable.ini
-         * - SI: puoi solo fare l'upgrade
-         * - NO: procedi con l'installazione (mostra un messaggio)
-         * 
-         * upgrade:
-         * verifica la connessione al DB
-         * - NO: non puoi fare nulla
-         * - SI: verifica la versione del DB
-         * -- Se la versione è minore di quella attuale allora occorre fare l'upgrade
-         */
     }
 
     /**
      * Checks PHP requirements.
      */
     public function step1Action() {
+
+        $this->view->headTitle('Step #1');
 
         if (!$this->sessionIsValid('index')) {
             $this->redirect( $this->view->ServerUrl() . '/install.php' );
@@ -281,6 +278,8 @@ class IndexController extends Zend_Controller_Action {
         if (!$this->sessionIsValid('step1')) {
             $this->redirect($this->view->ServerUrl() . '/install.php?step=step1');
         }
+
+        $this->view->headTitle('Step #2');
 
         $session = new Zend_Session_Namespace();
 
@@ -427,18 +426,35 @@ class IndexController extends Zend_Controller_Action {
      * @throws Zend_Form_Exception
      */
     public function step3Action() {
+
+        /**
+         * NOTE: remember that we need to translate 
+         * the 'frm_cluster_ssl' param
+         * from the string 'y' to a boolean
+         */
+        
         if (!$this->sessionIsValid('step2')) {
             $this->redirect($this->view->ServerUrl() . '/install.php?step=step1');
         }
 
+        $this->view->headTitle('Step #3');
+
         $session = new Zend_Session_Namespace();
         $session->last_step = 'step2';
+
+        $data_map = array(
+            'frm_cluster' => 'cluster',
+            'frm_cluster_ssl' => 'cluster_ssl',
+            'frm_cluster_port' => 'cluster_port',
+            'frm_cluster_ip' => 'cluster_ip',
+
+        );
 
         // Always populate from session, then update from request
         $this->view->frm_sx_cluster = $session->config['cluster'];
 
         $form = new Zend_Form();
-        $form->addElement( 'text', 'frm_sx_cluster', array(
+        $form->addElement( 'text', 'frm_cluster', array(
             'validators' => array( 
                 new Zend_Validate_StringLength(array('min' => 1, 'max' => 255)),
                 new Zend_Validate_Regex('/^sx:\/\/[a-zA-Z0-9]+/')
@@ -449,45 +465,92 @@ class IndexController extends Zend_Controller_Action {
             'required' => TRUE
         ));
 
+        $form->addElement( 'checkbox', 'frm_cluster_ssl', array(
+            'checkedValue' => 'y',
+            'uncheckedValue' => 'n',
+            'required' => TRUE
+        ));
+
+        $form->addElement( 'text', 'frm_cluster_ip', array(
+            'validators' => array( new Zend_Validate_Ip() ),
+            'filters' => array( 'StringTrim' ),
+            'required' => FALSE
+        ));
+
+        $form->addElement( 'text', 'frm_cluster_port', array(
+            'validators' => array( new Zend_Validate_Between(array(
+                'min' => 1,
+                'max' => 65535,
+                'inclusive' => TRUE
+            )) ),
+            'filters' => array( 'StringTrim' ),
+            'required' => FALSE
+        ));
 
         if ($this->getRequest()->isPost()) {
 
             if ($form->isValid($this->getRequest()->getParams())) {
                 $values = $form->getValues();
 
-                $session->config['cluster'] = $values['frm_sx_cluster'];
+                foreach($data_map as $field => $param) {
+                    if ($field == 'frm_cluster_ssl') {
+                        $session->config[$param] = $this->view->$field = ($values[$param] == 'y');
+                    } else {
+                        $this->view->$field = $values[$field];
+                        $session->config[$param] = $values[$field];    
+                    }
+                }
 
-                $this->view->frm_sx_cluster = $values['frm_sx_cluster'];
-                
                 $session->last_step = 'step3';
 
                 $this->redirect($this->view->ServerUrl() . '/install.php?step=step4');
+
             } else {
-                $this->view->frm_sx_cluster = '';
-                // $this->view->errors = $form->getMessages();
-                $this->view->errors = array( 'frm_sx_cluster' => array( $this->view->translate('Invalid cluster address')));
+
+                $this->view->errors = $form->getMessages();
+                $values = $form->getValues();
+
+                foreach($values as $vk => $vv) {
+                    if (array_key_exists($vk, $this->view->errors)) {
+                        $this->view->$vk = '';
+                    } else {
+                        $this->view->$vk = $vv;
+                    }
+                    
+                    if ($vk == 'frm_cluster_ssl') {
+                        $this->view->$vk = ($this->view->$vk == 'y');
+                    }
+                }
+                foreach($data_map as $field => $param) {
+                    $session->config[$param] = $this->view->$field;
+                }
             }
-            
+
+        } else {
+            foreach($data_map as $field => $param) {
+               $this->view->$field = $session->config[$param];    
+            }
         }
-        
-        
     }
 
+    /**
+     * Action for unknown actions
+     */
     public function noneAction() {
 
     }
     
     public function step4Action() {
-        /*
+        
         if (!$this->sessionIsValid('step3')) {
             $this->redirect($this->view->ServerUrl() . '/install.php?step=step1');
-        }*/
+        }
 
+        $this->view->headTitle('Step #4');
+        
         $session = new Zend_Session_Namespace();
 
         $data_map = array(
-            
-            
             'frm_mail_type' => 'mail.transport.type',
             'frm_mail_smtp_host' => 'mail.transport.host',
             'frm_mail_sender_host' => 'mail.transport.name',
@@ -576,6 +639,9 @@ class IndexController extends Zend_Controller_Action {
 
                     $session->config[$param] = $values[$field];
                 }
+
+                $session->last_step = 'step4';
+                $this->redirect($this->view->ServerUrl() . '/install.php?step=step5');
                 
             } else {
                 
@@ -598,6 +664,163 @@ class IndexController extends Zend_Controller_Action {
             foreach($data_map as $field => $param) {
                 $this->view->$field = $session->config[$param];
             }
+        }
+    }
+
+    /**
+     * The final step, generates the skylable.ini file
+     */
+    public function step5Action() {
+        
+        if (!$this->sessionIsValid('step4')) {
+            $this->redirect($this->view->ServerUrl() . '/install.php?step=step1');
+        }
+
+        $this->view->headTitle('Step #5');
+        
+        $session = new Zend_Session_Namespace();
+        
+        // Prepare the ini string
+        $skylable_ini = '[ production ]'.PHP_EOL;
+        $skylable_ini .= PHP_EOL;
+        $skylable_ini .= '; The SX Cluster URL: sx://clustername.com'.PHP_EOL;
+        $skylable_ini .= 'cluster = "' . $session->config['cluster'] . '"' . PHP_EOL;
+        $skylable_ini .= PHP_EOL;
+        $skylable_ini .= 'cluster_ssl = ' . ($session->config['cluster_ssl'] ? 'true' : 'false' ) . PHP_EOL;
+        $skylable_ini .= 'cluster_port = "' . $session->config['cluster_port'] . '"' . PHP_EOL;
+        $skylable_ini .= 'cluster_ip = "' . $session->config['cluster_ip'] . '"' . PHP_EOL;
+        
+        $skylable_ini .= PHP_EOL;
+        $skylable_ini .= '; Base URL used to generate other URLs, ie the shared file URL'.PHP_EOL;
+        $skylable_ini .= 'url = "' . $session->config['url'] . '"' . PHP_EOL;
+
+        $skylable_ini .= PHP_EOL;
+        $skylable_ini .= '; Main directory' . PHP_EOL; 
+        $skylable_ini .= 'local = ' . $session->config['local'] . PHP_EOL;
+
+        $skylable_ini .= PHP_EOL;
+        $skylable_ini .= '; Upload directory' . PHP_EOL;
+        $skylable_ini .= 'upload_dir = ' . $session->config['upload_dir'] . PHP_EOL;
+
+        $skylable_ini .= PHP_EOL;
+        $skylable_ini .= '; local directory where you will store your sx keys' . PHP_EOL;
+        $skylable_ini .= 'sx_local = ' . $session->config['sx_local'] . PHP_EOL;
+
+        $skylable_ini .= PHP_EOL;
+        $skylable_ini .= '; Dowload limits' . PHP_EOL;
+        $skylable_ini .= ';  maximum concurrent downloads per logged user' . PHP_EOL;
+        $skylable_ini .= 'downloads = ' . $session->config['downloads'] . PHP_EOL;
+
+        $skylable_ini .= PHP_EOL;
+        $skylable_ini .= '; maximum concurrent downloads per IP address (used for shared files)' . PHP_EOL;
+        $skylable_ini .= 'downloads_ip = ' . $session->config['downloads_ip'] . PHP_EOL;
+        $skylable_ini .= PHP_EOL;
+        $skylable_ini .= '; time window in seconds per single user' . PHP_EOL;
+        $skylable_ini .= 'downloads_time_window = ' . $session->config['downloads_time_window'] . PHP_EOL;
+        $skylable_ini .= PHP_EOL;
+        $skylable_ini .= '; time window in seconds per IP address' . PHP_EOL;
+        $skylable_ini .= 'downloads_time_window_ip = ' . $session->config['downloads_time_window_ip'] . PHP_EOL;
+        $skylable_ini .= PHP_EOL;
+        $skylable_ini .= '; Update upload_max_filesize, memory_limit, post_max_size, max_execution_time accordingly' . PHP_EOL;
+        $skylable_ini .= 'max_upload_filesize = ' . $session->config['max_upload_filesize'] . PHP_EOL;
+
+        $skylable_ini .= PHP_EOL;
+        $skylable_ini .= '; shared file expire time in seconds' . PHP_EOL;
+        $skylable_ini .= '; default 1 week = 60*60*24*7' . PHP_EOL;
+        $skylable_ini .= 'shared_file_expire_time = ' . $session->config['shared_file_expire_time'] . PHP_EOL;
+        
+        $skylable_ini .= PHP_EOL;
+        $skylable_ini .= '; how long cookie is valid?' . PHP_EOL;
+        $skylable_ini .= '; 3600*24*15 - 1296000 - 15 days' . PHP_EOL;
+        $skylable_ini .= 'remember_me_cookie_seconds = ' . $session->config['remember_me_cookie_seconds'] . PHP_EOL;
+
+        $skylable_ini .= PHP_EOL;
+        $skylable_ini .= '; The cookie domain' . PHP_EOL;
+        $skylable_ini .= '; remember to put a dot where needed' . PHP_EOL;
+        $skylable_ini .= '; ie: is ".example.com" and not "example.com"' . PHP_EOL;
+        $skylable_ini .= 'cookie_domain = "' . $session->config['cookie_domain'] . '"' . PHP_EOL;
+
+        $skylable_ini .= PHP_EOL;
+        $skylable_ini .= '; Elastic search hosts' . PHP_EOL;
+        foreach($session->config['elastic_hosts'] as $host) {
+            $skylable_ini .= 'elastic_hosts[] = "' . $host . '"' . PHP_EOL;    
+        }
+
+        $skylable_ini .= PHP_EOL;
+        $skylable_ini .= '; URL to use to contact the tech support' . PHP_EOL;
+        $skylable_ini .= 'tech_support_url = "' . $session->config['tech_support_url'] . '"' . PHP_EOL;
+
+        $skylable_ini .= PHP_EOL;
+        $skylable_ini .= '; DB configuration' . PHP_EOL;
+        $skylable_ini .= 'db.adapter = "pdo_mysql"' . PHP_EOL;
+        $skylable_ini .= 'db.params.host = "' . $session->config['db.params.host'] . '"' . PHP_EOL;
+        if (!empty($session->config['db.params.port'])) {
+            $skylable_ini .= 'db.params.port = "' . $session->config['db.params.port'] . '"' . PHP_EOL;    
+        }
+        $skylable_ini .= 'db.params.username = "' . $session->config['db.params.username'] . '"' . PHP_EOL;
+        $skylable_ini .= 'db.params.password = "' . $session->config['db.params.password'] . '"' . PHP_EOL;
+        $skylable_ini .= 'db.params.dbname = "' . $session->config['db.params.dbname'] . '"' . PHP_EOL;
+        $skylable_ini .= 'db.params.charset = "utf8" ' . PHP_EOL;
+        $skylable_ini .= 'db.isDefaultTableAdapter = true' . PHP_EOL;
+
+        $skylable_ini .= PHP_EOL;
+        $skylable_ini .= '; Email transport configuration' . PHP_EOL;
+        
+        $skylable_ini .= 'mail.transport.type = "' . $session->config['mail.transport.type'] . '"' . PHP_EOL;
+        $skylable_ini .= 'mail.transport.name = "' . $session->config['mail.transport.name'] . '"' . PHP_EOL;
+        $skylable_ini .= 'mail.transport.host = "' . $session->config['mail.transport.host'] . '"' . PHP_EOL;
+
+        if (empty($session->config['mail.defaultReplyTo.email']) || $session->config['mail.defaultReplyTo.email'] == 'none') {
+            $skylable_ini .= '; mail.transport.auth = ""' . PHP_EOL;
+            $skylable_ini .= '; mail.transport.username = ""' . PHP_EOL;
+            $skylable_ini .= '; mail.transport.password = ""' . PHP_EOL;
+        } else {
+            $skylable_ini .= 'mail.transport.auth = "' . $session->config['mail.transport.auth'] . '"' . PHP_EOL;
+            $skylable_ini .= 'mail.transport.username = "' . $session->config['mail.transport.username'] . '"' . PHP_EOL;
+            $skylable_ini .= 'mail.transport.password = "' . $session->config['mail.transport.password'] . '"' . PHP_EOL;
+        }
+            
+        $skylable_ini .= '; Must be true' . PHP_EOL;
+        $skylable_ini .= 'mail.transport.register = true' . PHP_EOL;
+        $skylable_ini .= 'mail.defaultFrom.email = "' . $session->config['mail.defaultFrom.email'] . '"' . PHP_EOL;
+        $skylable_ini .= 'mail.defaultFrom.name = "' . $session->config['mail.defaultFrom.name'] . '"' . PHP_EOL;
+        
+        if (empty($session->config['mail.defaultReplyTo.email'])) {
+            $skylable_ini .= '; mail.defaultReplyTo.email = ""' . PHP_EOL;
+            $skylable_ini .= '; mail.defaultReplyTo.name = ""' . PHP_EOL;
+        } else {
+            $skylable_ini .= 'mail.defaultReplyTo.email = "' . $session->config['mail.defaultReplyTo.email'] . '"' . PHP_EOL;
+            $skylable_ini .= 'mail.defaultReplyTo.name = "' . $session->config['mail.defaultReplyTo.name'] . '"' . PHP_EOL;
+        }
+
+        $skylable_ini .= PHP_EOL;
+        $skylable_ini .= '[development : production]' . PHP_EOL;
+        $skylable_ini .= PHP_EOL;
+
+        $this->view->skylable_ini = $skylable_ini;
+         
+        // Check if the file exists
+        $skylable_ini_path = APP_CONFIG_BASE_PATH . 'skylable.ini';
+
+        $this->view->skylable_ini_path = APP_CONFIG_BASE_PATH;
+        
+        if (@file_exists($skylable_ini_path)) {
+            $this->view->write_success = FALSE;
+            $this->view->reason = $this->view->translate('File already exists.');
+            return FALSE;
+        }
+   
+        if (!@is_writable(APP_CONFIG_BASE_PATH)) {
+            $this->view->write_success = FALSE;
+            $this->view->reason = $this->view->translate('Destination directory is not writable.');
+            return FALSE;
+        }
+        
+        if (@file_put_contents($skylable_ini_path, $skylable_ini) === FALSE ) {
+            $this->view->write_success = FALSE;
+            $this->view->reason = $this->view->translate('Failed to write the file.');
+        } else {
+            $this->view->write_success = TRUE;
         }
     }
  

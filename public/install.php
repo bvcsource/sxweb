@@ -57,6 +57,7 @@ set_include_path(implode(PATH_SEPARATOR, array(
 // Where all app data will be stored
 define('APPLICATION_DATA_PATH', realpath(dirname(__FILE__).'/..').'/data');
 define('INSTALLER_SQL_PATH', realpath(dirname(__FILE__).'/..').'/sql');
+define('APP_CONFIG_BASE_PATH', realpath(dirname(__FILE__).'/../application').'/configs/');
 
 // Set up the autoloader
 require_once 'Zend/Loader/Autoloader.php';
@@ -81,6 +82,7 @@ $action_map = array(
     'step2' => array('IndexController.php', 'IndexController', 'step2', '/step2.phtml'),
     'step3' => array('IndexController.php', 'IndexController', 'step3', '/step3.phtml'),
     'step4' => array('IndexController.php', 'IndexController', 'step4', '/step4.phtml'),
+    'step5' => array('IndexController.php', 'IndexController', 'step5', '/step5.phtml'),
     'none' => array('IndexController.php', 'IndexController', 'none', '/none.phtml'),
 );
 
