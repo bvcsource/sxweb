@@ -75,10 +75,21 @@ if(isset($this->list)) {
                 <span class="name">
                     <input type="hidden" name="file_basename" value="<?php echo $this->escape($file_name); ?>"/>
                     <span class="ir <?php echo $this->mimeTypeIcon($file['path']); ?>"></span>
-                    <a href="/open<?php echo $this->escape($this->sxUrlEncode($file['path'])); ?>"
-                       class="<?php echo $this->mimeTypeIcon($file['path']); ?>">
-                        <?php echo $this->escape($this->cutString($file_name, 60)); ?>
-                    </a>
+                    <?php if ($this->hasReadAccess()): 
+                        
+                        $file_type = My_Utils::getFileType($file['path']);
+                        if ($file_type != 'data') {
+                            echo '<a href="/open', $this->escape($this->sxUrlEncode($file['path'])), '" class="',$this->mimeTypeIcon($file['path']),' elmpreview" data-fileurl="/open', $this->escape($this->sxUrlEncode($file['path'])), '" data-filetype="', $file_type, '">', $this->escape($this->cutString($file_name, 60)), '</a>', PHP_EOL;
+                        } else { ?>
+                            <a href="/open<?php echo $this->escape($this->sxUrlEncode($file['path'])); ?>" class="<?php echo $this->mimeTypeIcon($file['path']); ?>"><?php echo $this->escape($this->cutString($file_name, 60)); ?></a>
+                    <?php
+                        }
+                        
+                    else: ?>
+                        <a href="#" class="<?php echo $this->mimeTypeIcon($file['path']); ?>">
+                            <?php echo $this->escape($this->cutString($file_name, 60)); ?>
+                        </a>
+                    <?php endif; ?>
                 </span>
                     <span class="size"><?php echo $this->fileSizeFormat($file['size']); ?></span>
 		        <span class="date"><span><?php echo $file['date']; ?></span>
@@ -92,9 +103,12 @@ if(isset($this->list)) {
                         if ($this->hasReadAccess()) {
                             $file_type = My_Utils::getFileType($file['path']);
                             if ($file_type != 'data') {
-                                echo '<li><a href="/open', $this->escape($this->sxUrlEncode($file['path'])), '" class="elmpreview" data-fileurl="/open', $this->escape($this->sxUrlEncode($file['path'])), '" data-filetype="', $file_type, '">', $this->translate('Preview'), '</a></li>', PHP_EOL;
+                                /*
+                                echo '<li><a href="/open', $this->escape($this->sxUrlEncode($file['path'])), '" class="elmpreview" data-fileurl="/open', $this->escape($this->sxUrlEncode($file['path'])), '" data-filetype="', $file_type, '">', $this->translate('Preview'), '</a></li>', PHP_EOL; 
+                                */
                             }
                             ?>
+                            <li><a href="/open<?php echo $this->escape($this->sxUrlEncode($file['path'])); ?>"><?php echo $this->translate('Download'); ?></a></li>
                             <li><a href="javascript:void(0)"
                                    class="elmshare"><?php echo $this->translate('Create Link'); ?></a></li>
                         <?php

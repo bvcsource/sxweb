@@ -604,7 +604,8 @@ if (!FileOperations) {
                     path = $(this).parent().parent().parent().find("input:checkbox[name=file_element]").val()
                     FileOperations.shareFile(e, path);
                 });
-
+                
+                /*
                 $(this).find('.elmpreview').click(function(e){
                     var type = $(this).data('filetype');
                     if (type === 'data') {
@@ -614,6 +615,19 @@ if (!FileOperations) {
                         e.preventDefault();
                     }
                 });
+                */
+            });
+
+            $('#selectable').find('li.ui-widget-content .elmpreview').click(function(e){
+                
+                    var type = $(this).data('filetype');
+                    if (type === 'data') {
+                        return true;
+                    } else {
+                        FileOperations.previewFile($(this).attr('href'), type);
+                        e.preventDefault();
+                    }
+                
             });
         },
 
