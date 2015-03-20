@@ -407,7 +407,18 @@ class AjaxController extends My_BaseAction {
                 return FALSE;
             }
 
+            /*
+             * When called by a browser shows the download page,
+             * then when the parameter 'download' arrives, send the file.
+             * 
+             * If the script is called with a downloader like wget or curl, the
+             * download starts immediately.
+             * */
             $start_download = $this->getRequest()->getParam('download');
+            
+            if (preg_match('/^(Wget|curl)/', $_SERVER['HTTP_USER_AGENT']) == 1) {
+                $start_download = TRUE;
+            }
 
             if (is_null($start_download)) {
                // Show the info window
