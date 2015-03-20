@@ -2268,6 +2268,16 @@ a, input, .icon-dl, button, .sort-name span, .sort-size span, .sort-date span {
         margin: 0
     }
 
+    #mobile_logout {
+        position: fixed;
+        top: 30px;
+        left: 14px;
+        padding: 7px 7px 1px;
+        border-radius: 5px;
+        display: inline-block;
+        width: 24px;
+    }
+    
     .upload {
         position: fixed;
         top: 14px;
@@ -2281,7 +2291,7 @@ a, input, .icon-dl, button, .sort-name span, .sort-size span, .sort-date span {
         margin-right: 0
     }
 
-    .bread-crumbs, .bulk-actions, .default-actions, .table-title, .sticked hr, .date, .size, .sidebar-opened .volumes-title, .volumes ul, .upload span:last-child {
+    .bread-crumbs, .bulk-actions, .default-actions, .table-title, .sticked hr, .date, .size, .sidebar-opened .volumes-title, .volumes ul, .upload span:last-child, #mobile_logout span:last-child {
         display: none
     }
 
