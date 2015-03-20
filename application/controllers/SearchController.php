@@ -42,6 +42,30 @@
  */
 class SearchController extends My_BaseAction {
 
+
+    /**
+     * Check the search engine configuration.
+     * 
+     * @return bool TRUE if cfg is ok, FALSE otherwise
+     * @throws Zend_Exception
+     */
+    public function checkSearchEngineConfig() {
+        $hosts_cfg = Zend_Registry::get('skylable')->get('elastic_hosts');
+        if (!is_object($hosts_cfg)) {
+            return FALSE;
+        }
+        $hosts = $hosts_cfg->toArray();
+        foreach($hosts as $k => $v) {
+            if (strlen(trim($v)) == 0) {
+                unset($hosts[$k]);
+            }
+        }
+        if (empty($hosts)) {
+            return FALSE;
+        }
+        return TRUE;
+    }
+    
 	/**
 	 * Search files and contents.
 	 *
@@ -51,6 +75,13 @@ class SearchController extends My_BaseAction {
 	 * 'page' - numeric, results page to show
 	 */
 	public function indexAction() {
+        
+        // Always check the configuration
+        if ($this->checkSearchEngineConfig() == FALSE) {
+            $this->getInvokeArg('bootstrap')->getResource('Log')->debug(__METHOD__ . ': Search engine is not configured properly');
+            $this->view->error_msg = 'Upgrade to SX Enterprise Edition to enable full-text search in SXWeb: <a href="http://www.skylable.com/company/#contact-us" onclick="window.open(this.href); return false;">http://www.skylable.com/company/#contact-us</a>.';
+            return FALSE;
+        }
 
 		$volume = $this->getRequest()->getParam('vol', '');
 		$query = $this->getRequest()->getParam('q', '');
@@ -78,6 +109,11 @@ class SearchController extends My_BaseAction {
 					}
 				}
 
+                // Sets vars here, because the following code can raise exceptions
+                $this->view->url = My_Utils::slashPath($volume); // Needed to let autocomplete show again
+                $this->view->volume = $volume;
+                $this->view->query_str = $query;
+
 				$paginator = new Zend_Paginator(new My_SearchPaginator($volume, $query));
 				$paginator->setItemCountPerPage( $page_size );
 				$paginator->setPageRange( 9 );
@@ -89,9 +125,7 @@ class SearchController extends My_BaseAction {
 				}
 				$paginator->setCurrentPageNumber( $current_page );
 
-				$this->view->url = My_Utils::slashPath($volume); // Needed to let autocomplete show again
-				$this->view->volume = $volume;
-				$this->view->query_str = $query;
+                $this->getInvokeArg('bootstrap')->getResource('Log')->debug('Search #2 on '.$volume.' for: '.$query);
 
 				$this->view->list = $paginator->getCurrentItems();
 				$this->view->paginator = $paginator;
@@ -102,8 +136,8 @@ class SearchController extends My_BaseAction {
 			}
 		}
 		catch(Exception $e) {
-			$this->getInvokeArg('bootstrap')->getResource('Log')->err(__METHOD__.': exception: '.$e->getMessage() );
-			$this->view->error_msg = 'Internal error, please retry later';
+			$this->getInvokeArg('bootstrap')->getResource('Log')->err(__METHOD__.': exception: '.$e->getMessage().' Code:'.$e->getCode() );
+			$this->view->error_msg = 'Search engine is unavailable. Contact your sysadmin.';
 		}
 
 	}
@@ -122,6 +156,17 @@ class SearchController extends My_BaseAction {
 
 		$this->disableView();
 		$this->getResponse()->setHeader('Content-Type', 'application/json; encoding=UTF-8');
+
+        if ($this->checkSearchEngineConfig() == FALSE) {
+            $this->getInvokeArg('bootstrap')->getResource('Log')->debug(__METHOD__ . ': Search engine is not configured properly');
+            echo json_encode(
+                array(
+                    'status' => FALSE,
+                    'error' => 'Search engine is unavailable. Contact your sysadmin.'
+                )
+            );
+            return FALSE;
+        }
 
 		$volume = $this->getRequest()->getParam('volume', '');
 		$query = $this->getRequest()->getParam('q', '');
@@ -186,7 +231,7 @@ class SearchController extends My_BaseAction {
 				echo json_encode(
 					array(
 						'status' => FALSE,
-						'error' => 'Internal error.'
+						'error' => 'Search engine is unavailable. Contact your sysadmin.'
 					)
 				);
 			}
