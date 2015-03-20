@@ -262,10 +262,43 @@ class Skylable_AccessSxNew {
             $this->getLogger()->debug(__METHOD__.': Invalid cluster: '.print_r($cluster, TRUE));
             return FALSE;
         }
+        
+        $cluster_ssl = Zend_Registry::get('skylable')->get('cluster_ssl', TRUE);
+        if ($cluster_ssl !== TRUE) {
+            $cluster_ssl = (bool)$cluster_ssl;
+        }
+        
+        $cluster_port = Zend_Registry::get('skylable')->get('cluster_port', FALSE);
+        if ($cluster_port !== FALSE) {
+            if (!is_numeric($cluster_port)) {
+                $this->getLogger()->debug(__METHOD__.': Invalid cluster port: '.print_r($cluster_port, TRUE));
+                return FALSE;
+            }
+
+            if ($cluster_port < 1 || $cluster_port > 65535) {
+                $this->getLogger()->debug(__METHOD__.': Invalid cluster port (out of range): '.print_r($cluster_port, TRUE));
+                return FALSE;
+            }
+        }
+        
+        $cluster_ip = Zend_Registry::get('skylable')->get('cluster_ip', FALSE);
+        if ($cluster_ip !== FALSE) {
+            /*
+            if (is_array($cluster_ip)) {
+                $cluster_ip = '-l '.implode(',', $cluster_ip);
+            } else {
+                $cluster_ip = '-l '.escapeshellarg($cluster_ip);
+            }
+            */
+            $cluster_ip = '-l '.escapeshellarg($cluster_ip);
+        }
 
         $ret = $this->executeShellCommand(
             'sxinit -b '.
             ($force_reinit ? '--force-reinit ' : '').
+            ($cluster_ssl ? '' : '--no-ssl ').
+            ($cluster_port !== FALSE ? '--port='.strval($cluster_port).' ' : '').
+            ($cluster_ip !== FALSE ? $cluster_ip.' ' : '').
             '-c '.escapeshellarg($destination_path).' '.
             escapeshellarg($cluster),
             $user_auth_key.PHP_EOL, $output, $exitcode, $this->_last_error_log);

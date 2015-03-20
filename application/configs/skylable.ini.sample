@@ -2,8 +2,17 @@
 ; related to Skylable services interaction
 
 [production] 
-;sx cluster url sx://...
+; sx cluster url sx://...
 cluster = "sx://cluster.example.com"
+
+; Flag for using SSL when communicating with the SX Cluster, usually true 
+cluster_ssl = true
+
+; Custom port for SX Cluster
+;cluster_port = 443
+
+; For non DNS clusters, specify the IP address of a node
+;cluster_ip = 192.168.0.1
 
 ; Base URL used to generate other URLS, ie the shared file URL
 url = "https://sxweb.example.com"
