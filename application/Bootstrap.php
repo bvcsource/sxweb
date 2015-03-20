@@ -47,6 +47,29 @@ require_once 'My/User.php';
  */
 class Bootstrap extends Zend_Application_Bootstrap_Bootstrap {
 
+
+    /**
+     * Converts a php.ini "pretty" value to bytes
+     * @param $value
+     * @return integer
+     */
+    public function toBytes($value) {
+        switch (substr ($value, -1))
+        {
+            case 'M':
+            case 'm':
+                return (int)$value * 1048576;
+            case 'K':
+            case 'k':
+                return (int)$value * 1024;
+            case 'G':
+            case 'g':
+                return (int)$value * 1073741824;
+            default:
+                return $value;
+        }
+    }
+    
     /**
      * Initializes the application execution environment
      * @throws Zend_Exception
@@ -55,6 +78,20 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap {
 
         $this->bootstrap('Config');
         $cfg = Zend_Registry::get('skylable');
+        
+        // Are uploads allowed?
+        if (ini_get('file_uploads') == FALSE) {
+            throw new Zend_Exception('Internal error: uploads are disabled by PHP (please change the \'file_uploads\' PHP ini directive)!');
+        }
+
+        // Sanity checks on upload file size
+        $max_upload_filesize = min( array( $this->toBytes(ini_get('post_max_size')), $this->toBytes(ini_get('memory_limit')), $this->toBytes(ini_get('upload_max_filesize'))  ) );
+        $cfg_max_upload_filesize = Zend_Registry::get('skylable')->get('max_upload_filesize', 0);
+        if ($cfg_max_upload_filesize > $max_upload_filesize) {
+            throw new Zend_Exception('Internal error: please check the \'max_upload_filesize\' skylable.ini setting, it\'s too high. Maximum allowed upload file size is (in bytes): '.strval($max_upload_filesize));
+        } elseif ($cfg_max_upload_filesize < ($max_upload_filesize / 4)) {
+            throw new Zend_Exception('Internal error: please check the \'max_upload_filesize\' skylable.ini setting, it\'s too low. Maximum allowed upload file size is (in bytes): '.strval($max_upload_filesize));
+        }
         
         // Checks the upload dir
         $upload_dir = $cfg->get('upload_dir');
