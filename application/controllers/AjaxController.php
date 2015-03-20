@@ -416,7 +416,8 @@ class AjaxController extends My_BaseAction {
              * */
             $start_download = $this->getRequest()->getParam('download');
             
-            if (preg_match('/^(Wget|curl)/', $_SERVER['HTTP_USER_AGENT']) == 1) {
+            // Uses a white-list approach
+            if (preg_match('/^(Mozilla|Opera)/', $_SERVER['HTTP_USER_AGENT']) == 0) {
                 $start_download = TRUE;
             }
 
