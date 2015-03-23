@@ -141,6 +141,7 @@ class Skylable_AccessSxNew {
         } else {
             $this->_base_dir = strval($base_dir);
         }
+        $this->getLogger()->debug(__METHOD__.': base dir: ' . $this->_base_dir );
         if (!$this->initialize()) {
             throw new Exception('Failed to initialize user', self::ERROR_INITIALIZATION_FAILURE);
         }
@@ -183,7 +184,7 @@ class Skylable_AccessSxNew {
      */
     protected function initialize() {
         if ($this->isInitialized()) {
-            return TRUE;
+           return TRUE;
         }
         $path = $this->getBaseDir();
         $this->getLogger()->debug(__METHOD__.': using path: '.$path);
@@ -209,10 +210,12 @@ class Skylable_AccessSxNew {
     public function isInitialized() {
         $path = $this->getBaseDir();
         if (!@is_dir($path)) {
+            $this->getLogger()->debug(__METHOD__.': path is not a directory: '.$path);
             return FALSE;
         }
         $path .= '/'.substr(Zend_Registry::get('skylable')->get('cluster'), 5);
         if (!@is_dir($path)) {
+            $this->getLogger()->debug(__METHOD__.': path is not a directory: '.$path);
             return FALSE;
         }
 
@@ -264,11 +267,17 @@ class Skylable_AccessSxNew {
         }
         
         $cluster_ssl = Zend_Registry::get('skylable')->get('cluster_ssl', TRUE);
-        if ($cluster_ssl !== TRUE) {
+        $this->getLogger()->debug(__METHOD__.': Cluster SSL: '.var_export($cluster_ssl, TRUE));
+        if (empty($cluster_ssl)) {
+            $cluster_ssl = TRUE; // Use SSL by default
+        } else {
             $cluster_ssl = (bool)$cluster_ssl;
         }
         
         $cluster_port = Zend_Registry::get('skylable')->get('cluster_port', FALSE);
+        if (empty($cluster_port)) {
+            $cluster_port = FALSE;
+        }
         if ($cluster_port !== FALSE) {
             if (!is_numeric($cluster_port)) {
                 $this->getLogger()->debug(__METHOD__.': Invalid cluster port: '.print_r($cluster_port, TRUE));
@@ -282,6 +291,9 @@ class Skylable_AccessSxNew {
         }
         
         $cluster_ip = Zend_Registry::get('skylable')->get('cluster_ip', FALSE);
+        if (empty($cluster_port)) {
+            $cluster_ip = FALSE;
+        }
         if ($cluster_ip !== FALSE) {
             /*
             if (is_array($cluster_ip)) {
