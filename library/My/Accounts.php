@@ -63,6 +63,7 @@ class My_Accounts extends Zend_Db_Table_Abstract  {
      * 
      * Optional parameters
      * 'preferences' - a Zend_Config object with default user preferences
+     * 'role' - The user role: one of the My_User::ROLE_* constants
      * 
      * @param array $params
      * @return integer the new user id
@@ -81,8 +82,15 @@ class My_Accounts extends Zend_Db_Table_Abstract  {
                 'passwd' => $password,
                 'secret_key' => $params['secret_key'],
                 'active' => ($params['is_active'] ? 1 : 0),
-                'preferences' => ''
+                'preferences' => '',
+                'user_role' => My_User::ROLE_GUEST
             );
+
+            if (array_key_exists('role', $params)) {
+                if (My_User::checkRole( $params['role'] )) {
+                    $data['user_role'] = $params['role'];
+                }
+            }
             
             if (array_key_exists('preferences', $params)) {
                 if (is_object($params['preferences'])) {
@@ -168,7 +176,7 @@ class My_Accounts extends Zend_Db_Table_Abstract  {
         if (is_array($row)) {
             $row = (object)$row;
         }
-        $user = new My_User($row->id, $row->email, $row->secret_key, ($row->active == 1 ? My_User::ROLE_REGISTERED : My_User::ROLE_GUEST));
+        $user = new My_User($row->id, $row->email, $row->secret_key, ($row->active == 1 ? $row->user_role : My_User::ROLE_GUEST));
         
         try {
             $json = Zend_Json::decode($row->preferences);

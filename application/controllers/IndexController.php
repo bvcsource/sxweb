@@ -47,7 +47,7 @@ class IndexController extends My_BaseAction {
      * Create a new user account.
      *
      * Parameters:
-     * 'key' - string - the external user key: if present automatically compiles the 'user key' field.
+     * 'key' - string - the external user key: if present automatically fill in the 'user key' field.
      * 
      */
     public function createAction() {
@@ -113,7 +113,8 @@ class IndexController extends My_BaseAction {
             'password_is_plain' => TRUE,
             'secret_key' => $values['frm_user_key'],
             'is_active' => FALSE,
-            'activation_key' => bin2hex(openssl_random_pseudo_bytes(20))
+            'activation_key' => bin2hex(openssl_random_pseudo_bytes(20)),
+            'role' => My_User::ROLE_REGISTERED
         );
         
         $accounts_model = new My_Accounts();
@@ -500,7 +501,6 @@ class IndexController extends My_BaseAction {
         }
         catch (Exception $e) {
             $logger->err(__METHOD__. ': An error occurred: CODE: '.strval($e->getCode()).' MSG:'. $e->getMessage());
-            
             // Quick fix...
             $this->forward('malfunction', 'error');
             return FALSE;

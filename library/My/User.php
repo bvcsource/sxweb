@@ -49,7 +49,8 @@ class My_User implements Zend_Acl_Role_Interface {
      const
         // User roles
         ROLE_GUEST = 'guest',
-        ROLE_REGISTERED = 'registered';
+        ROLE_REGISTERED = 'registered',
+        ROLE_ADMIN = 'admin';
      
      const
         // Common preferences tags
@@ -85,16 +86,32 @@ class My_User implements Zend_Acl_Role_Interface {
      * @param string $email the user name
      * @param string $secret_key the SX user secret key
      * @param string $role the user role
+     * @throws Exception
      */
     public function __construct($id, $email = '', $secret_key = '', $role = self::ROLE_GUEST) {
         $this->_id = $id;
         $this->_email = $email;
         $this->_secret_key = $secret_key;
-        $this->_role = ($role !== self::ROLE_REGISTERED ? self::ROLE_GUEST : $role);
+        
+        if (!$this->checkRole($role)) {
+            throw new Exception(__CLASS__ . ': Invalid role.');
+        }
+        $this->_role = $role;
+        
         $this->_prefs = new My_Preferences(array(
             self::PREF_FILE_SORT_ORDER => 0,
             self::PREF_LAST_VISITED_PATH => '',
         ));
+    }
+
+    /**
+     * Tells if the user role is valid.
+     * 
+     * @param string $role a string with the role
+     * @return bool TRUE if the role is valid, FALSE otherwise
+     */
+    public static function checkRole($role) {
+        return in_array($role, array(self::ROLE_GUEST, self::ROLE_REGISTERED, self::ROLE_ADMIN));
     }
     
     /**
@@ -156,7 +173,26 @@ class My_User implements Zend_Acl_Role_Interface {
      * @return boolean TRUE if is a guest, FALSE otherwise
      */
     public function isGuest() {
-        return ($this->_role === 'guest');
+        return ($this->_role == self::ROLE_GUEST);
+    }
+
+    /**
+     * Tells is this user is an admin
+     * @return bool TRUE the user is an admin, FALSE otherwise
+     */
+    public function isAdmin() {
+        return ($this->_role === self::ROLE_ADMIN);
+    }
+
+    /**
+     * Tells if this user is registered.
+     * 
+     * An admin user is also registered.
+     * 
+     * @return bool TRUE the user is registered, FALSE otherwise
+     */
+    public function isRegistered() {
+        return ($this->_role === self::ROLE_ADMIN || $this->_role === self::ROLE_REGISTERED);
     }
 
     /**
@@ -166,6 +202,7 @@ class My_User implements Zend_Acl_Role_Interface {
     public static function registerAclRoles(Zend_Acl $acl) {
         $acl->addRole( new Zend_Acl_Role(self::ROLE_GUEST));
         $acl->addRole( new Zend_Acl_Role(self::ROLE_REGISTERED));
+        $acl->addRole( new Zend_Acl_Role(self::ROLE_ADMIN));
     }
     
     /**

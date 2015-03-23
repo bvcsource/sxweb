@@ -78,7 +78,7 @@ class My_Acl extends Zend_Acl {
         // 
         // A guest user is limited
         //
-        $this->allow('guest', 
+        $this->allow(My_User::ROLE_GUEST, 
                 array('default/error', 'default/error/error', 
             'default/activateaccount/index',  
             'default/index/create', 'default/index/login', 'default/index/demo', 
@@ -88,6 +88,7 @@ class My_Acl extends Zend_Acl {
                 );
         
         // A registered user can do anything
-        $this->allow('registered', null);
+        $this->allow(My_User::ROLE_REGISTERED, null);
+        $this->allow(My_User::ROLE_ADMIN, null);
     }
 }

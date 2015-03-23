@@ -75,7 +75,7 @@ class My_Plugin_Acl extends Zend_Controller_Plugin_Abstract {
          );
         
         // Speeds up the ACL check for registered users
-        if ($user->getRoleId() == 'registered') {
+        if ($user->getRoleId() == My_user::ROLE_REGISTERED || $user->getRoleId() == My_user::ROLE_ADMIN) {
             $log->debug('Registered user, can do anything!');
             $log->debug('<-------- ACL Check');
             return;
