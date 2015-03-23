@@ -2022,9 +2022,9 @@ a:hover .icon-dl {
     border-radius: 3px;
 }
 
-.success a {
+.success a, .info a, .failure a {
     color: #fff;
-    text-decoration: underline
+    text-decoration: underline;
 }
 
 .success a:hover {

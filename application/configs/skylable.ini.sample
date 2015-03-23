@@ -58,6 +58,9 @@ elastic_hosts[] = "localhost"
 ; URL to use to contact the tech support
 tech_support_url = "http://skylable.zendesk.com"
 
+; Enable/disable version check. Enabled by default
+; enable_version_check = true
+
 ; DB configuration
 db.adapter = "pdo_mysql"
 db.params.host = "localhost"

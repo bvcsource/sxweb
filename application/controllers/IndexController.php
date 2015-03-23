@@ -242,7 +242,54 @@ class IndexController extends My_BaseAction {
         catch(Exception $e) {
 
         }
+
+        $session = new Zend_Session_Namespace();
         
+        // Do the version check
+        $do_version_check = TRUE;
+        $cfg = Zend_Registry::get('skylable');
+        if (isset($cfg->enable_version_check)) {
+            $do_version_check = (bool)$cfg->enable_version_check;
+        }
+        $this->getLogger()->debug(__METHOD__ . ': Do version check? ' . var_export($do_version_check, TRUE));
+        if ($user->isAdmin() && $do_version_check ) {
+            
+            $timestamp = $user->getPreferences()->get('version_check_timestamp');
+            $timestamp2 = time();
+            if (is_null($timestamp)) {
+                // 12h in the past to force the version check.
+                $timestamp = $timestamp2 - (12 * 60 * 60);
+            } 
+
+            try {
+                // If 12h are passed, do the check
+                if ($timestamp2 - $timestamp >= (12 * 60 * 60) ) { 
+                    $user->getPreferences()->version_check_timestamp = $timestamp2;
+                    
+                    $version_check_url = str_replace('SECS_SINCE_LAST_CHECK', strval($timestamp), SXWEB_VERSION_CHECK_URL);
+
+                    $this->getLogger()->debug(__METHOD__ . ': checking for updated version. URL: ' . $version_check_url);
+                    $latest_version = @file_get_contents($version_check_url);
+                    if ($latest_version !== FALSE) {
+                        $latest_version = trim($latest_version);
+                        $this->getLogger()->debug(__METHOD__ . ': found version: ' . var_export($latest_version, TRUE));
+                        if (version_compare($latest_version, SXWEB_VERSION, '>')) {
+                            $this->getLogger()->debug(__METHOD__ . ': upgrade needed. ');
+                            
+                            $this->_helper->getHelper('FlashMessenger')->addMessage('A new version (' . strval($latest_version) . ') of SXWeb is available, please upgrade. You can get it <a href="' . $this->view->escape(SXWEB_UPGRADE_URL) .'" onclick="window.open(this.href); return false;">here</a>.','info');
+                        }
+                    } else {
+                        $this->getLogger()->debug(__METHOD__ . ': checking for updated version failed. ');
+                    }
+                    $this->getUserModel()->updateUserPreferences($user);
+                }
+
+            }
+            catch(Exception $e) {
+                $this->getLogger()->err(__METHOD__ . ': checking for updated version exception. Msg: ' . $e->getMessage() );
+            }
+
+        }
         
         /**
          * Re-initializes the user preferences: now that we have a valid identity
@@ -251,7 +298,7 @@ class IndexController extends My_BaseAction {
          * If we have a referer to be redirected, retrieve it and go
          * 
          */
-        $session = new Zend_Session_Namespace();
+        
         if (isset($session->referer)) {
             $referer = $session->referer;
             unset($session->referer);
