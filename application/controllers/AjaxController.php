@@ -338,7 +338,7 @@ class AjaxController extends My_BaseAction {
         $this->getLogger()->debug(__METHOD__.': path is: '.print_r($path, TRUE) );
 
         try {
-            $access_sx = new Skylable_AccessSxNG(array( 'secret_key' => Zend_Auth::getInstance()->getIdentity()->getSecretKey(), 'cluster' => parse_url(Zend_Registry::get('skylable')->get('cluster'), PHP_URL_HOST) ));
+            $access_sx = new Skylable_AccessSxNG( My_Utils::getAccessSxNGOpt( Zend_Auth::getInstance()->getIdentity() ) );
             $validate_path = new My_ValidateSxPath( $access_sx, My_ValidateSxPath::FILE_TYPE_FILE );
             if (!$validate_path->isValid($path)) {
                 $this->sendErrorResponse('<p>File not found or invalid.</p>');

@@ -41,6 +41,57 @@
  *
  */
 class My_Utils {
+
+    /**
+     * From the application configuration, prepares an array of params 
+     * to use when constructing the Skylable_AccessSxNG class
+     * 
+     * Valid options:
+     * 'secret_key' -  string containing the secret key
+     * 
+     * @param My_User $user
+     * @param array $opt
+     * @return array
+     * @throws Zend_Exception
+     */
+    public static function getAccessSxNGOpt($user, $opt = array()) {
+        $cfg = Zend_Registry::get('skylable');
+        
+        if (is_object($user)) {
+            $secret_key = $user->getSecretKey();
+        } else {
+            $secret_key = (isset($opt['secret_key']) ? $opt['secret_key'] : '' );
+        }
+        
+        $out = array( 
+            'secret_key' => $secret_key, 
+            'cluster' => parse_url($cfg->get('cluster'), PHP_URL_HOST) 
+        );
+
+        $cluster_ssl = $cfg->get('cluster_ssl', TRUE);
+        if (empty($cluster_ssl)) {
+            $out['use_ssl'] = TRUE;
+        } else {
+            $out['use_ssl'] = (bool)$cluster_ssl;
+        }
+
+        $cluster_port = $cfg->get('cluster_port', FALSE);
+        if ($cluster_port !== FALSE) {
+            if (is_numeric($cluster_port)) {
+                if ($cluster_port >= 1 && $cluster_port <= 65535) {
+                    $out['port'] = $cluster_port;
+                }    
+            }
+        }
+
+        $cluster_ip = $cfg->get('cluster_ip', FALSE);
+        if ($cluster_ip !== FALSE) {
+            if (!empty($cluster_ip)) {
+                $out['cluster'] = $cluster_ip;
+            }
+        }
+        return $out;
+    }
     
     /**
      * Generates a randomized string of the given length

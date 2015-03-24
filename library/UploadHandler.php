@@ -406,10 +406,7 @@ class UploadHandler {
         $volume = Zend_Controller_Front::getInstance()->getRequest()->getParam($this->options['sx_volume_param']);
         $path = Zend_Controller_Front::getInstance()->getRequest()->getParam($this->options['sx_path_param'], '');
 
-        $access_sx_ng = new Skylable_AccessSxNG(array(
-            'cluster' => Zend_Registry::get('skylable')->get('cluster'),
-            'secret_key' => Zend_Auth::getInstance()->getIdentity()->getSecretKey()
-        ));
+        $access_sx_ng = new Skylable_AccessSxNG(My_Utils::getAccessSxNGOpt( Zend_Auth::getInstance()->getIdentity() ));
 
         if (!is_string($path) || !is_string($volume)) {
             $file->error = 'Invalid destination path.';

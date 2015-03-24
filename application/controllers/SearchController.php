@@ -89,10 +89,7 @@ class SearchController extends My_BaseAction {
 		// validate a bit...
 		$validate_query = new Zend_Validate_StringLength(array( 'min' => 1, 'max' => 255 ));
 
-		$access_sx = new Skylable_AccessSxNG(array(
-			'cluster' => Zend_Registry::get('skylable')->get('cluster'),
-			'secret_key' => Zend_Auth::getInstance()->getIdentity()->getSecretKey()
-		));
+		$access_sx = new Skylable_AccessSxNG( My_Utils::getAccessSxNGOpt( Zend_Auth::getInstance()->getIdentity() ));
 		$validate_volume = new My_ValidateSxPath($access_sx, My_ValidateSxPath::FILE_TYPE_VOLUME);
 
 		try {
@@ -174,10 +171,7 @@ class SearchController extends My_BaseAction {
 		// validate a bit...
 		$validate_query = new Zend_Validate_StringLength(array( 'min' => 1, 'max' => 255 ));
 
-		$access_sx = new Skylable_AccessSxNG(array(
-			'cluster' => Zend_Registry::get('skylable')->get('cluster'),
-			'secret_key' => Zend_Auth::getInstance()->getIdentity()->getSecretKey()
-		));
+		$access_sx = new Skylable_AccessSxNG( My_Utils::getAccessSxNGOpt( Zend_Auth::getInstance()->getIdentity() ) );
 		$validate_volume = new My_ValidateSxPath($access_sx, My_ValidateSxPath::FILE_TYPE_VOLUME);
 
 		if ($validate_query->isValid($query) && $validate_volume->isValid($volume)) {

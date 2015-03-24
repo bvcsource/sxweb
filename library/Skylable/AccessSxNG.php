@@ -52,6 +52,18 @@ class Skylable_AccessSxNG {
         $_response,
         $_node_list = array(),
 
+        /**
+         * Connect using SSL 
+         * @var bool
+         */
+        $_use_ssl = TRUE,
+
+        /**
+         * Alternative server port.
+         * If NULL use the default one.
+         * @var null
+         */
+        $_port = NULL,
         $_secret_key = NULL,
         $_cluster = NULL;
 
@@ -68,7 +80,11 @@ class Skylable_AccessSxNG {
      *
      * Mandatory parameters:
      * 'secret_key' - the user secret key (the authorization token)
-     * 'cluster' - the cluster on which operate
+     * 'cluster' - the cluster on which operate (can be an IP address for non-DNS clusters)
+     * 
+     * Other parameters:
+     * 'port' - the port number of the cluster
+     * 'use_ssl' - boolean, TRUE use SSL (the default), FALSE otherwise
      *
      * @param array $options
      */
@@ -83,7 +99,30 @@ class Skylable_AccessSxNG {
                 $this->_cluster = substr($this->_cluster, 5);
             }
         }
+
+        if (array_key_exists('port', $options)) {
+            if (is_numeric($options['port'])) {
+                $this->_port = $options['port'];
+            }
+        }
+
+        if (array_key_exists('use_ssl', $options)) {
+            $this->_use_ssl = (bool)$options['use_ssl'];
+        } else {
+            $this->_use_ssl = TRUE;
+        }
+        
         $this->clear();
+    }
+
+    /**
+     * Return a base URL to use in cURL calls.
+     * 
+     * @param string $host the host (IP or domain name) to call
+     * @return string
+     */
+    private function getBaseURL($host) {
+        return 'http' . ($this->_use_ssl ? 's' : '') . '://'.$host;
     }
 
     /**
@@ -169,6 +208,10 @@ class Skylable_AccessSxNG {
         $res = curl_init();
         if ($res !== FALSE) {
             curl_setopt($res, CURLOPT_URL, $params['url']);
+            
+            if (!empty($this->_port)) {
+                curl_setopt($res, CURLOPT_PORT, $this->_port);
+            }
 
             if (array_key_exists('verb', $params)) {
                 switch($params['verb']) {
@@ -310,7 +353,7 @@ class Skylable_AccessSxNG {
 
         if ($this->RESTCall(
             array(
-                'url' => 'https://'.$this->_cluster.'/?nodeList',
+                'url' => $this->getBaseURL($this->_cluster).'/?nodeList',
                 'date' => $date,
                 'authorization' => $this->getRequestSignature($this->_secret_key, 'GET', '?nodeList', $date, sha1(''))
             )
@@ -345,7 +388,7 @@ class Skylable_AccessSxNG {
 
         if ($this->RESTCall(
             array(
-                'url' => 'https://'.$this->_cluster.'/'.$volume.'?o=locate',
+                'url' => $this->getBaseURL($this->_cluster).'/'.$volume.'?o=locate',
                 'date' => $date,
                 'authorization' => $this->getRequestSignature($this->_secret_key, 'GET', $volume.'?o=locate', $date, sha1(''))
             )
@@ -379,7 +422,7 @@ class Skylable_AccessSxNG {
 
         if ($this->RESTCall(
             array(
-                'url' => 'https://'.$this->_cluster.'/'.$volume.'?o=acl',
+                'url' => $this->getBaseURL($this->_cluster).'/'.$volume.'?o=acl',
                 'date' => $date,
                 'authorization' => $this->getRequestSignature($this->_secret_key, 'GET', $volume.'?o=acl', $date, sha1(''))
             )
@@ -409,7 +452,7 @@ class Skylable_AccessSxNG {
         $date = $this->getRequestDate();
         if ($this->RESTCall(
             array(
-                'url' => 'https://'.$this->_cluster.'/?volumeList',
+                'url' => $this->getBaseURL($this->_cluster).'/?volumeList',
                 'date' => $date,
                 'authorization' => $this->getRequestSignature($this->_secret_key, 'GET', '?volumeList', $date, sha1(''))
             )
@@ -466,7 +509,7 @@ class Skylable_AccessSxNG {
 
                 if ($this->RESTCall(
                     array(
-                        'url' => 'https://'.$node.'/'.$req,
+                        'url' => $this->getBaseURL($node).'/'.$req,
                         'date' => $date,
                         'authorization' => $this->getRequestSignature($this->_secret_key, 'GET', $req, $date, sha1(''))
                     )
@@ -584,7 +627,7 @@ class Skylable_AccessSxNG {
 
                 if ($this->RESTCall(
                     array(
-                        'url' => 'https://'.$node.'/'.$req,
+                        'url' => $this->getBaseURL($node).'/'.$req,
                         'date' => $date,
                         'authorization' => $this->getRequestSignature($this->_secret_key, 'DELETE', $req, $date, sha1('')),
                         'verb' => self::REQUEST_VERB_DELETE
@@ -626,7 +669,7 @@ class Skylable_AccessSxNG {
 
                 if ($this->RESTCall(
                     array(
-                        'url' => 'https://'.$node.'/'.$req,
+                        'url' => $this->getBaseURL($node).'/'.$req,
                         'date' => $date,
                         'authorization' => $this->getRequestSignature($this->_secret_key, 'GET', $req, $date, sha1(''))
                     )
