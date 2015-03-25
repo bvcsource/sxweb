@@ -69,7 +69,7 @@ class IndexController extends Zend_Controller_Action {
             // Upload directory
             'upload_dir' => $app_path . '"/../data/files"',
 
-                // local directory where you will store your sx keys
+            // local directory where you will store your sx keys
             'sx_local' => $app_path . '"/../data/sx"',
             
             // Dowload limits
@@ -131,6 +131,26 @@ class IndexController extends Zend_Controller_Action {
             'mail.defaultReplyTo.email' => '',
             'mail.defaultReplyTo.name' => ''
         );
+        
+        // Parameters to skip
+        $skip_list = array('db.params.username','db.params.password',
+            'db.adapter','db.isDefaultTableAdapter','db.params.charset');
+        
+        // Check for a valid skylable.ini and integrate its configuration
+        if (@file_exists(APP_CONFIG_BASE_PATH . 'skylable.ini')) {
+            $skylable_ini = @parse_ini_file( APP_CONFIG_BASE_PATH . 'skylable.ini', TRUE, INI_SCANNER_RAW );
+            if ($skylable_ini !== FALSE) {
+                foreach($skylable_ini as $k => $v) {
+                    if (trim($k) == 'production') {
+                        foreach($skylable_ini[$k] as $dk => $dv) {
+                            if (array_key_exists($dk, $cfg) && !in_array($dk, $skip_list)) {
+                                $cfg[$dk] = $dv;
+                            }
+                        }
+                    }    
+                }
+            } 
+        } 
         
         return $cfg;
     }
@@ -273,6 +293,210 @@ class IndexController extends Zend_Controller_Action {
         }
     }
 
+    /**
+     * Load a file containing SQL code and breaks it into an array of SQL strings.
+     * 
+     * Also remove the comments.
+     * 
+     * The returned array can be empty.
+     * 
+     * @param string $sql_file_path the file to load
+     * @return array|bool FALSE if the file is not readable, an array otherwise
+     */
+    protected function getSQLArray($sql_file_path) {
+        $sql = @file_get_contents($sql_file_path);
+        if ($sql === FALSE) {
+            return FALSE;
+        }
+
+        $sql = preg_replace('/^\s*--.*/m', '', $sql);
+        $sql_arr = array_map( 'trim', explode(';', $sql));
+        foreach($sql_arr as $k => $v) {
+            if (strlen($v) == 0) {
+                unset($sql_arr[$k]);
+            }
+        }
+        
+        return $sql_arr;
+    }
+
+    /**
+     * Initialize or upgrade the DB schema.
+     */
+    public function initdbAction() {
+
+        $this->view->headTitle('Step #2');
+        
+        if (!$this->sessionIsValid('step2')) {
+            $this->redirect($this->view->ServerUrl() . '/install.php?step=step1');
+        }
+
+        $this->view->headTitle('Setting up the DB');
+
+        $session = new Zend_Session_Namespace();
+
+        // Install or upgrade the DB
+        $session->last_step = 'step2';
+
+        try {
+            $db_conn = Zend_Db::factory('Pdo_Mysql', array(
+                'username' => $session->config['db.params.username'],
+                'password' => $session->config['db.params.password'],
+                'dbname' => $session->config['db.params.dbname'],
+                'host' => $session->config['db.params.host'],
+                'port' => (empty($session->config['db.params.port']) ? '3306' : $session->config['db.params.port'] ),
+                'charset' => 'utf8'
+            ));
+
+            // If the DB is already populated skip creation, tries upgrade
+            $tables = $db_conn->listTables();    
+        }
+        catch(Exception $e) {
+            $session->last_step = 'step1';
+            $this->view->error = $e->getMessage();
+            $this->view->error_title = $this->view->translate('<strong>Fail!</strong> Database connection failed!');
+            $this->view->message = $this->view->translate('Please check your connection parameters and retry.');
+            return FALSE;
+        }
+        
+        // Check if we need to create the DB schema
+        $do_create_db = FALSE;
+        if (empty($tables)) {
+            $do_create_db = TRUE;
+        } else {
+            $base_tables = array('shared', 'tickets', 'user_reset_password', 'users', 'users_act_keys');
+            foreach($base_tables as $t) {
+                if (!in_array($t, $tables)) {
+                    $do_create_db = TRUE;
+                    break;
+                }
+            }
+        }
+
+        if ($do_create_db) {
+            $sql_arr = $this->getSQLArray( INSTALLER_SQL_PATH . '/sxweb.sql' );
+            if ($sql_arr !== FALSE) {
+                try {
+                    foreach($sql_arr as $sql) {
+                        $db_conn->query($sql);    
+                    }
+                    
+                    $this->view->message = $this->view->translate('Successfully created the database schema.');
+                }
+                catch(Exception $e) {
+                    $session->last_step = 'step1';
+                    $this->view->error = $e->getMessage();
+                    $this->view->error_title = $this->view->translate('<strong>Fail!</strong> Database creation failed!');
+                    $this->view->message = $this->view->translate('Failed to create the database schema.');
+                }
+
+            } else {
+                $this->view->error_title = $this->view->translate('<strong>Fail!</strong> I/O error!');
+                $this->view->error = $this->view->translate('Failed to load <code>sxweb.sql</code>. Please check your installation.');
+                $session->last_step = 'step1';
+            }
+        } else {
+            // Guess the DB schema version
+            /*
+             * The 0.2.0 branch lacks the 'sxweb_config' table
+             * */
+            try {
+                $db_conn->setFetchMode(Zend_Db::FETCH_ASSOC);
+                $db_version = FALSE;
+                if (in_array('sxweb_config', $tables)) {
+                    $data = $db_conn->fetchRow('SELECT * FROM ' . $db_conn->quoteIdentifier('sxweb_config') . ' WHERE ' . $db_conn->quoteIdentifier('item') . ' = ' . $db_conn->quote('db_version') . ' LIMIT 1');
+                    if (!empty($data)) {
+                        $db_version = $data['value'];
+                    }
+                } else {
+                    $db_version = '0.2.0';
+                }
+            }
+            catch(Exception $e) {
+                $session->last_step = 'step2';
+                $this->view->error = $e->getMessage();
+                $this->view->error_title = $this->view->translate('<strong>Fail!</strong> Database access error!');
+                $this->view->message = $this->view->translate('Failed to retrieve the DB schema version, you should upgrade manually.');
+                
+                $this->view->can_proceed = FALSE;
+                return FALSE;
+            }
+
+            if ($db_version === FALSE) {
+                $this->view->message = $this->view->translate('Something went wrong...');
+                $this->view->error_title = $this->view->translate('<strong>Fail!</strong> Database access error!');
+                $this->view->error = $this->view->translate('Failed to retrieve the DB schema version, you should upgrade manually.');
+                $this->view->can_proceed = FALSE;
+                
+                return FALSE;
+            } else {
+                // DB is old, upgrade
+                $upgrade_success = TRUE;
+                $upgrade_problems = array();
+
+                if (version_compare($db_version, SXWEB_VERSION, '<=')) {
+                    $upgrade_steps = array();
+                    if (version_compare($db_version, '0.2.0', '==')) {
+                        $upgrade_steps = array(
+                            'from_02_to_03'
+                        );
+                    }
+                    
+                    // Prepare the list of SQL files to apply
+                    $upgrade_sql_file_list = array();
+                    foreach($upgrade_steps as $sql_dir) {
+                        $the_sql_dir = INSTALLER_SQL_PATH . '/upgrade/' . $sql_dir;
+                        if (@is_dir($the_sql_dir)) {
+                            $sql_files = glob($the_sql_dir . '/*.sql');
+                            if ($sql_files !== FALSE) {
+                                foreach ($sql_files as $sql_file) {
+                                    $upgrade_sql_file_list[] = $sql_file;
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Apply the SQL files
+                    foreach($upgrade_sql_file_list as $sql_file) {
+                        $sql_arr = $this->getSQLArray($sql_file);
+                        if ($sql_arr === FALSE) {
+                            $upgrade_success = FALSE;
+                            $upgrade_problems[] = sprintf( $this->view->translate('Failed to load SQL file: <code>%s</code>') , $sql_file);
+                        } else {
+                            try {
+                                foreach($sql_arr as $sql) {
+                                    $db_conn->query($sql);    
+                                }
+                            }
+                            catch(Exception $e) {
+                                $upgrade_success = FALSE;
+                                $upgrade_problems[] = sprintf( $this->view->translate('Failed to apply SQL file: <code>%s</code>, SQL error: <code>%s</code>') , $sql_file, $e->getMessage());
+                            }
+                        }
+                        
+                        if (!$upgrade_success) {
+                            break;
+                        }
+                    }
+                }
+
+                if ($upgrade_success) {
+                    $this->view->message = $this->view->translate('Database successfully upgraded.');
+                } else {
+                    $session->last_step = 'step1';
+                    $this->view->error =  implode('<br />'.PHP_EOL, $upgrade_problems);
+                    $this->view->error_title = $this->view->translate('<strong>Fail!</strong> Database upgrade failed!');
+                    $this->view->message = $this->view->translate('Something went wrong...');
+                    $this->view->can_proceed = FALSE; 
+                }
+            }
+        }
+    }
+    
+    /**
+     * DB configuration
+     * @throws Zend_Form_Exception
+     */
     public function step2Action() {
         
         if (!$this->sessionIsValid('step1')) {
@@ -354,44 +578,21 @@ class IndexController extends Zend_Controller_Action {
                     
                     if (is_null($db_conn->getConnection())) {
                         $session->last_step = 'step1';
-                        $this->render_the_script = FALSE;
                         $this->view->error = $this->view->translate('Connection failed.');
-                        echo $this->view->render('step2b.phtml');
                     } else {
                         $session->last_step = 'step2';
-                        $this->render_the_script = FALSE;
-                        
-                        // If already populated skip creation
-                        $tables = $db_conn->listTables();
-                        if (empty($tables)) {
-                            $sql = @file_get_contents(INSTALLER_SQL_PATH . '/sxweb.sql');
-                            if ($sql !== FALSE) {
-                                try {
-                                    $db_conn->query($sql);
-                                    $this->view->message = $this->view->translate('Successfully created database tables.');
-                                }
-                                catch(Exception $e) {
-                                    $session->last_step = 'step1';
-                                    $this->view->error = $e->getMessage();
-                                    $this->view->message = $this->view->translate('Database creation failed!');
-                                }
-                                
-                            } else {
-                                $this->view->error = $this->view->translate('Failed to load <code>sxweb.sql</code>.');
-                            }
-                        } else {
-                            $this->view->message = $this->view->translate('Database is already populated and is leaved as is.');
-                        }
-                        
-                        echo $this->render('step2b');
+                        $this->view->message = $this->view->translate('<strong>Important!</strong> If you are upgrading, before continuing to prevent data loss, please <em>backup your database</em>.');
                     }
                 }
                 catch(Exception $e) {
                     $session->last_step = 'step1';
-                    $this->render_the_script = FALSE;
+                    
                     $this->view->error = $e->getMessage();
                     echo $this->view->render('step2b.phtml');
                 }
+                
+                $this->render_the_script = FALSE;
+                echo $this->view->render('step2b.phtml');
 
             } else {
                 $this->view->errors = $form->getMessages();
@@ -494,7 +695,7 @@ class IndexController extends Zend_Controller_Action {
 
                 foreach($data_map as $field => $param) {
                     if ($field == 'frm_cluster_ssl') {
-                        $session->config[$param] = $this->view->$field = ($values[$param] == 'y');
+                        $session->config[$param] = $this->view->$field = ($values[$field] == 'y');
                     } else {
                         $this->view->$field = $values[$field];
                         $session->config[$param] = $values[$field];    

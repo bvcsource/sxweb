@@ -83,6 +83,7 @@ $action_map = array(
     'step3' => array('IndexController.php', 'IndexController', 'step3', '/step3.phtml'),
     'step4' => array('IndexController.php', 'IndexController', 'step4', '/step4.phtml'),
     'step5' => array('IndexController.php', 'IndexController', 'step5', '/step5.phtml'),
+    'initdb' => array('IndexController.php', 'IndexController', 'initdb', '/initdb.phtml'),
     'none' => array('IndexController.php', 'IndexController', 'none', '/none.phtml'),
 );
 
@@ -124,7 +125,6 @@ if (isset($action->render_the_script)) {
 
 
 $layout->content = ob_get_clean();
-
 
 $front->getResponse()->appendBody( $layout->render() );
 

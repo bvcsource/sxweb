@@ -34,28 +34,35 @@
     above, a recipient may use your version of this file under either the CPAL or the
     SWCL.
 */
+
+if (!isset($this->can_proceed)) {
+    $this->can_proceed = TRUE;
+}
+
 ?>
 <div class="page-header">
     <h1><?php echo $this->translate('Database Setup'); ?></h1>
 </div>
-<?php
-    if (isset($this->error)):
-        ?>
-        <div class="alert alert-danger"><?php echo $this->translate('<strong>Fail!</strong> Database connection error!'); ?></div>
-        <p><?php echo $this->translate('<strong>Reason:</strong> '), $this->error; ?></p>
-        <p><?php echo $this->translate('Please check your connection parameters and retry'); ?></p>
-<?php
-    else:
-        ?>
-        <div class="alert alert-success"><?php echo $this->translate('<strong>Success!</strong> Database connection successfully established!'); ?></div>
-    <?php
-    endif;
-?>
+<?php if (isset($this->error)): ?>
+        <div class="alert alert-danger"><?php echo $this->error_title; ?></div>
+<?php else: ?>
+        <div class="alert alert-success"><?php echo $this->translate('<strong>Success!</strong> Database successfully installed or upgraded!'); ?></div>
+<?php endif; ?>
 <?php if (isset($this->message)): ?>
     <p><?php echo $this->message; ?></p>
 <?php endif; ?>
 <?php if (isset($this->error)): ?>
-        <p><a class="btn btn-default" href="<?php echo $this->ServerUrl(); ?>/install.php?step=step2"><?php echo $this->translate('Retry!');?></a></p>
-    <?php else: ?>
-        <p><a class="btn btn-default" href="<?php echo $this->ServerUrl(); ?>/install.php?step=initdb"><?php echo $this->translate('Continue to create or upgrade the DB schema...');?></a></p>
-    <?php endif; ?>
+    <p><?php echo $this->translate('<strong>Reason:</strong> '), $this->error; ?></p>
+    <br/>
+<?php endif; 
+
+    if ($this->can_proceed) {
+        if (isset($this->error)) {
+            ?><p><a class="btn btn-default" href="<?php echo $this->ServerUrl(); ?>/install.php?step=step2"><?php echo $this->translate('Retry!');?></a></p><?php
+        } else {
+            ?><p><a class="btn btn-default" href="<?php echo $this->ServerUrl(); ?>/install.php?step=step3"><?php echo $this->translate('Continue...');?></a></p><?php
+        }
+    } else {
+        echo '<p>',$this->translate('Installation stopped to prevent data loss.'),'</p>';
+    }
+   
