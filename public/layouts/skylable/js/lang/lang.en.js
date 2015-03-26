@@ -57,6 +57,7 @@ if (!Skylable_Lang) {
         shareTitle : "Share file",
         shareMsg : "Are you sure you want to share the file?",
         shareCopyToClipboard: "Copy to clipboard",
+        shareCopiedToClipboard: "Copied to clipboard!",
         shareFile : 'File: ',
 
         // -------- Preview

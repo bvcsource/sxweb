@@ -691,8 +691,6 @@ if (!FileOperations) {
                                     FileOperations.is_working = true;
                                 },
                                 success : function(data, status, xhr) {
-                                    dlg.html(xhr.responseText);
-
                                     dlg.dialog('option', 'buttons',[
                                         {
                                             id: 'copytoclipboarddialogbtn',
@@ -710,7 +708,13 @@ if (!FileOperations) {
                                     dlg.html(xhr.responseText);
                                     $('#copytoclipboarddialogbtn').zclip({
                                         path:'/layouts/skylable/js/ZeroClipboard.swf',
-                                        copy:$('.sharelink a').text()
+                                        copy:$('.sharelink a').text(),
+                                        afterCopy:function() {
+                                            $( '#copytoclipboarddialogbtn' ).button( "option", "label", Skylable_Lang['shareCopiedToClipboard'] );
+                                            window.setTimeout(function(){
+                                                $( '#copytoclipboarddialogbtn' ).button( "option", "label", Skylable_Lang['shareCopyToClipboard'] );
+                                            }, 3000);
+                                        }
                                     });
                                 },
                                 error : function(xhr, status) {
