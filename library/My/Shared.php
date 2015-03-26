@@ -77,6 +77,12 @@ class My_Shared extends Zend_Db_Table_Abstract {
         }
         $path = My_Utils::removeSlashes($path, TRUE);
 
+        if ((is_null($password) || strlen($password) == 0)) {
+            $the_password = '';
+        } else {
+            $the_password = $this->getPasswordHash($password);
+        }
+
         $db = $this->getAdapter();
         $db->beginTransaction();
         try {
@@ -93,7 +99,7 @@ class My_Shared extends Zend_Db_Table_Abstract {
                 $db->quoteIdentifier('expire_at').', '.
                 $db->quoteIdentifier('file_password').') '.
                 ' SELECT @mykey := SHA1(UUID()), ?, ?, NOW(), DATE_ADD(NOW(), INTERVAL ? SECOND), ?',
-                array( strval($user_auth_token), strval($path), $expire, ((is_null($password) || strlen($password) == 0) ? '' : sha1($password)) )
+                array( strval($user_auth_token), strval($path), $expire, $the_password )
             );
             $key = $db->fetchOne('SELECT @mykey');
 
@@ -107,6 +113,34 @@ class My_Shared extends Zend_Db_Table_Abstract {
             }
             throw $e;
         }
+    }
+
+    /**
+     * Generates a password hash from a plain password.
+     *
+     * Every password stored into the DB is a hash obtained with this method.
+     *
+     * Current options:
+     * 'salt' - use this salt instead of a random generated one
+     *
+     * @param string $plain_password the plain password
+     * @param array $options
+     * @return string|boolean the password hash, FALSE on errors
+     */
+    public static function getPasswordHash($plain_password, $options = array()) {
+        if (array_key_exists('salt', $options)) {
+            $salt = $options['salt'];
+        } else {
+            $salt = openssl_random_pseudo_bytes(16);
+
+            $base64_digits =  'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+            $bcrypt64_digits = './ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            $base64_string = base64_encode($salt);
+            $salt = strtr(rtrim($base64_string, '='), $base64_digits, $bcrypt64_digits);
+            $salt = '$2y$10$' . base64_encode($salt);
+        }
+
+        return crypt($plain_password, $salt);
     }
 
     /**
@@ -167,9 +201,27 @@ class My_Shared extends Zend_Db_Table_Abstract {
     /**
      * Get a shared file using its unique hash, but only if not expired.
      *
-     * The password, if not empty, is an sha1 hash of the plain password.
+     * The password you get is encrypted.
+     * If the password is empty, the file is not password protected.
+     * To verify the password use it as a salt for {@see getPasswordHash}.
+     * Do:
+     * <code>
+     * 
+     *  // $password_from_request contains the plain password you get from the user
+     *  
+     * 
+     *  $the_file = $my_shared->getSharedFile('...', TRUE);
+     *  if (strlen($the_file['password']) > 0) {
+     *    $password_check = $my_shared->getPasswordHash( $password_from_request, array( 'salt' => $the_file->password ) );
+     *    if (strcmp($the_file->password, $password_check) == 0) {
+     *      echo 'The password is right!';
+     *    } else {
+     *      echo 'Wrong password, sir!';    
+     *    }   
+     *  }
+     * </code> 
      *
-     * @param string $hash
+     * @param string $hash the file hash
      * @param bool $return_data TRUE returns the entire record, FALSE only the file path.
      * @return bool|string|array FALSE if the file don't exists, or the file path or the data record
      * @throws Zend_Db_Table_Exception

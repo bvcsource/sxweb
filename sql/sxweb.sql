@@ -7,7 +7,7 @@ CREATE TABLE `shared` (
   `file_path` varchar(255) NOT NULL,
   `created_at` datetime NOT NULL,
   `expire_at` datetime NOT NULL,
-  `file_password` varchar(64) NOT NULL DEFAULT '',
+  `file_password` varchar(255) NOT NULL DEFAULT '',
   PRIMARY KEY (`file_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
