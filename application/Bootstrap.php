@@ -79,6 +79,11 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap {
         $this->bootstrap('Config');
         $cfg = Zend_Registry::get('skylable');
         
+        // We need strong cryptography
+        if (!My_Utils::randomBytesAreSafe()) {
+            throw new Zend_Exception('Internal error: we can\'t ensure strong cryptography!');
+        }
+        
         // Are uploads allowed?
         if (ini_get('file_uploads') == FALSE) {
             throw new Zend_Exception('Internal error: uploads are disabled by PHP (please change the \'file_uploads\' PHP ini directive)!');

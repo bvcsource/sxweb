@@ -113,6 +113,9 @@ class My_Utils {
      * @return boolean TRUE on success, FALSE on failure
      */
     public static function randomBytesAreSafe() {
+        if (!extension_loaded('openssl')) {
+            return FALSE;
+        }
         $bytes = openssl_random_pseudo_bytes(20, $crypto);
         return $crypto;
     }
