@@ -55,9 +55,9 @@ class My_Accounts extends Zend_Db_Table_Abstract  {
      * 
      * Actual _mandatory_ parameters are:
      * 'email' - string - the user email
-     * 'password' - string - the password (plain or crypted)
-     * 'password_is_plain' - flag - TRUE the password is plain an should be crypted, FALSE the password is already crypted
-     * 'auth_token' - string - skylable auth token
+     * 'password' - string - the password (plain or encrypted)
+     * 'password_is_plain' - flag - TRUE the password is plain an should be encrypted, FALSE the password is already encrypted
+     * 'auth_token' - string - SX cluster user auth token
      * 'is_active' - boolean - flag: TRUE the user is active, FALSE otherwise
      * 'activation_key' - string - a random activation key to use to two pass activation of non active accounts
      * 
@@ -101,7 +101,7 @@ class My_Accounts extends Zend_Db_Table_Abstract  {
             $user_id = $this->insert($data);
             if ($params['is_active'] == FALSE) {
                 $this->getAdapter()->insert('users_act_keys', array(
-                    'key' => $params['activation_key'],
+                    'activation_key' => $params['activation_key'],
                     'uid' => $user_id
                 ));
             }
@@ -248,7 +248,7 @@ class My_Accounts extends Zend_Db_Table_Abstract  {
         if (array_key_exists('salt', $options)) {
             $salt = $options['salt'];
         } else {
-            $salt = openssl_random_pseudo_bytes(16);
+            $salt = My_Utils::getRandomBytes(16);
 
             $base64_digits =  'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
             $bcrypt64_digits = './ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -331,7 +331,9 @@ class My_Accounts extends Zend_Db_Table_Abstract  {
                     $this->getAdapter()->commit();
                     return FALSE;
                 }
-                $hash = hash_hmac('sha256', $res['id'] . bin2hex( openssl_random_pseudo_bytes(50) ), openssl_random_pseudo_bytes(20) );
+                
+                // This will generate a 64 byte hash
+                $hash = bin2hex( My_Utils::getRandomBytes(32) );
                 
                 if ($cnt['cnt'] > 0) {
                     // Updates existing info

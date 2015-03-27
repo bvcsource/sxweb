@@ -131,7 +131,7 @@ class My_Shared extends Zend_Db_Table_Abstract {
         if (array_key_exists('salt', $options)) {
             $salt = $options['salt'];
         } else {
-            $salt = openssl_random_pseudo_bytes(16);
+            $salt = My_Utils::getRandomBytes(16);
 
             $base64_digits =  'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
             $bcrypt64_digits = './ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';

@@ -113,7 +113,7 @@ class IndexController extends My_BaseAction {
             'password_is_plain' => TRUE,
             'secret_key' => $values['frm_user_key'],
             'is_active' => FALSE,
-            'activation_key' => bin2hex(openssl_random_pseudo_bytes(20)),
+            'activation_key' => My_AccountKeys::generateActivationKey(),
             'role' => My_User::ROLE_REGISTERED
         );
         

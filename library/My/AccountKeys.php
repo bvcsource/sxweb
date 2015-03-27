@@ -53,7 +53,7 @@ class My_AccountKeys extends Zend_Db_Table_Abstract {
      * 
      * An activation fails when:
      * - the user is already active
-     * - the activation hash doesn't permit to find a related user to activate
+     * - the activation hash does not permit to find an user to activate
      * 
      * @param string $hash the activation hash
      * @return Integer|Boolean return the activated user UID or FALSE on failed activation
@@ -64,10 +64,10 @@ class My_AccountKeys extends Zend_Db_Table_Abstract {
         $db->beginTransaction();
         try {
             $data = $db->fetchRow( $db->select()
-               ->from(array('u' => 'users'), array('id' , 'secret_key' => new Zend_Db_Expr('SHA1(CONCAT(u.email, uk.key))') ))
+               ->from(array('u' => 'users'), array('u.id' , 'uk.activation_key'))
                ->join(array('uk' => 'users_act_keys'), 'u.id = uk.uid', array())
                ->where('u.active = 0')
-               ->having('secret_key = ?', $hash) );
+               ->where('uk.activation_key = ?', $hash) );
             
             // No valid keys -> FALSE
             $ret_val = FALSE;
@@ -88,15 +88,29 @@ class My_AccountKeys extends Zend_Db_Table_Abstract {
     
     /**
      * Generates the activation hash: this is the hash that will be sent via email
-     * to the newly registered user 
+     * to the newly registered user. 
      * 
-     * @param string $activation_key the random hash associated with the user
+     * You _MUST_ generate the activation key using {@link generateActivationKey}.
+     * 
+     * @param string $activation_key the random key associated with the user
      * @param string $email the user email address
      * @param integer $user_id the users UID
      * @return string
+     * @see generateActivationKey
      */
     public static function getAccountActivationHash($activation_key, $email, $user_id = NULL) {
-        return sha1($email . $activation_key);
+        return $activation_key;
+    }
+
+    /**
+     * Generates a random unique activation key.
+     * 
+     * Returns an hexadecimal string.
+     * 
+     * @return string the random key
+     */
+    public static function generateActivationKey() {
+        return bin2hex(My_Utils::getRandomBytes(20));
     }
 
 }
