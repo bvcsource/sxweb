@@ -70,7 +70,7 @@ class UploadController extends My_BaseAction {
                 'sx_path_param' => 'url',
                 'upload_dir' => $upload_path
             ) );
-            $uh->initialize();
+
         } else {
             $this->getLogger()->err(__METHOD__.': Check your config, upload dir is empty.');
 
