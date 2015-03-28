@@ -49,19 +49,21 @@ if (isset($this->errors)): ?>
         <div class="panel-body">
 <?php
             $map = array(
-                'frm_mail_type' => 'Transport Type',
-                'frm_mail_smtp_host' => 'SMTP Host',
-                'frm_mail_sender_host' => 'Sender Host Name',
+                'frm_mail_type' => $this->translate('Transport Type'),
+                'frm_mail_smtp_host' => $this->translate('SMTP Host'),
+                'frm_mail_sender_host' => $this->translate('Sender Host Name'),
+                'frm_mail_ssl' => $this->translate('Use SSL'),
+                'frm_mail_port' => $this->translate('SMTP port'),
                 
-                'frm_mail_auth' => 'Auth Type',
-                'frm_mail_username' => 'User Name',
-                'frm_mail_password' => 'Password',
+                'frm_mail_auth' => $this->translate('Auth Type'),
+                'frm_mail_username' => $this->translate('User Name'),
+                'frm_mail_password' => $this->translate('Password'),
                 
-                'frm_default_from_mail' => '&quot;From&quot; Address',
-                'frm_default_from_name' => '&quot;From&quot; Name',
+                'frm_default_from_mail' => $this->translate('&quot;From&quot; Address'),
+                'frm_default_from_name' => $this->translate('&quot;From&quot; Name'),
 
-                'frm_default_replyto_mail' => '&quot;Reply To&quot; Address',
-                'frm_default_replyto_name' => '&quot;Reply To&quot; Name'
+                'frm_default_replyto_mail' => $this->translate('&quot;Reply To&quot; Address'),
+                'frm_default_replyto_name' => $this->translate('&quot;Reply To&quot; Name')
 
             );
 
@@ -82,15 +84,6 @@ if (isset($this->errors)): ?>
 <?php
 
 endif;
-
-/**
- * 
- *             'mail.transport.name' => "example.com",
-'mail.transport.host' => "localhost",
-';mail.transport.auth' => 'login',
-';mail.transport.username' => 'myUsername',
-';mail.transport.password' => 'myPassword',
- */
 ?>
 <form method="post" class="form-horizontal" action="<?php echo $this->escape( $this->ServerUrl() . '/install.php?step=step4' )?>">
     <fieldset>
@@ -116,6 +109,22 @@ endif;
             <div class="col-sm-10">
                 <input class="form-control" name="frm_mail_sender_host" id="frm_mail_sender_host" type="text" size="25" value="<?php echo $this->escape( $this->frm_mail_sender_host ); ?>" />
                 <span class="help-block"><?php echo $this->translate('To avoid been marked as a spammer, use this host when connecting to the SMTP host. Don&apos;t use <code>localhost</code> if you send emails using SMTP. You can safely leave this field blank.'); ?></span>
+            </div>
+        </div>
+
+        <div class="form-group<?php if (isset($this->errors['frm_mail_ssl'])) echo ' has-error'; ?>">
+            <label for="frm_mail_ssl" class="col-sm-2 control-label"><?php echo $this->translate('Use SSL'); ?></label>
+            <div class="col-sm-10">
+                <?php echo $this->formSelect('frm_mail_ssl', $this->frm_mail_ssl, array('class' => 'form-control'), array( '' => $this->translate('No'), 'tls' => 'TLS', 'ssl' => 'SSL' ) );  ?>
+                <span class="help-block"><?php echo $this->translate('SSL protocol to use.'); ?></span>
+            </div>
+        </div>
+
+        <div class="form-group<?php if (isset($this->errors['frm_mail_port'])) echo ' has-error'; ?>">
+            <label for="frm_mail_port" class="col-sm-2 control-label"><?php echo $this->translate('SMTP port'); ?></label>
+            <div class="col-sm-10">
+                <input class="form-control" name="frm_mail_port" id="frm_mail_port" type="text" size="25" value="<?php echo $this->escape( $this->frm_mail_port ); ?>" />
+                <span class="help-block"><?php echo $this->translate('SMTP server port. Leave blank for default (25 for TLS or 465 for SSL).'); ?></span>
             </div>
         </div>
         

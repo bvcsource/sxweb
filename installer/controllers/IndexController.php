@@ -124,6 +124,8 @@ class IndexController extends Zend_Controller_Action {
             'mail.transport.auth' => 'none',
             'mail.transport.username' => '',
             'mail.transport.password' => '',
+            'mail.transport.ssl' => '',
+            'mail.transport.port' => '',
             'mail.transport.register' => true, 
     
             'mail.defaultFrom.email' => "noreply@example.com",
@@ -755,6 +757,9 @@ class IndexController extends Zend_Controller_Action {
             'frm_mail_type' => 'mail.transport.type',
             'frm_mail_smtp_host' => 'mail.transport.host',
             'frm_mail_sender_host' => 'mail.transport.name',
+
+            'frm_mail_ssl' => 'mail.transport.ssl',
+            'frm_mail_port' => 'mail.transport.port',
                 
             'frm_mail_auth' => 'mail.transport.auth',
             'frm_mail_username' => 'mail.transport.username',
@@ -785,6 +790,18 @@ class IndexController extends Zend_Controller_Action {
 
         $form->addElement( 'text', 'frm_mail_sender_host', array(
             'validators' => array( new Zend_Validate_StringLength(array('min' => 0, 'max' => 255)) ),
+            'filters' => array( 'StringTrim' ),
+            'required' => FALSE
+        ));
+
+        $form->addElement( 'text', 'frm_mail_ssl', array(
+            'validators' => array( new Zend_Validate_InArray( array( 'ssl', 'tls') ) ),
+            'filters' => array( 'StringTrim' ),
+            'required' => FALSE
+        ));
+
+        $form->addElement( 'text', 'frm_mail_port', array(
+            'validators' => array( 'validators' => array( new Zend_Validate_Between( array( 'min' => 1, 'max' => 65535, 'inclusive' => TRUE ) ) ) ),
             'filters' => array( 'StringTrim' ),
             'required' => FALSE
         ));
@@ -971,7 +988,19 @@ class IndexController extends Zend_Controller_Action {
         $skylable_ini .= 'mail.transport.name = "' . $session->config['mail.transport.name'] . '"' . PHP_EOL;
         $skylable_ini .= 'mail.transport.host = "' . $session->config['mail.transport.host'] . '"' . PHP_EOL;
 
-        if (empty($session->config['mail.defaultReplyTo.email']) || $session->config['mail.defaultReplyTo.email'] == 'none') {
+        if (empty($session->config['mail.transport.ssl']) || $session->config['mail.transport.ssl'] == 'none') {
+            $skylable_ini .= '; mail.transport.ssl = ""' . PHP_EOL;
+        } else {
+            $skylable_ini .= 'mail.transport.ssl = "' . $session->config['mail.transport.ssl'] . '"' . PHP_EOL;
+        }
+
+        if (empty($session->config['mail.transport.port'])) {
+            $skylable_ini .= '; mail.transport.port = ""' . PHP_EOL;
+        } else {
+            $skylable_ini .= 'mail.transport.port = ' . $session->config['mail.transport.port'] . PHP_EOL;
+        }
+        
+        if (empty($session->config['mail.transport.auth']) || $session->config['mail.transport.auth'] == 'none') {
             $skylable_ini .= '; mail.transport.auth = ""' . PHP_EOL;
             $skylable_ini .= '; mail.transport.username = ""' . PHP_EOL;
             $skylable_ini .= '; mail.transport.password = ""' . PHP_EOL;
