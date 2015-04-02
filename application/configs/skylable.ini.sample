@@ -69,7 +69,6 @@ db.params.username = "db_user_name"
 db.params.password = "db_user_password"
 db.params.dbname = "sxweb"
 db.params.charset = "utf8"
-db.isDefaultTableAdapter = true
 
 ; Email
 mail.transport.type = "smtp"

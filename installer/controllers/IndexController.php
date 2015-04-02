@@ -115,7 +115,6 @@ class IndexController extends Zend_Controller_Action {
             'db.params.password' => "",
             'db.params.dbname' => "sxweb",
             'db.params.charset' => "utf8",
-            'db.isDefaultTableAdapter' => true,
 
             // Email
             'mail.transport.type' => "smtp",
@@ -899,7 +898,10 @@ class IndexController extends Zend_Controller_Action {
         $session = new Zend_Session_Namespace();
         
         // Prepare the ini string
-        $skylable_ini = '[ production ]'.PHP_EOL;
+        $skylable_ini = '; This file holds all the application configuration'. PHP_EOL;
+        $skylable_ini .= '; related to Skylable services interaction'. PHP_EOL;
+        $skylable_ini .= PHP_EOL;
+        $skylable_ini .= '[ production ]'.PHP_EOL;
         $skylable_ini .= PHP_EOL;
         $skylable_ini .= '; The SX Cluster URL: sx://clustername.com'.PHP_EOL;
         $skylable_ini .= 'cluster = "' . $session->config['cluster'] . '"' . PHP_EOL;
@@ -979,7 +981,6 @@ class IndexController extends Zend_Controller_Action {
         $skylable_ini .= 'db.params.password = "' . $session->config['db.params.password'] . '"' . PHP_EOL;
         $skylable_ini .= 'db.params.dbname = "' . $session->config['db.params.dbname'] . '"' . PHP_EOL;
         $skylable_ini .= 'db.params.charset = "utf8" ' . PHP_EOL;
-        $skylable_ini .= 'db.isDefaultTableAdapter = true' . PHP_EOL;
 
         $skylable_ini .= PHP_EOL;
         $skylable_ini .= '; Email transport configuration' . PHP_EOL;

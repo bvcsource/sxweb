@@ -158,6 +158,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap {
         
         if (isset($cfg->db)) {
             $db_res = new Zend_Application_Resource_Db($cfg->db);
+            $db_res->setIsDefaultTableAdapter(TRUE);
             $db = $db_res->getDbAdapter();
             $conn = $db->getConnection();
             if (is_null($conn)) {
