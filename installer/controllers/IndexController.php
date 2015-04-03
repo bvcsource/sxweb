@@ -256,14 +256,15 @@ class IndexController extends Zend_Controller_Action {
             'sxinit','sxcp','sxrm','sxmv','sxacl'
         );
         $this->view->sx_commands_search_path = $_SERVER['PATH'];
-        if (empty($_SERVER['PATH'])) {
+        $exec_path = $this->getExecPath();
+        if (empty($exec_path)) {
             $this->view->can_proceed = FALSE;
             foreach($sx_cmd as $cmd) {
                 $this->view->sx_commands[] = array( $cmd, '', 'Not found (invalid path)' );
             }
             $this->view->sx_commands_search_path_error = $this->view->translate('Search path is empty!');
         } else {
-            $places = explode(PATH_SEPARATOR, $_SERVER['PATH']);
+            $places = explode(PATH_SEPARATOR, $exec_path);
             $this->view->sx_commands = array();
             foreach($sx_cmd as $cmd) {
                 $command_found = FALSE;
@@ -283,17 +284,6 @@ class IndexController extends Zend_Controller_Action {
                     $this->view->can_proceed = FALSE;
                     $this->view->sx_commands[] = array( $cmd, '', 'Not found' );
                 }
-                
-                /*
-                $str = exec('which '.$cmd, $output, $ret_val);
-                if (empty($output)) {
-                    $this->view->can_proceed = FALSE;
-                    $this->view->sx_commands[] = array( $cmd, '', 'Not found' );
-                } else {
-                    $this->view->sx_commands[] = array( $cmd, implode('', $output), 'Found' );
-                    $output = '';
-                }
-                */
             }    
         }
         
@@ -323,6 +313,21 @@ class IndexController extends Zend_Controller_Action {
         } else {
             $session->last_step = FALSE;
         }
+    }
+
+    /**
+     * Returns the execution path of exec() command
+     * @return string
+     */
+    public function getExecPath() {
+        $the_path = getenv('PATH');
+        if ($the_path !== FALSE) {
+            return $the_path;
+        }
+        if (isset($_SERVER['PATH'])) {
+            return $_SERVER['PATH'];
+        }
+        return '';
     }
 
     /**
