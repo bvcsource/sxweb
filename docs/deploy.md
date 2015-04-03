@@ -71,6 +71,11 @@ Check `/var/log/audit.log` and if required run:
 
     # chcon -Rt httpd_sys_content_t /path/to/sxweb
 
+SXWeb needs to write to the data/ subdirectory. Make sure it is writable by the user under which the webserver 
+is running and also verify that SELinux is not blocking write access to it:
+
+    # chcon -R -h -t httpd_sys_script_rw_t /path/to/sxweb/data
+
 ## TROUBLESHOOTING
 SXWeb will always try to tell you what is going wrong writing it to a log file. The first place to search for problems is `data/logs/sxweb.log`. Then you can look at the web server error log (on Ubuntu located in `/var/log/apache2/error.log`).
  
