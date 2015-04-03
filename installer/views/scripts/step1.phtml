@@ -80,6 +80,7 @@ $this->headTitle('Requirements');
     <h2><?php echo $this->translate('SX Commands'); ?></h2>
     </div>
 <p><?php echo $this->translate('You must have installed all the Skylable SX commands to run SXWeb.'); ?></p>
+<p><?php printf($this->translate('Commands are searched into these paths: <code>%s</code>'), $this->sx_commands_search_path); ?></p>
 <table class="table">
     <thead>
     <tr><th><?php echo $this->translate('Command'); ?></th><th><?php echo $this->translate('Path'); ?></th><th><?php echo $this->translate('Status'); ?></th></tr>
@@ -92,13 +93,21 @@ $this->headTitle('Requirements');
     ?>
     </tbody>
 </table>
+<?php 
+if (isset($this->sx_commands_search_path_error)): ?>
+<div class="alert alert-danger"><?php printf( $this->translate('<strong>Attention!</strong> %s'), $this->sx_commands_search_path_error); ?></div>
+<?php
+endif;
+?>
 
 <div class="page-header">
     <h2><?php echo $this->translate('SXWeb Data directory'); ?></h2>
 </div>
 <p><?php printf($this->translate('SXWeb uses the directory <code>%s</code> to store log files, session data, temporary uploads and user informations. This directory must be writable.'), APPLICATION_DATA_PATH); ?></p>
 <p><?php echo $this->translate('<strong>Status</strong>: '), (isset($this->data_path_problem) ? $this->data_path_problem : $this->translate('OK!') ); ?> </p>
-
+<?php if (isset($this->data_path_problem)): ?>
+    <p><?php echo $this->translate('<em>Tip:</em> Verify that SELinux is not blocking the access to this directory.'); ?></p>
+<?php endif; ?>
 <p><?php if ($this->can_proceed): ?>
         <a class="btn btn-default" href="<?php echo $this->ServerUrl(); ?>/install.php?step=step2"><?php echo $this->translate('Continue');?></a>
     <?php else: ?>

@@ -255,17 +255,48 @@ class IndexController extends Zend_Controller_Action {
         $sx_cmd = array(
             'sxinit','sxcp','sxrm','sxmv','sxacl'
         );
-        $this->view->sx_commands = array();
-        foreach($sx_cmd as $cmd) {
-            $str = exec('which '.$cmd, $output, $ret_val);
-            if (empty($output)) {
-                $this->view->can_proceed = FALSE;
-                $this->view->sx_commands[] = array( $cmd, '', 'Not found' );
-            } else {
-                $this->view->sx_commands[] = array( $cmd, implode('', $output), 'Found' );
-                $output = '';
+        $this->view->sx_commands_search_path = $_SERVER['PATH'];
+        if (empty($_SERVER['PATH'])) {
+            $this->view->can_proceed = FALSE;
+            foreach($sx_cmd as $cmd) {
+                $this->view->sx_commands[] = array( $cmd, '', 'Not found (invalid path)' );
             }
+            $this->view->sx_commands_search_path_error = $this->view->translate('Search path is empty!');
+        } else {
+            $places = explode(PATH_SEPARATOR, $_SERVER['PATH']);
+            $this->view->sx_commands = array();
+            foreach($sx_cmd as $cmd) {
+                $command_found = FALSE;
+                foreach($places as $sx_command_path) {
+                    $the_cmd = My_Utils::slashPath($sx_command_path).$cmd;
+                    if (@file_exists($the_cmd)) {
+                        $output = '';
+                        $str = exec($the_cmd.' -V', $output, $ret_val);
+                        if (!empty($output)) {
+                            $command_found = TRUE;
+                            $this->view->sx_commands[] = array( $cmd, $sx_command_path, 'Found' );
+                        }
+                    }
+                }
+                
+                if (!$command_found) {
+                    $this->view->can_proceed = FALSE;
+                    $this->view->sx_commands[] = array( $cmd, '', 'Not found' );
+                }
+                
+                /*
+                $str = exec('which '.$cmd, $output, $ret_val);
+                if (empty($output)) {
+                    $this->view->can_proceed = FALSE;
+                    $this->view->sx_commands[] = array( $cmd, '', 'Not found' );
+                } else {
+                    $this->view->sx_commands[] = array( $cmd, implode('', $output), 'Found' );
+                    $output = '';
+                }
+                */
+            }    
         }
+        
         
         // Check the data dir
         if (!@file_exists(APPLICATION_DATA_PATH)) {

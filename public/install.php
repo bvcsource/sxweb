@@ -59,9 +59,9 @@ define('APPLICATION_DATA_PATH', realpath(dirname(__FILE__).'/..').'/data');
 define('INSTALLER_SQL_PATH', realpath(dirname(__FILE__).'/..').'/sql');
 define('APP_CONFIG_BASE_PATH', realpath(dirname(__FILE__).'/../application').'/configs/');
 
-// Set up the autoloader
+// Setup the autoloader
 require_once 'Zend/Loader/Autoloader.php';
-Zend_Loader_Autoloader::getInstance();
+Zend_Loader_Autoloader::getInstance()->registerNamespace('My');
 
 
 // Prepare the front controller
