@@ -83,12 +83,12 @@ $this->headTitle('Requirements');
 <p><?php printf($this->translate('Commands are searched into these paths: <code>%s</code>'), $this->sx_commands_search_path); ?></p>
 <table class="table">
     <thead>
-    <tr><th><?php echo $this->translate('Command'); ?></th><th><?php echo $this->translate('Path'); ?></th><th><?php echo $this->translate('Status'); ?></th></tr>
+    <tr><th><?php echo $this->translate('Command'); ?></th><th><?php echo $this->translate('Status'); ?></th></tr>
     </thead>
     <tbody>
     <?php
     foreach($this->sx_commands as $c) {
-        echo '<tr><td>',$c[0],'</td><td>',$c[1],'</td><td>',$c[2],'</td></tr>',PHP_EOL;
+        echo '<tr><td>',$c[0],'</td><td>',$c[2],'</td></tr>',PHP_EOL;
     }
     ?>
     </tbody>
