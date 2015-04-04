@@ -1,3 +1,20 @@
+<?php 
+    // In demo mode, pre-fill the form
+    $user_login = '';
+    $user_password = '';
+    $demo_mode = FALSE;
+    if (defined('SXWEB_DEMO_MODE')) {
+        if (SXWEB_DEMO_MODE) {
+            $demo_mode = TRUE;
+            if (defined('SXWEB_DEMO_LOGIN')) {
+                $user_login = SXWEB_DEMO_LOGIN;
+            }
+            if (defined('SXWEB_DEMO_PASSWORD')) {
+                $user_password = SXWEB_DEMO_PASSWORD;
+            }
+        }
+    }
+?>
 <div class="login-box">
     <div class="login-logo">
         <span class="icon-logo ir"></span><h1>Login</h1>
@@ -5,8 +22,8 @@
 
     <div class="login-form">
     <?php echo $this->form('', $this->form->getAttribs()); ?>
-        <input type="email" value="" name="frm_login" placeholder="Email address" />
-        <input type="password" value="" name="frm_password" placeholder="Password" />
+        <input type="email" value="<?php echo $this->escape($user_login); ?>" name="frm_login" placeholder="Email address" />
+        <input type="password" value="<?php echo $this->escape($user_password); ?>" name="frm_password" placeholder="Password" />
         <label for="confirm"><input type="checkbox" name="frm_remember_me" value="yes" id="confirm" />Remember me</label>
         <input type="submit" value="Sign in" />
     </form>
