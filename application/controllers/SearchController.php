@@ -126,7 +126,18 @@ class SearchController extends My_BaseAction {
 
 				$this->view->list = $paginator->getCurrentItems();
 				$this->view->paginator = $paginator;
-
+                
+                // Populate the ACL, adapting the array
+                $the_acl = $access_sx->getACL($volume);
+                if ($the_acl !== FALSE) {
+                    $this->view->acl = array();
+                    foreach($the_acl as $acl_usr => $acl_data) {
+                        $this->view->acl[] = array(
+                            'user' => $acl_usr,
+                            'perms' => $acl_data
+                        ); 
+                    }
+                }
 			} else {
 				$this->getInvokeArg('bootstrap')->getResource('Log')->debug('Invalid search parameters: volume: '.var_export($volume, TRUE).' query: '.var_export($query, TRUE));
 				$this->view->error_msg = 'Invalid search parameters, please retry.';

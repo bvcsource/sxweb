@@ -1,88 +1,115 @@
 <div class="sticked">
-	<div class="wrap">
-	<?php echo $this->render('index/messages.phtml'); ?>
-    <?php echo $this->putMessage(); ?>
-	<div id="search" >
-        <form action="/search,<?php echo $this->escape($this->volume); ?>" method="get" >
-           <input type="submit" class="ir icon-search"  />
-           <input type="search" placeholder="<?php echo $this->translate('Search...'); ?>" class="search" name="q"  value="<?php echo $this->escape($this->query_str);?>"/>
-        </form>
-	</div>
-	<hr>
-<p class="table-title">
-<span class="name"><?php echo $this->translate('Name'); ?></span>
-	<span class="folder-name"><?php echo $this->translate('Folder'); ?></span>
-</p>
-	</div>
-</div>	
+    <div class="wrap">
+        <?php echo $this->render('index/messages.phtml'); ?>
+        <?php echo $this->putMessage(); ?>
+        <div id="search">
+            <form action="/search,<?php echo $this->escape($this->volume); ?>" method="get">
+                <input type="submit" class="ir icon-search"/>
+                <input type="search" placeholder="<?php echo $this->translate('Search...'); ?>" class="search" name="q"
+                       value="<?php echo $this->escape($this->query_str); ?>"/>
+            </form>
+        </div>
+        <hr>
+        <p class="table-title">
+            <span class="name"><?php echo $this->translate('Name'); ?></span>
+            <span class="folder-name"><?php echo $this->translate('Actions'); ?></span>
+        </p>
+    </div>
+</div>
 <style>
-#selectable .kontent {
-font-size:13px;
-margin-top:5px;
-color:gray;
-width: 100%;
-}
-#selectable .kontent em {
-font-weight:bold;
-}
-#selectable .name a {
-color:black;
-}
-	.content-margin {
-		margin-top: 120px;
-	}
+    #selectable .kontent {
+        font-size: 13px;
+        margin-top: 5px;
+        color: gray;
+        width: 100%;
+    }
+
+    #selectable .kontent em {
+        font-weight: bold;
+    }
+
+    #selectable .name a {
+        color: black;
+    }
+
+    .content-margin {
+        margin-top: 120px;
+    }
 </style>
 <div class="wrap">
-	<?php
+    <?php
 
-	if (isset($this->error_msg)) {
-?>
-	<p class="content-margin"><?php echo $this->translate($this->error_msg); ?></p>
-<?php
-	} else {
+    if (isset($this->error_msg)) {
+        ?>
+        <p class="content-margin"><?php echo $this->translate($this->error_msg); ?></p>
+    <?php
+    } else {
 
-		if (count($this->list) == 0) {
-			?>
-		<p class="content-margin"><?php echo $this->translate('Nothing found.'); ?></p>
-		<?php
+        if (count($this->list) == 0) {
+            ?>
+            <p class="content-margin"><?php echo $this->translate('Nothing found.'); ?></p>
+        <?php
 
-		} else {
-			?>
-			<ol id="selectable" class="file-list" style="margin-top:120px;" >
-			<?php
-				foreach($this->list as $elm) {
+        } else {
+            ?>
+            <ol id="selectable" class="file-list" style="margin-top:120px;">
+                <?php
+                foreach ($this->list as $elm) {
 
-					$name = $elm['fields']['path'][0];
-					$text = '';
-					if(!empty($elm['highlight']['content'])) {
-						$text=implode("",$elm['highlight']['content']);
-					}
-					$file = $this->sxUrlEncode($name);
-					$the_dir_name = dirname($name);
-					?>
-					<li class="ui-widget-content">
+                    $name = $elm['fields']['path'][0];
+                    $text = '';
+                    if (!empty($elm['highlight']['content'])) {
+                        $text = implode("", $elm['highlight']['content']);
+                    }
+                    $file = $this->sxUrlEncode($name);
+                    $the_dir_name = dirname($name);
+                    ?>
+                    <li class="ui-widget-content">
 <span class="name">
-	<span class="ir <?php echo $this->mimeTypeIcon($file);?>"></span>
-	<a href="/open/<?php echo $this->volume,'/', $file; ?>" target="_blank" title="<?php echo $this->escape($name); ?>" ><span><?php echo $this->escape($this->cutString($name, 50)); ?></span></a>
-	<span class="kontent"><?php echo  trim(strip_tags($text,"<em>")); ?></span>
+	<span class="ir <?php echo $this->mimeTypeIcon($name); ?>"></span>
+    <?php if ($this->hasReadAccess()) {
+        $file_type = My_Utils::getFileType($name);
+        if ($file_type != 'data') { ?>
+            <a href="/open/<?php echo $this->escape($this->volume . '/' . $file); ?>" class="elmpreview"
+               title="<?php echo $this->escape($name); ?>"
+               data-fileurl="/open/<?php echo $this->escape($this->volume . '/' . $file); ?>"
+               data-filetype="<?php echo $file_type ?>"><span><?php echo $this->escape($this->cutString($name, 50)); ?></span></a>
+        <?php } else { ?>
+            <a href="/open/<?php echo $this->escape($this->volume . '/' . $file); ?>"
+               title="<?php echo $this->escape($name); ?>"><span><?php echo $this->escape($this->cutString($name, 50)); ?></span></a>
+        <?php
+        }
+
+    } else {  ?>
+      
+        <a href="#" title="<?php echo $this->escape($name); ?>"><span><?php echo $this->escape($this->cutString($name, 50)); ?></span></a>
+    <?php } ?>
+	<span class="kontent"><?php echo trim(strip_tags($text, "<em>")); ?></span>
 </span>
-						<span class="folder-name"><a href="/vol<?php echo $this->escape(My_Utils::slashPath($this->volume).$this->sxUrlEncode($the_dir_name)); ?>" title="<?php echo $this->escape(sprintf($this->translate('Open folder: %s'), $the_dir_name ) ); ?>" ><?php echo $this->escape($this->cutString($the_dir_name, 30)); ?></a></span>
-					</li>
-				<?php
-				}
-			?>
-			</ol>
-	<?php
-			if (isset($this->paginator)) {
-				if (is_object($this->paginator)) {
-					echo $this->paginationControl($this->paginator, 'Sliding', 'search_result_paginator.phtml', array('volume' => $this->volume, 'query_str' => $this->query_str));
-				}
-			}
-		}
+                        <span class="folder-name">
+                            <?php if ($this->hasReadAccess()): ?>
+                            <a href="/open/<?php echo $this->escape($this->volume . '/' . $file); ?>" 
+                               title="<?php echo $this->translate('Download the file'); ?>"><?php echo $this->translate('Download'); ?></a> | 
+                            <a href="/vol<?php echo $this->escape(My_Utils::slashPath($this->volume) . $this->sxUrlEncode($the_dir_name)); ?>"
+                                title="<?php echo $this->escape(sprintf($this->translate('Open folder: %s'), $the_dir_name)); ?>"><?php echo $this->translate('Open Folder'); ?></a>
+                        <?php endif; ?>
+                        </span>
+                    </li>
+                <?php
+                }
+                ?>
+            </ol>
+            <?php
+            if (isset($this->paginator)) {
+                if (is_object($this->paginator)) {
+                    echo $this->paginationControl($this->paginator, 'Sliding', 'search_result_paginator.phtml', array('volume' => $this->volume, 'query_str' => $this->query_str));
+                }
+            }
+        }
 
-	}
+    }
 
-	echo $this->render('footer.phtml');
+    echo $this->render('footer.phtml');
 
-	?>
+    ?>
 </div>
