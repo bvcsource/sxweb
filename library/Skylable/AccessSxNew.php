@@ -299,10 +299,10 @@ class Skylable_AccessSxNew {
             if (is_array($cluster_ip)) {
                 $cluster_ip = '-l '.implode(',', $cluster_ip);
             } else {
-                $cluster_ip = '-l '.escapeshellarg($cluster_ip);
+                $cluster_ip = '-l '.My_utils::escapeshellarg($cluster_ip);
             }
             */
-            $cluster_ip = '-l '.escapeshellarg($cluster_ip);
+            $cluster_ip = '-l '.My_utils::escapeshellarg($cluster_ip);
         }
 
         $ret = $this->executeShellCommand(
@@ -311,8 +311,8 @@ class Skylable_AccessSxNew {
             ($cluster_ssl ? '' : '--no-ssl ').
             ($cluster_port !== FALSE ? '--port='.strval($cluster_port).' ' : '').
             ($cluster_ip !== FALSE ? $cluster_ip.' ' : '').
-            '-c '.escapeshellarg($destination_path).' '.
-            escapeshellarg($cluster),
+            '-c '.My_utils::escapeshellarg($destination_path).' '.
+            My_utils::escapeshellarg($cluster),
             $user_auth_key.PHP_EOL, $output, $exitcode, $this->_last_error_log);
         if ($exitcode == 0) {
             return TRUE;
@@ -344,7 +344,7 @@ class Skylable_AccessSxNew {
                     unset($path[$k]);
                     continue;
                 }
-                $path[$k] = escapeshellarg( Zend_Registry::get('skylable')->get('cluster').'/'.My_Utils::removeSlashes($v, TRUE) );
+                $path[$k] = My_utils::escapeshellarg( Zend_Registry::get('skylable')->get('cluster').'/'.My_Utils::removeSlashes($v, TRUE) );
             }
             if (count($path) == 0) {
                 return FALSE;
@@ -352,13 +352,13 @@ class Skylable_AccessSxNew {
         } elseif (strlen($path) == 0) {
             return FALSE;
         } else {
-            $path = escapeshellarg( Zend_Registry::get('skylable')->get('cluster').'/'.My_Utils::removeSlashes($path, TRUE) );
+            $path = My_utils::escapeshellarg( Zend_Registry::get('skylable')->get('cluster').'/'.My_Utils::removeSlashes($path, TRUE) );
         }
 
         $ret = $this->executeShellCommand(
             'sxrm '.
             ($delete_recursive ? '-r ' : '').
-            '-c '.escapeshellarg($this->_base_dir).' '.
+            '-c '.My_utils::escapeshellarg($this->_base_dir).' '.
             (is_array($path) ? implode(' ', $path) : $path),
             '', $output, $exitcode, $this->_last_error_log);
         if ($exitcode == 0) {
@@ -452,8 +452,8 @@ class Skylable_AccessSxNew {
 
         $ret = $this->executeShellCommand(
             'sxls -l '.
-            '-c '.escapeshellarg($this->_base_dir).' '.
-            escapeshellarg( Zend_Registry::get('skylable')->get('cluster').'/'.My_Utils::removeSlashes($filepath, TRUE)),
+            '-c '.My_utils::escapeshellarg($this->_base_dir).' '.
+            My_utils::escapeshellarg( Zend_Registry::get('skylable')->get('cluster').'/'.My_Utils::removeSlashes($filepath, TRUE)),
             '', $output, $exitcode, $this->_last_error_log, array($this, 'processSxLsOutput'), array($this, 'parseErrors'), array(self::LIST_ALL) );
         if ($exitcode == 0) {
             if (count($output) == 0) {
@@ -511,8 +511,8 @@ class Skylable_AccessSxNew {
         $ret = $this->executeShellCommand(
             'sxls -l '.
             ($recursive ? '-r ' : '').
-            '-c '.escapeshellarg($this->_base_dir).' '.
-            escapeshellarg( Zend_Registry::get('skylable')->get('cluster').'/'.My_Utils::removeSlashes($path, TRUE)),
+            '-c '.My_utils::escapeshellarg($this->_base_dir).' '.
+            My_utils::escapeshellarg( Zend_Registry::get('skylable')->get('cluster').'/'.My_Utils::removeSlashes($path, TRUE)),
             '', $output, $exitcode, $this->_last_error_log, array($this, 'processSxLsOutput'), array($this, 'parseErrors'), array($file_types) );
         if ($exitcode == 0) {
             switch($sort_order) {
@@ -698,8 +698,8 @@ class Skylable_AccessSxNew {
 
         $ret = $this->executeShellCommand(
             'sxacl volshow '.
-            '-c '.escapeshellarg($this->_base_dir).' '.
-            escapeshellarg( Zend_Registry::get('skylable')->get('cluster').'/'.$vol )
+            '-c '.My_utils::escapeshellarg($this->_base_dir).' '.
+            My_utils::escapeshellarg( Zend_Registry::get('skylable')->get('cluster').'/'.$vol )
             , '', $output, $exit_code, $this->_last_error_log, array($this, 'processVolumeACL'), array($this, 'parseErrors') );
         if ($exit_code == 0) {
             return $output;
@@ -927,8 +927,8 @@ class Skylable_AccessSxNew {
         $this->_last_error_log = '';
 
         $cmd = 'sxcat '.
-            '-c '.escapeshellarg($this->_base_dir).' '.
-            escapeshellarg(Zend_Registry::get('skylable')->get('cluster').'/'.My_Utils::removeSlashes($file_data['path'], TRUE) );
+            '-c '.My_utils::escapeshellarg($this->_base_dir).' '.
+            My_utils::escapeshellarg(Zend_Registry::get('skylable')->get('cluster').'/'.My_Utils::removeSlashes($file_data['path'], TRUE) );
 
         $this->getLogger()->debug(__METHOD__ . ': executing: '.$cmd);
         $process = proc_open($cmd,
@@ -1185,7 +1185,7 @@ class Skylable_AccessSxNew {
                     unset($source[$k]);
                     continue;
                 }
-                $source[$k] = escapeshellarg( Zend_Registry::get('skylable')->get('cluster').'/'.My_Utils::removeSlashes($v, TRUE) );
+                $source[$k] = My_utils::escapeshellarg( Zend_Registry::get('skylable')->get('cluster').'/'.My_Utils::removeSlashes($v, TRUE) );
             }
             if (count($source) == 0) {
                 return FALSE;
@@ -1193,15 +1193,15 @@ class Skylable_AccessSxNew {
         } elseif (strlen($source) == 0) {
             return FALSE;
         } else {
-            $source = escapeshellarg( Zend_Registry::get('skylable')->get('cluster').'/'.My_Utils::removeSlashes($source, TRUE) );
+            $source = My_utils::escapeshellarg( Zend_Registry::get('skylable')->get('cluster').'/'.My_Utils::removeSlashes($source, TRUE) );
         }
 
         $ret = $this->executeShellCommand(
             'sxcp -q --ignore-errors '.
             ($recursive ? '-r ' : '').
-            '-c '.escapeshellarg($this->_base_dir).' '.
+            '-c '.My_utils::escapeshellarg($this->_base_dir).' '.
             (is_array($source) ? implode(' ', $source) : $source).' '.
-            escapeshellarg( Zend_Registry::get('skylable')->get('cluster').'/'.My_Utils::removeSlashes( $destination, TRUE ) ),
+            My_utils::escapeshellarg( Zend_Registry::get('skylable')->get('cluster').'/'.My_Utils::removeSlashes( $destination, TRUE ) ),
             $password, $output, $exitcode, $this->_last_error_log, NULL, array($this, 'parseErrors'));
         if ($exitcode == 0) {
             return TRUE;
@@ -1248,7 +1248,7 @@ class Skylable_AccessSxNew {
                     unset($source[$k]);
                     continue;
                 }
-                $source[$k] = escapeshellarg( $v );
+                $source[$k] = My_utils::escapeshellarg( $v );
             }
             if (count($source) == 0) {
                 $this->getLogger()->debug(__METHOD__.': No valid files to upload');
@@ -1261,15 +1261,15 @@ class Skylable_AccessSxNew {
                 $this->getLogger()->debug(__METHOD__.': File don\'t exists: '.print_r($source, TRUE));
                 return FALSE;
             }
-            $source = escapeshellarg( $source );
+            $source = My_utils::escapeshellarg( $source );
         }
 
         $ret = $this->executeShellCommand(
             'sxcp -q --ignore-errors '.
             ($recursive ? '-r ' : '').
-            '-c '.escapeshellarg($this->_base_dir).' '.
+            '-c '.My_utils::escapeshellarg($this->_base_dir).' '.
             (is_array($source) ? implode(' ', $source) : $source).' '.
-            escapeshellarg( Zend_Registry::get('skylable')->get('cluster').'/'.My_Utils::removeSlashes( $destination, TRUE ) ),
+            My_utils::escapeshellarg( Zend_Registry::get('skylable')->get('cluster').'/'.My_Utils::removeSlashes( $destination, TRUE ) ),
             $password, $output, $exitcode, $this->_last_error_log, NULL, array($this, 'parseErrors'));
 
         if ($exitcode == 0) {
@@ -1338,7 +1338,7 @@ class Skylable_AccessSxNew {
                     unset($source[$k]);
                     continue;
                 }
-                $source[$k] = escapeshellarg( Zend_Registry::get('skylable')->get('cluster').'/'.My_Utils::removeSlashes($v, TRUE) );
+                $source[$k] = My_utils::escapeshellarg( Zend_Registry::get('skylable')->get('cluster').'/'.My_Utils::removeSlashes($v, TRUE) );
             }
             if (count($source) == 0) {
                 return FALSE;
@@ -1346,15 +1346,15 @@ class Skylable_AccessSxNew {
         } elseif (strlen($source) == 0) {
             return FALSE;
         } else {
-            $source = escapeshellarg( Zend_Registry::get('skylable')->get('cluster').'/'.My_Utils::removeSlashes($source, TRUE) );
+            $source = My_utils::escapeshellarg( Zend_Registry::get('skylable')->get('cluster').'/'.My_Utils::removeSlashes($source, TRUE) );
         }
 
         $ret = $this->executeShellCommand(
             'sxmv '.
             ($recursive ? '-r ' : '').
-            '-c '.escapeshellarg($this->_base_dir).' '.
+            '-c '.My_utils::escapeshellarg($this->_base_dir).' '.
             (is_array($source) ? implode(' ', $source) : $source).' '.
-            escapeshellarg( Zend_Registry::get('skylable')->get('cluster').'/'.My_Utils::removeSlashes( $destination, TRUE ) ),
+            My_utils::escapeshellarg( Zend_Registry::get('skylable')->get('cluster').'/'.My_Utils::removeSlashes( $destination, TRUE ) ),
             $password, $output, $exitcode, $this->_last_error_log, NULL, array($this, 'parseErrors'));
         if ($exitcode == 0) {
             return TRUE;
@@ -1457,8 +1457,8 @@ class Skylable_AccessSxNew {
         }
 
         $ret = $this->executeShellCommand('sxacl whoami '.
-            '-c '.escapeshellarg($this->_base_dir).' '.
-            escapeshellarg( Zend_Registry::get('skylable')->get('cluster') ),
+            '-c '.My_utils::escapeshellarg($this->_base_dir).' '.
+            My_utils::escapeshellarg( Zend_Registry::get('skylable')->get('cluster') ),
             '', $out, $exit_code, $this->_last_error_log, NULL, array($this, 'parseErrors'));
         if ($exit_code == 0) {
             return trim($out);

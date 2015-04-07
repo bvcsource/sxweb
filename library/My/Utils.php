@@ -43,6 +43,17 @@
 class My_Utils {
 
     /**
+     * Wrapper to escapeshellarg().
+     * 
+     * @param string $arg
+     * @return string
+     */
+    public static function escapeshellarg($arg) {
+        setlocale(LC_ALL, "en_US.UTF-8");
+        return escapeshellarg($arg);
+    }
+
+    /**
      * From the application configuration, prepares an array of params 
      * to use when constructing the Skylable_AccessSxNG class
      * 
@@ -342,7 +353,7 @@ class My_Utils {
         if (empty($dirname)) {
             return FALSE;
         }
-        exec('rm -rf '.escapeshellarg($dirname), $out, $ret_val);
+        exec('rm -rf '.self::escapeshellarg($dirname), $out, $ret_val);
         return TRUE;
     }
 
