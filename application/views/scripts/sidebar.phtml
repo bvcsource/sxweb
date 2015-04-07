@@ -50,7 +50,6 @@ try {
     Zend_Controller_Front::getInstance()->getParam('bootstrap')->getResource('log')->debug('sidebar.phtml - volume listing exception - '.$e->getMessage());
 }
 if(Zend_Auth::getInstance()->hasIdentity() || !empty($vlist)): ?>
-?>
 <a id="sidebar-trigger" class="ir<?php echo ($this->show_sidebar ? ' pressed' : '') ?>"><?php $this->translate('Menu'); ?></a>
 <div class="sidebar<?php echo ($this->show_sidebar ? ' pressed sidebar-opened' : '') ?>" id="sidebar">
 	<div class="logo">
