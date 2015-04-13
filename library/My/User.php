@@ -70,6 +70,7 @@ class My_User implements Zend_Acl_Role_Interface {
             $_prefs,
             
             $_id,
+            $_login,
             $_email,
             $_secret_key,
             /**
@@ -83,15 +84,17 @@ class My_User implements Zend_Acl_Role_Interface {
      * Creates a new user of the web application.
      *
      * @param integer $id the unique user ID or NULL for non persistent users
+     * @param string $login the user login
      * @param string $email the user name
      * @param string $secret_key the SX user secret key
      * @param string $role the user role
      * @throws Exception
      */
-    public function __construct($id, $email = '', $secret_key = '', $role = self::ROLE_GUEST) {
+    public function __construct($id = NULL, $login = '', $email = '', $secret_key = '', $role = self::ROLE_GUEST) {
         $this->_id = $id;
-        $this->_email = $email;
-        $this->_secret_key = $secret_key;
+        $this->_email = strval($email);
+        $this->_login = strval($login);
+        $this->setSecretKey($secret_key);
         
         if (!$this->checkRole($role)) {
             throw new Exception(__CLASS__ . ': Invalid role.');
@@ -140,6 +143,15 @@ class My_User implements Zend_Acl_Role_Interface {
     public function isNew() {
        return is_null($this->_id);
     }
+
+    /**
+     * Return the user login.
+     * 
+     * @return string the login
+     */
+    public function getLogin() {
+        return $this->_login;
+    }
     
     /**
      * Return the user email.
@@ -157,6 +169,14 @@ class My_User implements Zend_Acl_Role_Interface {
      */
     public function getSecretKey() {
         return $this->_secret_key;
+    }
+
+    /**
+     * Sets the user secret key
+     * @param string $secret_key the secret key
+     */
+    public function setSecretKey($secret_key) {
+        $this->_secret_key = $secret_key;
     }
     
     /**

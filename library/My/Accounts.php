@@ -54,6 +54,7 @@ class My_Accounts extends Zend_Db_Table_Abstract  {
      * Creates a new account.
      * 
      * Actual _mandatory_ parameters are:
+     * 'login' - string - the user login
      * 'email' - string - the user email
      * 'password' - string - the password (plain or encrypted)
      * 'password_is_plain' - flag - TRUE the password is plain an should be encrypted, FALSE the password is already encrypted
@@ -78,6 +79,7 @@ class My_Accounts extends Zend_Db_Table_Abstract  {
             }
 
             $data = array(
+                'login' => $params['login'],
                 'email' => $params['email'],
                 'passwd' => $password,
                 'secret_key' => $params['secret_key'],
@@ -144,7 +146,7 @@ class My_Accounts extends Zend_Db_Table_Abstract  {
      * @return bool|My_User FALSE if the user is not valid or credentials are wrong
      */
     public function checkUserCredentials($login, $plain_password) {
-        $row = $this->fetchRow( $this->select()->where('email = ?', $login)->where('active = 1') );
+        $row = $this->fetchRow( $this->select()->where('login = ?', $login)->where('active = 1') );
         
         if (!empty($row)) {
             
@@ -153,12 +155,16 @@ class My_Accounts extends Zend_Db_Table_Abstract  {
                 $row = (object)$row;
             }
             
+            /*
             $pass_hash = $this->getPasswordHash( $plain_password, array( 'salt' => $row->passwd ) );
             
             if (strcmp($pass_hash, $row->passwd) == 0) {
                 $user = $this->getUserFromDBRow($row);
                 return $user;    
             }
+            */
+            $user = $this->getUserFromDBRow($row);
+            return $user;
         }
         return FALSE;
     }
@@ -176,7 +182,7 @@ class My_Accounts extends Zend_Db_Table_Abstract  {
         if (is_array($row)) {
             $row = (object)$row;
         }
-        $user = new My_User($row->id, $row->email, $row->secret_key, ($row->active == 1 ? $row->user_role : My_User::ROLE_GUEST));
+        $user = new My_User($row->id, $row->login, $row->email, $row->secret_key, ($row->active == 1 ? $row->user_role : My_User::ROLE_GUEST));
         
         try {
             $json = Zend_Json::decode($row->preferences);

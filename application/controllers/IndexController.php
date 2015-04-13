@@ -214,10 +214,15 @@ class IndexController extends My_BaseAction {
         }
         
         try {
-            // Store the user identity, if credentials are ok.
+            // Store the user identity into Zend_Auth only if credentials are ok.
             
             $user = $this->getUserModel()->checkUserCredentials( $values['frm_login'], $values['frm_password'] );
             if (!is_object($user)) {
+                // User is not registered into the DB
+                // Check using sxinit if the user is real, if so, save it into the DB
+                $user = new My_User(NULL, $values['frm_login'], '', '');
+                $access_sx = new Skylable_AccessSxNew( $user );
+                
                 $form->addError("Email address or password are wrong, please retry.");
                 return $this->render('login');
             }
@@ -232,6 +237,8 @@ class IndexController extends My_BaseAction {
         }
 
         try {
+            
+            
             $access_sx = new Skylable_AccessSxNew( Zend_Auth::getInstance()->getIdentity() );
             $whoami = $access_sx->whoami();
             $this->getLogger()->debug('You are: '.var_export($whoami, TRUE));
