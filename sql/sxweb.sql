@@ -1,4 +1,4 @@
- -- SXWeb Version 0.3 
+ -- SXWeb Version 0.4 
 
 DROP TABLE IF EXISTS `shared`;
 CREATE TABLE `shared` (
@@ -23,15 +23,14 @@ CREATE TABLE `tickets` (
 DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `login` VARCHAR(255) NOT NULL,
   `email` varchar(50) NOT NULL,
-  `passwd` varchar(255) NOT NULL,
   `secret_key` varchar(255) NOT NULL,
   `active` tinyint(4) NOT NULL DEFAULT '0',
   `preferences` text NOT NULL,
   `user_role` enum('guest','registered','admin') NOT NULL DEFAULT 'registered',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `email` (`email`),
-  UNIQUE KEY `secret_key` (`secret_key`)
+  UNIQUE KEY `login` (`login`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 DROP TABLE IF EXISTS `user_reset_password`;
@@ -60,4 +59,4 @@ CREATE TABLE `sxweb_config` (
   `value` TEXT 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-INSERT INTO `sxweb_config` (`item`, `value`) VALUES ('db_version', '0.3.0'), ('db_initial_version', '0.3.0'), ('db_created', NOW()),('db_modified', NOW());
+INSERT INTO `sxweb_config` (`item`, `value`) VALUES ('db_version', '0.4.0'), ('db_initial_version', '0.4.0'), ('db_created', NOW()),('db_modified', NOW());

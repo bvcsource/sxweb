@@ -457,7 +457,7 @@ class AjaxController extends My_BaseAction {
                     }
                     if (!isset($the_user)) {
                         $this->getLogger()->debug(__METHOD__.': different user, creating a temporary identity.');
-                        $the_user = new My_User('', '', $file_data['user_auth_token']);
+                        $the_user = new My_User('', '', '', $file_data['user_auth_token']);
                         $the_dir = My_Utils::mktempdir( Zend_Registry::get('skylable')->get('sx_local'), 'Skylable_' );
                         if ($the_dir === FALSE) {
                             throw new Exception('Failed to create the user dir into: '. Zend_Registry::get('skylable')->get('sx_local') );

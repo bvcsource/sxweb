@@ -121,29 +121,51 @@ class Skylable_AccessSxNew {
          * Directory where everything user related is stored
          * @var string user base dir
          */
-        $_base_dir = '';
+        $_base_dir = '',
+
+        /**
+         * Extra configuration parameters
+         * 
+         * @var Zend_Config
+         */
+        $_params;
 
     /**
      * Initialize using a user: this will create all necessary dirs and configs.
+     * 
+     * Valid parameters:
+     * 'password' - string - the plain user password
      *
      * @param My_User $user
      * @param string $base_dir directory of operations, if NULL generate one using the user
+     * @param array $params additional parameters 
+     * @throws Skylable_AccessSxException
      * @throws Exception
      * @see initialize
      */
-    public function  __construct(My_User $user, $base_dir = NULL) {
+    public function  __construct(My_User $user, $base_dir = NULL, $params = array()) {
         $this->_user = $user;
+        $this->_params = new Zend_Config($params);
+        
         if ($this->_user->isNew()) {
-            throw new Skylable_AccessSxException('Invalid user', self::ERROR_INVALID_USER);
+            if (!isset($this->_params->password)) {
+                throw new Skylable_AccessSxException('Invalid user', self::ERROR_INVALID_USER);    
+            }
         }
+        
         if (empty($base_dir)) {
-            $this->_base_dir = My_Utils::slashPath(Zend_Registry::get('skylable')->get('sx_local')).$this->_user->getId();
+
+            if (strlen(trim($this->_user->getLogin())) == 0) {
+                throw new Skylable_AccessSxException('Invalid user: empty login', self::ERROR_INVALID_USER);
+            }
+            
+            $this->_base_dir = My_Utils::slashPath(Zend_Registry::get('skylable')->get('sx_local')).sha1( $this->_user->getLogin() );
         } else {
             $this->_base_dir = strval($base_dir);
         }
         $this->getLogger()->debug(__METHOD__.': base dir: ' . $this->_base_dir );
         if (!$this->initialize()) {
-            throw new Exception('Failed to initialize user', self::ERROR_INITIALIZATION_FAILURE);
+            throw new Skylable_AccessSxException('Failed to initialize user', self::ERROR_INITIALIZATION_FAILURE);
         }
     }
 
@@ -181,27 +203,42 @@ class Skylable_AccessSxNew {
 
     /**
      * Creates all the local paths and initialize the user directory structure.
+     * 
+     * @param $force boolean TRUE force initialization, FALSE otherwise
+     * @throws Skylable_AccessSxException
+     * @return boolean
      */
-    protected function initialize() {
-        if ($this->isInitialized()) {
-           return TRUE;
+    protected function initialize($force = FALSE) {
+        if (!$force) {
+            if ($this->isInitialized()) {
+                return TRUE;
+            }    
         }
+        
+        $sxinit_params = array();
+        $sxinit_params['login'] = $this->_user->getLogin();
+        if (isset($this->_params->password)) {
+            $sxinit_params['password'] = $this->_params->password;
+        }
+        $sxinit_params['user_auth_key'] = $this->_user->getSecretKey();
+        
         $path = $this->getBaseDir();
         $this->getLogger()->debug(__METHOD__.': using path: '.$path);
-        // Corner case: directory already exists
+        // Directory already exists, force
         if (@is_dir($path)) {
             $this->getLogger()->debug(__METHOD__.': sxinit into already existing path: '.$path);
-            return $this->sxinit($path, $this->_user->getSecretKey(), TRUE);
+            return $this->sxinit($path, $sxinit_params, TRUE);
         }
 
         if (@mkdir($path, 0775) === TRUE) {
             $this->getLogger()->debug(__METHOD__.': sxinit into: '.$path);
-            return $this->sxinit($path, $this->_user->getSecretKey());
+            return $this->sxinit($path, $sxinit_params );
         }
         return FALSE;
     }
 
     /**
+     * FIXME: always return FALSE
      * Tells if the local cluster services are initialized.
      *
      * @return bool
@@ -220,11 +257,31 @@ class Skylable_AccessSxNew {
         }
 
         // Check for the key
-        $path .= '/'.'auth'.'/'.'default';
+        /*
+        $path .= '/auth/default';
         if (@file_exists($path)) {
             $authkey = file_get_contents($path);
             if ($authkey !== FALSE) {
                 return (strcmp($authkey, $this->_user->getSecretKey()) == 0);
+            }
+        }
+        */
+        return FALSE;
+    }
+
+    /**
+     * FIXME: take the login into account to create user path
+     * @return bool|string
+     * @throws Zend_Exception
+     */
+    public function getUserSecretKey() {
+        if ($this->isInitialized()) {
+            $path = $this->getBaseDir() .
+                '/'.substr(Zend_Registry::get('skylable')->get('cluster'), 5) .
+                '/auth/default';
+            $authkey = @file_get_contents($path);
+            if ($authkey !== FALSE) {
+                return $authkey;
             }
         }
         return FALSE;
@@ -240,25 +297,62 @@ class Skylable_AccessSxNew {
     }
 
     /**
-     * Initializes the user using a certain directory.
+     * Initializes the user into the specified directory.
+     * 
+     * Launch sxinit using the specified directory as target for configuration creation.
+     * 
+     * The base parameters are taken from the skylable.ini file, that is 
+     * saved into the Zend_Registry 'skylable' key at bootstrap.
+     * 
+     * You must supply some user parameters:
+     * login - the user login
+     * password - the user password
+     * user_auth_key - the user secret auth key
      *
      * @param string $destination_path
-     * @param string $user_auth_key
+     * @param string $params
      * @param bool $force_reinit
      * @return bool
      * @throws Exception
      * @throws Zend_Exception
      */
-    public function sxinit($destination_path, $user_auth_key, $force_reinit = FALSE) {
+    public function sxinit($destination_path, $params, $force_reinit = FALSE) {
         $this->_last_error_log = '';
         if (empty($destination_path) || !is_string($destination_path)) {
             $this->getLogger()->debug(__METHOD__.': Invalid destination path: '.print_r($destination_path, TRUE));
             return FALSE;
         }
-        if (empty($user_auth_key) || !is_string($user_auth_key)) {
-            $this->getLogger()->debug(__METHOD__.': Invalid user key: '.print_r($user_auth_key, TRUE));
-            return FALSE;
+        
+        // Compatibility mode, use the user auth key
+        $has_auth_key = FALSE;
+        if (isset($params['user_auth_key'])) {
+            if (is_string($params['user_auth_key']) && !empty($params['user_auth_key'])) {
+                $has_auth_key = TRUE;
+            } else {
+                $this->getLogger()->debug(__METHOD__.': Invalid user key: '.print_r($params['user_auth_key'], TRUE));
+                return FALSE;
+            }
         }
+        
+        // New mode: login+password
+        $has_password = FALSE;
+        if (isset($params['password'])) {
+            if (is_string($params['password']) && (strlen($params['password']) > 0) ) {
+                $has_password = TRUE;
+            } else {
+                $this->getLogger()->debug(__METHOD__.': Invalid password (not a string or empty)');
+                return FALSE;
+            }
+        }
+        
+        if (!$has_auth_key) {
+            // We need a login
+            if (!isset($params['login'])) {
+                $this->getLogger()->debug(__METHOD__.': You must supply the user login.');
+                return FALSE;
+            }
+        }
+        
 
         $cluster = Zend_Registry::get('skylable')->get('cluster', FALSE);
         if (empty($cluster)) {
@@ -304,22 +398,59 @@ class Skylable_AccessSxNew {
             */
             $cluster_ip = '-l '.My_utils::escapeshellarg($cluster_ip);
         }
-
-        $ret = $this->executeShellCommand(
-            'sxinit -b '.
+        
+        $sxinit_cmd = 'sxinit -b '.
             ($force_reinit ? '--force-reinit ' : '').
             ($cluster_ssl ? '' : '--no-ssl ').
             ($cluster_port !== FALSE ? '--port='.strval($cluster_port).' ' : '').
             ($cluster_ip !== FALSE ? $cluster_ip.' ' : '').
-            '-c '.My_utils::escapeshellarg($destination_path).' '.
-            My_utils::escapeshellarg($cluster),
-            $user_auth_key.PHP_EOL, $output, $exitcode, $this->_last_error_log);
-        if ($exitcode == 0) {
-            return TRUE;
-        } else {
-            $this->getLogger()->debug(__METHOD__.': sxinit failed: '.$this->_last_error_log);
+            '-c '.My_utils::escapeshellarg($destination_path);
+        
+        $tmp_file = @tempnam( $this->getBaseDir(), 'sxinit_' );
+        if ($tmp_file === FALSE) {
+            $this->getLogger()->debug(__METHOD__.': Failed to create temporary files into: ' . $this->getBaseDir());
             return FALSE;
         }
+
+        $auth_data_ok = @file_put_contents($tmp_file, ($has_auth_key ? $params['user_auth_key'].PHP_EOL : $params['password'].PHP_EOL) );
+        
+        if ($auth_data_ok === FALSE) {
+            $this->getLogger()->debug(__METHOD__.': Failed to write auth data to file: ' . $tmp_file);
+            @unlink($tmp_file);
+            return FALSE;
+        }
+        
+        if ($has_auth_key) {
+            $sxinit_cmd .= ' --key -a '.My_utils::escapeshellarg($tmp_file);
+        } else {
+            $sxinit_cmd .= ' -p '.My_utils::escapeshellarg($tmp_file);
+        }
+        if (!$has_auth_key) {
+            $cluster = 'sx://'.$params['login'].parse_url($cluster, PHP_URL_HOST);
+        }
+        
+        $sxinit_cmd .= ' '.My_utils::escapeshellarg($cluster);
+
+        try {
+            $ret = $this->executeShellCommand(
+                $sxinit_cmd,
+                $params['user_auth_key'].PHP_EOL,
+                $output,
+                $exitcode,
+                $this->_last_error_log);
+            @unlink($tmp_file);
+            if ($exitcode == 0) {
+                return TRUE;
+            } else {
+                $this->getLogger()->debug(__METHOD__.': sxinit failed: '.$this->_last_error_log);
+                return FALSE;
+            }    
+        }
+        catch (Exception $e) {
+            @unlink($tmp_file);
+            throw $e;
+        }
+        
     }
 
     /**
