@@ -70,6 +70,7 @@ class My_User implements Zend_Acl_Role_Interface {
             $_prefs,
             
             $_id,
+            $_active,
             $_login,
             $_email,
             $_secret_key,
@@ -88,12 +89,14 @@ class My_User implements Zend_Acl_Role_Interface {
      * @param string $email the user name
      * @param string $secret_key the SX user secret key
      * @param string $role the user role
+     * @param bool $is_active user active flag: TRUE the user is active.
      * @throws Exception
      */
-    public function __construct($id = NULL, $login = '', $email = '', $secret_key = '', $role = self::ROLE_GUEST) {
+    public function __construct($id = NULL, $login = '', $email = '', $secret_key = '', $role = self::ROLE_GUEST, $is_active = TRUE) {
         $this->_id = $id;
         $this->_email = strval($email);
         $this->_login = strval($login);
+        $this->_active = (bool)$is_active;
         $this->setSecretKey($secret_key);
         
         if (!$this->checkRole($role)) {
@@ -160,6 +163,15 @@ class My_User implements Zend_Acl_Role_Interface {
      */
     public function getEmail() {
         return $this->_email;
+    }
+
+    /**
+     * Sets the user email.
+     * 
+     * @param string $email
+     */
+    public function setEmail($email) {
+        $this->_email = strval($email);
     }
     
     /**
@@ -231,5 +243,24 @@ class My_User implements Zend_Acl_Role_Interface {
      */
     public function getRoleId() {
         return $this->_role;
+    }
+
+    /**
+     * Tells if the user is active.
+     * 
+     * @return bool TRUE if is active, FALSE otherwise
+     */
+    public function isActive() {
+        return $this->_active;
+    }
+    
+    public function copy(My_User $source) {
+        $this->_id = $source->_id;
+        $this->_active = $source->_active;
+        $this->_login = $source->_login;
+        $this->_email = $source->_email;
+        $this->_secret_key = $source->_secret_key;
+        $this->_role  = $source->_role;
+        $this->_prefs = clone $source->_prefs;
     }
 }

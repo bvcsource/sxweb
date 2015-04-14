@@ -135,6 +135,7 @@ class Skylable_AccessSxNew {
      * 
      * Valid parameters:
      * 'password' - string - the plain user password
+     * 'initialize' - boolean - FALSE don't initialize, TRUE (default) do initializations
      *
      * @param My_User $user
      * @param string $base_dir directory of operations, if NULL generate one using the user
@@ -164,8 +165,11 @@ class Skylable_AccessSxNew {
             $this->_base_dir = strval($base_dir);
         }
         $this->getLogger()->debug(__METHOD__.': base dir: ' . $this->_base_dir );
-        if (!$this->initialize()) {
-            throw new Skylable_AccessSxException('Failed to initialize user', self::ERROR_INITIALIZATION_FAILURE);
+        
+        if ($this->_params->get('initialize', TRUE) === TRUE) {
+            if (!$this->initialize()) {
+                throw new Skylable_AccessSxException('Failed to initialize user', self::ERROR_INITIALIZATION_FAILURE);
+            }    
         }
     }
 
@@ -208,7 +212,7 @@ class Skylable_AccessSxNew {
      * @throws Skylable_AccessSxException
      * @return boolean
      */
-    protected function initialize($force = FALSE) {
+    public function initialize($force = FALSE) {
         if (!$force) {
             if ($this->isInitialized()) {
                 return TRUE;
@@ -238,7 +242,7 @@ class Skylable_AccessSxNew {
     }
 
     /**
-     * FIXME: always return FALSE
+     * FIXME: check functionality
      * Tells if the local cluster services are initialized.
      *
      * @return bool
@@ -257,20 +261,19 @@ class Skylable_AccessSxNew {
         }
 
         // Check for the key
-        /*
-        $path .= '/auth/default';
+        $path .= '/auth/' . $this->_user->getLogin();
         if (@file_exists($path)) {
             $authkey = file_get_contents($path);
             if ($authkey !== FALSE) {
                 return (strcmp($authkey, $this->_user->getSecretKey()) == 0);
             }
         }
-        */
         return FALSE;
     }
 
     /**
-     * FIXME: take the login into account to create user path
+     * Returns the current user secret key.
+     * 
      * @return bool|string
      * @throws Zend_Exception
      */
@@ -278,10 +281,10 @@ class Skylable_AccessSxNew {
         if ($this->isInitialized()) {
             $path = $this->getBaseDir() .
                 '/'.substr(Zend_Registry::get('skylable')->get('cluster'), 5) .
-                '/auth/default';
+                '/auth/'.$this->_user->getLogin();
             $authkey = @file_get_contents($path);
             if ($authkey !== FALSE) {
-                return $authkey;
+                return trim($authkey);
             }
         }
         return FALSE;

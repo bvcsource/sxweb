@@ -207,47 +207,56 @@ class IndexController extends My_BaseAction {
         // Check if we should remember the user
         $remember_me = $this->getRequest()->getParam('frm_remember_me');
         if ($remember_me === 'yes') {
-            $this->getInvokeArg('bootstrap')->getResource('log')->debug('Index::Login - Remembering the user');
+            $this->getInvokeArg('bootstrap')->getResource('log')->debug(__METHOD__ . ' - Remembering the user');
             Zend_Session::rememberMe( Zend_Registry::get('skylable')->get('remember_me_cookie_seconds') );
         } else {
             Zend_Session::forgetMe();
         }
         
         try {
-            // Store the user identity into Zend_Auth only if credentials are ok.
             
-            $user = $this->getUserModel()->checkUserCredentials( $values['frm_login'], $values['frm_password'] );
-            if (!is_object($user)) {
-                // User is not registered into the DB
-                // Check using sxinit if the user is real, if so, save it into the DB
-                $user = new My_User(NULL, $values['frm_login'], '', '');
-                $access_sx = new Skylable_AccessSxNew( $user );
+            // Check user credentials using sxinit
+            // Note: the login is an email
+            $user = new My_User(NULL, $values['frm_login'], $values['frm_login'], '', My_User::ROLE_REGISTERED);
+            $access_sx = new Skylable_AccessSxNew( $user, NULL, array( 'password' => $values['frm_password'], 'initialize' => FALSE ) );
+            $init_ok = $access_sx->initialize(TRUE);
+            if ($init_ok) {
+                $user_secret_key = $access_sx->getUserSecretKey();
                 
-                $form->addError("Email address or password are wrong, please retry.");
+                /*
+                 * Read or create the user into the DB
+                 * */
+                $user_from_db = $this->getUserModel()->accountExists( $values['frm_login'] );
+                if ($user_from_db !== FALSE) {
+                    $user = clone $user_from_db;
+                    $user->setSecretKey( $user_secret_key );
+                    $this->getUserModel()->updateUser($user);
+                } else {
+                    $user->setSecretKey( $user_secret_key );
+                    
+                    $this->getUserModel()->createAccount( $user );
+                }
+
+
+                // Sets who you are on the SX server: from version 1.1 of SX server
+                // is the same as the login name
+                $user->getPreferences()->set('whoami', $values['frm_login']);
+                $this->getLogger()->debug('You are: '.var_export($values['frm_login'], TRUE));
+                
+                // Finally save the user into session
+                Zend_Auth::getInstance()->getStorage()->write($user);
+            } else {
+                // Assume there are wrong credentials...
+                $form->addError("Login name or password are wrong, please retry.");
                 return $this->render('login');
             }
-            
-            Zend_Auth::getInstance()->getStorage()->write($user);
         }
         catch(Exception $e) {
             $form->addError("Internal error, please retry later.");
+            $this->getLogger()->err(__METHOD__ . ': Exception: '.$e->getMessage() );
             Zend_Session::forgetMe();
             Zend_Auth::getInstance()->clearIdentity();
             return $this->render('login');
-        }
-
-        try {
-            
-            
-            $access_sx = new Skylable_AccessSxNew( Zend_Auth::getInstance()->getIdentity() );
-            $whoami = $access_sx->whoami();
-            $this->getLogger()->debug('You are: '.var_export($whoami, TRUE));
-            if (!empty($whoami)) {
-                Zend_Auth::getInstance()->getIdentity()->getPreferences()->set('whoami', $whoami);
-            }
-        }
-        catch(Exception $e) {
-
         }
 
         $session = new Zend_Session_Namespace();
