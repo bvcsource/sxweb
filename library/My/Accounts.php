@@ -53,12 +53,13 @@ class My_Accounts extends Zend_Db_Table_Abstract  {
     /**
      * Creates a new account.
      * 
-     * Actual _mandatory_ parameters are:
+     * You can provide a My_User object or an associative array.
+     * In this case the actual _mandatory_ parameters are:
      * 'login' - string - the user login
      * 'email' - string - the user email
      * 'password' - string - the password (plain or encrypted)
      * 'password_is_plain' - flag - TRUE the password is plain an should be encrypted, FALSE the password is already encrypted
-     * 'auth_token' - string - SX cluster user auth token
+     * 'secret_key' - string - SX cluster user auth token
      * 'is_active' - boolean - flag: TRUE the user is active, FALSE otherwise
      * 'activation_key' - string - a random activation key to use to two pass activation of non active accounts
      * 
@@ -66,22 +67,29 @@ class My_Accounts extends Zend_Db_Table_Abstract  {
      * 'preferences' - a Zend_Config object with default user preferences
      * 'role' - The user role: one of the My_User::ROLE_* constants
      * 
-     * @param array $params
+     * @param array|My_User $params
      * @return integer the new user id
      * @throws Exception
      */
     public function createAccount($params = array()) {
-        $this->getAdapter()->beginTransaction();
-        try {
-            $password = $params['password'];
-            if (array_key_exists('password_is_plain', $params)) {
-                if ($params['password_is_plain']) $password = self::getPasswordHash($params['password']);
+        if ($params instanceof My_User) {
+            $data = array(
+                'login' => $params->getLogin(),
+                'email' => $params->getEmail(),
+                'secret_key' => $params->getSecretKey(),
+                'active' => ($params->isActive() ? 1 : 0),
+                'preferences' => Zend_Json::encode( $params->getPreferences()->toArray() ),
+                'user_role' => $params->getRoleId()
+            );
+        } elseif (is_array($params)) {
+            if (!array_key_exists('login', $params)) {
+                return FALSE;
             }
-
+            
             $data = array(
                 'login' => $params['login'],
                 'email' => $params['email'],
-                'passwd' => $password,
+                // 'passwd' => $password,
                 'secret_key' => $params['secret_key'],
                 'active' => ($params['is_active'] ? 1 : 0),
                 'preferences' => '',
@@ -93,25 +101,74 @@ class My_Accounts extends Zend_Db_Table_Abstract  {
                     $data['user_role'] = $params['role'];
                 }
             }
-            
+
             if (array_key_exists('preferences', $params)) {
                 if (is_object($params['preferences'])) {
                     $data['preferences'] = Zend_Json::encode( $params['preferences']->toArray() );
                 }
             }
+        } else {
+            return FALSE;
+        }
+        
+        $this->getAdapter()->beginTransaction();
+        try {
+
+            /*
+            $password = $params['password'];
+            if (array_key_exists('password_is_plain', $params)) {
+                if ($params['password_is_plain']) $password = self::getPasswordHash($params['password']);
+            }
+            */
             
             $user_id = $this->insert($data);
+            /*
             if ($params['is_active'] == FALSE) {
                 $this->getAdapter()->insert('users_act_keys', array(
                     'activation_key' => $params['activation_key'],
                     'uid' => $user_id
                 ));
             }
+            */
             $this->getAdapter()->commit();
             return $user_id;
         }
         catch(Exception $e) {
             $this->getAdapter()->rollBack();
+            throw $e;
+        }
+    }
+
+    /**
+     * Updates the given user.
+     * 
+     * @param My_User $user
+     * @return bool TRUE on succes, FALSE on failure
+     * @throws Exception
+     */
+    public function updateUser(My_User $user) {
+        if ($user->isNew() || !is_numeric($user->getId())) {
+            return FALSE;
+        }
+        $db = $this->getAdapter();
+        $db->beginTransaction();
+        try {
+
+            $this->update(
+                array(
+                    'login' => $user->getLogin(),
+                    'email' => $user->getEmail(),
+                    'secret_key' => $user->getSecretKey(),
+                    'active' => ($user->isActive() ? 1 : 0),
+                    'user_role' => $user->getRoleId(),
+                    'preferences' => Zend_Json::encode( $user->getPreferences()->toArray() ) 
+                ), array( 'id = ?' => $user->getId()) 
+            );
+            $db->commit();
+            return TRUE;
+        }
+        catch(Exception $e) {
+            $db->rollBack();
             throw $e;
         }
     }
@@ -168,6 +225,30 @@ class My_Accounts extends Zend_Db_Table_Abstract  {
         }
         return FALSE;
     }
+
+    /**
+     * Tells if an account exists and return it.
+     * 
+     * Return FALSE if the account don't exists or a My_User object.
+     * 
+     * Important: you must check if the user is active or not.
+     * 
+     * @param string $login the user login to check
+     * @return bool|My_User
+     */
+    public function accountExists($login) {
+        $row = $this->fetchRow( $this->select()->where('login = ?', $login)->limit(1) );
+
+        if (!empty($row)) {
+            if (is_array($row)) {
+                $row = (object)$row;
+            }
+       
+            $user = $this->getUserFromDBRow($row);
+            return $user;
+        }
+        return FALSE;
+    }
     
     /**
      * Create a user from data extracted from DB.
@@ -182,7 +263,7 @@ class My_Accounts extends Zend_Db_Table_Abstract  {
         if (is_array($row)) {
             $row = (object)$row;
         }
-        $user = new My_User($row->id, $row->login, $row->email, $row->secret_key, ($row->active == 1 ? $row->user_role : My_User::ROLE_GUEST));
+        $user = new My_User($row->id, $row->login, $row->email, $row->secret_key, $row->user_role, (bool)$row->active);
         
         try {
             $json = Zend_Json::decode($row->preferences);
@@ -196,6 +277,8 @@ class My_Accounts extends Zend_Db_Table_Abstract  {
     }
 
     /**
+     * FIXME: you can't change the password.
+     * 
      * Update the user password.
      * 
      * IMPORTANT: this method accepts only passwords hash generated using
@@ -210,6 +293,9 @@ class My_Accounts extends Zend_Db_Table_Abstract  {
      * 
      */
 	public function changePassword($user_id, $oldpasswd, $newpasswd) {
+        
+        return FALSE;
+        
         if (!is_numeric($user_id)) {
             return FALSE;
         }
