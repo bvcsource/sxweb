@@ -68,7 +68,8 @@ class UploadController extends My_BaseAction {
                 // 'sxurl' => $the_path,
                 'sx_volume_param' => 'vol',
                 'sx_path_param' => 'url',
-                'upload_dir' => $upload_path
+                'upload_dir' => $upload_path,
+                'image_versions' => array()
             ) );
 
         } else {
