@@ -207,7 +207,7 @@ class IndexController extends My_BaseAction {
         // Check if we should remember the user
         $remember_me = $this->getRequest()->getParam('frm_remember_me');
         if ($remember_me === 'yes') {
-            $this->getInvokeArg('bootstrap')->getResource('log')->debug(__METHOD__ . ' - Remembering the user');
+            $this->getLogger()->debug(__METHOD__ . ' - Remembering the user');
             Zend_Session::rememberMe( Zend_Registry::get('skylable')->get('remember_me_cookie_seconds') );
         } else {
             Zend_Session::forgetMe();
@@ -655,6 +655,14 @@ class IndexController extends My_BaseAction {
     public function logoutAction() {
         $this->_helper->viewRenderer->setNoRender(true);
         $this->_helper->layout->disableLayout();
+        
+        try {
+            $access_sx = new Skylable_AccessSxNew( Zend_Auth::getInstance()->getIdentity(), '', array('initialize' => FALSE) );
+            $access_sx->purgeProfile();
+        }
+        catch(Exception $e) {
+            
+        }
 
         Zend_Auth::getInstance()->clearIdentity();
         Zend_Session::forgetMe();

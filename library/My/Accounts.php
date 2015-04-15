@@ -73,6 +73,7 @@ class My_Accounts extends Zend_Db_Table_Abstract  {
      */
     public function createAccount($params = array()) {
         if ($params instanceof My_User) {
+            $this->getLogger()->debug(__METHOD__ . ': Using an object');
             $data = array(
                 'login' => $params->getLogin(),
                 'email' => $params->getEmail(),
@@ -82,7 +83,9 @@ class My_Accounts extends Zend_Db_Table_Abstract  {
                 'user_role' => $params->getRoleId()
             );
         } elseif (is_array($params)) {
+            $this->getLogger()->debug(__METHOD__ . ': Using data');
             if (!array_key_exists('login', $params)) {
+                $this->getLogger()->debug(__METHOD__ . ': invalid data, no login');
                 return FALSE;
             }
             
@@ -108,6 +111,7 @@ class My_Accounts extends Zend_Db_Table_Abstract  {
                 }
             }
         } else {
+            $this->getLogger()->debug(__METHOD__ . ': Invalid input');
             return FALSE;
         }
         
@@ -131,6 +135,7 @@ class My_Accounts extends Zend_Db_Table_Abstract  {
             }
             */
             $this->getAdapter()->commit();
+            $this->getLogger()->debug(__METHOD__ . ': User successfully created, UID: ' . strval($user_id));
             return $user_id;
         }
         catch(Exception $e) {
@@ -148,12 +153,13 @@ class My_Accounts extends Zend_Db_Table_Abstract  {
      */
     public function updateUser(My_User $user) {
         if ($user->isNew() || !is_numeric($user->getId())) {
+            $this->getLogger()->debug(__METHOD__ . ': Invalid user.');
             return FALSE;
         }
         $db = $this->getAdapter();
         $db->beginTransaction();
         try {
-
+            $this->getLogger()->debug(__METHOD__ . ': Updating user UID: '.strval($user->getId()) );
             $this->update(
                 array(
                     'login' => $user->getLogin(),
@@ -165,6 +171,7 @@ class My_Accounts extends Zend_Db_Table_Abstract  {
                 ), array( 'id = ?' => $user->getId()) 
             );
             $db->commit();
+            $this->getLogger()->debug(__METHOD__ . ': User successfully updated');
             return TRUE;
         }
         catch(Exception $e) {
@@ -498,4 +505,12 @@ class My_Accounts extends Zend_Db_Table_Abstract  {
         }
     }
 
+    /**
+     * Return the system logger
+     * 
+     * @return Zend_Logger
+     */
+    public function getLogger() {
+        return Zend_Controller_Front::getInstance()->getParam('bootstrap')->getResource('log');
+    }
 }
