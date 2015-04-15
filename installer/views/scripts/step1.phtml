@@ -95,7 +95,7 @@ $this->headTitle('Requirements');
 </table>
 <?php 
 if (isset($this->sx_commands_search_path_error)): ?>
-<div class="alert alert-danger"><?php printf( $this->translate('<strong>Attention!</strong> %s'), $this->sx_commands_search_path_error); ?></div>
+<div class="alert alert-warning"><?php printf( $this->translate('<strong>Attention!</strong> %s'), $this->sx_commands_search_path_error); ?></div>
 <?php
 endif;
 ?>
@@ -111,6 +111,7 @@ endif;
 <p><?php if ($this->can_proceed): ?>
         <a class="btn btn-default" href="<?php echo $this->ServerUrl(); ?>/install.php?step=step2"><?php echo $this->translate('Continue');?></a>
     <?php else: ?>
-        <?php echo $this->translate('Please fulfill the basic requirements before continuing.'); ?>
+        <?php echo $this->translate('Please fulfill the basic requirements before continuing.'); ?></p>
+        <p><a class="btn btn-default" href="<?php echo $this->ServerUrl(); ?>/install.php"><?php echo $this->translate('Retry');?>
     <?php endif; ?>
 </p>

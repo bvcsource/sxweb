@@ -460,7 +460,12 @@ class IndexController extends Zend_Controller_Action {
                     $upgrade_steps = array();
                     if (version_compare($db_version, '0.2.0', '==')) {
                         $upgrade_steps = array(
-                            'from_02_to_03'
+                            'from_02_to_03',
+                            'from_03_to_04'
+                        );
+                    } elseif (version_compare($db_version, '0.3.0', '==')) {
+                        $upgrade_steps = array(
+                            'from_03_to_04'
                         );
                     }
                     
