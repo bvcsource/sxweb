@@ -290,7 +290,6 @@ class Skylable_AccessSxNew {
     }
 
     /**
-     * FIXME: check functionality
      * Tells if the local cluster services are initialized.
      *
      * @return bool
@@ -328,7 +327,7 @@ class Skylable_AccessSxNew {
     public function getUserSecretKey() {
         $path = $this->getBaseDir() .
             '/'.substr(Zend_Registry::get('skylable')->get('cluster'), 5) .
-            '/auth/'.$this->_user->getLogin();
+            '/auth/'. (strlen($this->_user->getLogin()) > 0 ? $this->_user->getLogin() : 'default');
         if (@file_exists($path)) {
             $authkey = @file_get_contents($path);
             if ($authkey !== FALSE) {
