@@ -279,9 +279,6 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap {
         
         $router->addRoute('account_settings',  new Zend_Controller_Router_Route('account_settings', array( 'controller' => 'settings', 'action' => 'account' ) ));
 
-        // Create account
-        $router->addRoute('create', new Zend_Controller_Router_Route('create', array( 'controller' => 'index', 'action' => 'create') ));
-
          // Remove account
         $router->addRoute('remove_account', new Zend_Controller_Router_Route('remove/account', array('controller' => 'rmacc','action' => 'index')));
 
