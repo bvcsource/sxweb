@@ -142,6 +142,7 @@ class Skylable_AccessSxNew {
      * Valid parameters:
      * 'password' - string - the plain user password
      * 'initialize' - boolean - FALSE don't initialize, TRUE (default) do initializations
+     * 'user_auth_key' - string - the user secret key to use instead of password or identity
      *
      * @param My_User $user
      * @param string $base_dir directory of operations, if NULL generate one using the user
@@ -154,10 +155,24 @@ class Skylable_AccessSxNew {
         $this->_user = $user;
         $this->_params = new Zend_Config($params);
         
-        if ($this->_user->isNew()) {
-            if (!isset($this->_params->password)) {
-                throw new Skylable_AccessSxException('Invalid user', self::ERROR_INVALID_USER);    
+        // Check user validity
+        $user_is_valid = FALSE;
+        if ( isset($this->_params->user_auth_key) ) {
+            $user_is_valid = TRUE;
+        } else {
+            if ($this->_user->isNew()) {
+                if (isset($this->_params->password) ) {
+                    $user_is_valid = (strlen($user->getLogin()) > 0);
+                }
+            } else {
+                // We are reusing user data
+                $user_is_valid = TRUE;
             }
+        }
+            
+        
+        if (!$user_is_valid) {
+            throw new Skylable_AccessSxException('Invalid user', self::ERROR_INVALID_USER);
         }
         
         if (empty($base_dir)) {
@@ -193,7 +208,7 @@ class Skylable_AccessSxNew {
             $this->getLogger()->debug(__METHOD__.': Invalid cluster: '.print_r($cluster, TRUE));
             return FALSE;
         }
-        $this->_cluster_string = 'sx://' . strval($login) . '@' . parse_url($cluster, PHP_URL_HOST);
+        $this->_cluster_string = 'sx://' . (empty($login) ? '' : strval($login) . '@') . parse_url($cluster, PHP_URL_HOST);
         return $this->_cluster_string;
     }
 
@@ -248,9 +263,14 @@ class Skylable_AccessSxNew {
         if (isset($this->_params->password)) {
             $sxinit_params['password'] = $this->_params->password;
         }
-        $sxinit_params['user_auth_key'] = $this->_user->getSecretKey();
-        if (empty($sxinit_params['user_auth_key'])) {
-            unset($sxinit_params['user_auth_key']);
+        $sc = $this->_user->getSecretKey();
+        if (empty($sc)) {
+            if (isset($this->_params->user_auth_key)) {
+                $sc = $this->_params->user_auth_key;
+            }
+        }
+        if (!empty($sc)) {
+            $sxinit_params['user_auth_key'] = $sc;
         }
         
         $this->updateClusterString( $sxinit_params['login'] );
@@ -289,7 +309,7 @@ class Skylable_AccessSxNew {
         }
 
         // Check for the key
-        $path .= '/auth/' . $this->_user->getLogin();
+        $path .= '/auth/' . (strlen($this->_user->getLogin()) > 0 ? $this->_user->getLogin() : 'default');
         if (@file_exists($path)) {
             $authkey = file_get_contents($path);
             if ($authkey !== FALSE) {
@@ -610,6 +630,7 @@ class Skylable_AccessSxNew {
         $this->_last_error_log = '';
 
         if (strlen($filepath) == 0 || !is_string($filepath)) {
+            $this->getLogger()->debug(__METHOD__.': Invalid file path'. var_export($filepath, TRUE) );
             return FALSE;
         }
 
