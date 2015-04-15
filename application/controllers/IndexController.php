@@ -400,8 +400,22 @@ class IndexController extends My_BaseAction {
         $this->view->sort = $this->getFileSortOrder();
 
         try {
+            $access_sx = new Skylable_AccessSxNew(Zend_Auth::getInstance()->getIdentity());    
+        }
+        catch(Exception $e) {
+            $this->getLogger()->err(__METHOD__ . ': Step #1 Access SX error: ' . $e->getMessage());
 
-            $access_sx = new Skylable_AccessSxNew(Zend_Auth::getInstance()->getIdentity());
+            $this->view->error_title = 'Internal error!';
+            $this->view->error_message = 'Application encountered an internal error. Please retry in a few seconds.';
+            $this->_helper->layout()->setLayout('application-failure');
+            $this->_helper->layout()->assign('exception', $e);
+            $this->_helper->layout()->assign('show_message', FALSE);
+            $this->renderScript('error/malfunction.phtml');
+
+            return FALSE;
+        }
+        
+        try {
 
             $logger->debug("IndexAction - Step #2");
             $this->view->volumes = $access_sx->listVolumes();

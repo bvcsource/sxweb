@@ -137,6 +137,18 @@ class My_User implements Zend_Acl_Role_Interface {
     public function getId() {
         return $this->_id;
     }
+
+    /**
+     * Set the user unique ID.
+     * @param integer $id
+     * @throws Exception
+     */
+    public function setId($id) {
+        if (empty($id)) {
+            throw new Exception('Invalid user ID');
+        }
+        $this->_id = $id;
+    }
     
     /**
      * Tells if the user is already stored on the DB.

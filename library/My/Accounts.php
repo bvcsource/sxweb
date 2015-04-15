@@ -136,6 +136,10 @@ class My_Accounts extends Zend_Db_Table_Abstract  {
             */
             $this->getAdapter()->commit();
             $this->getLogger()->debug(__METHOD__ . ': User successfully created, UID: ' . strval($user_id));
+            if ($params instanceof My_User) {
+                $params->setId($user_id);
+            }
+            
             return $user_id;
         }
         catch(Exception $e) {
