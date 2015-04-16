@@ -43,6 +43,19 @@
 class My_Utils {
 
     /**
+     * Tells if password recovery is allowed.
+     * 
+     * @return bool TRUE password recovery is allowed, FALSE otherwise
+     * @throws Zend_Exception
+     */
+    public static function passwordRecoveryIsAllowed() {
+        if (Zend_Registry::get('skylable')->get('password_recovery', FALSE) === TRUE ) {
+            return (strlen(Zend_Registry::get('skylable')->get('admin_key', '')) > 0);
+        }
+        return FALSE;
+    } 
+
+    /**
      * Wrapper to escapeshellarg().
      * 
      * @param string $arg

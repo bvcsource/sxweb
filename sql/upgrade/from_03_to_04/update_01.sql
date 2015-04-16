@@ -3,7 +3,6 @@ ALTER TABLE `users` ADD `login` VARCHAR(255) NOT NULL UNIQUE;
 UPDATE `users` SET `login` = `email`;
 ALTER TABLE `users` DROP `passwd`;
 
-ALTER TABLE `users` DROP INDEX `email`;
 ALTER TABLE `users` DROP INDEX `secret_key`;
 
 -- Update the db version

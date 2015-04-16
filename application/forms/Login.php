@@ -46,8 +46,8 @@ class Application_Form_Login extends Zend_Form {
         $this->addElement( $this->createElement('text', 'frm_login')
                 ->addValidator(new My_ValidateUserLogin())
                 ->setRequired(TRUE)
-                ->addErrorMessage("Invalid email address.")
-                ->setLabel('Email address') );
+                ->addErrorMessage("Invalid login name.")
+                ->setLabel('Login name') );
         
         $this->addElement($this->createElement('password', 'frm_password')
             ->addValidator(new My_ValidateUserPassword())

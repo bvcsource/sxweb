@@ -92,10 +92,19 @@ class IndexController extends My_BaseAction {
         }
         
         try {
+            // If the login is an email, use it
+            $the_email = '';
+            $is_email = new Zend_Validate_EmailAddress(array(
+                'mx' => FALSE,
+                'deep' => FALSE
+            ));
+            if ($is_email->isValid( $values['frm_login'] )) {
+                $the_email = $values['frm_login'];
+            }
             
             // Check user credentials using sxinit
             // Note: the login is an email
-            $user = new My_User(NULL, $values['frm_login'], $values['frm_login'], '', My_User::ROLE_REGISTERED);
+            $user = new My_User(NULL, $values['frm_login'], $the_email, '', My_User::ROLE_REGISTERED);
             $access_sx = new Skylable_AccessSxNew( $user, NULL, array( 'password' => $values['frm_password'], 'initialize' => FALSE ) );
             $init_ok = $access_sx->initialize(TRUE);
             if ($init_ok) {
@@ -599,6 +608,10 @@ class IndexController extends My_BaseAction {
             $this->redirect('/index');
         }
         
+        if (!My_Utils::passwordRecoveryIsAllowed()) {
+            $this->redirect('/index');
+        }
+        
         $this->_helper->layout->setLayout("simple");
         
         $the_email = $this->getRequest()->getParam('email');
@@ -668,6 +681,10 @@ class IndexController extends My_BaseAction {
         if ($this->isDemoMode()) {
             $this->redirect('/demo');
             return FALSE;
+        }
+
+        if (!My_Utils::passwordRecoveryIsAllowed()) {
+            $this->redirect('/index');
         }
 
         $this->_helper->layout->setLayout('simple');

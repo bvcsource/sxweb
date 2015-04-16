@@ -52,7 +52,9 @@ if (isset($this->errors)): ?>
                 'frm_cluster' => 'SX Cluster Address',
                 'frm_cluster_ssl' => 'Use SSL',
                 'frm_cluster_port' => 'Cluster Port',
-                'frm_cluster_ip' => 'Cluster IP'
+                'frm_cluster_ip' => 'Cluster IP',
+                'frm_admin_key' => 'Admin Key',
+                'frm_allow_password_recovery' => 'Allow Password Recovery'
             );
 
             echo '<p>',$this->translate('The following field(s) have errors, please correct them:'),'</p>',PHP_EOL;
@@ -74,6 +76,10 @@ if (isset($this->errors)): ?>
 endif;
 ?>
 <form method="post" class="form-horizontal" action="<?php echo $this->escape( $this->ServerUrl() . '/install.php?step=step3' )?>">
+
+    <fieldset>
+        <legend><?php echo $this->translate('Basic settings'); ?></legend>
+    
     <div class="form-group<?php if (isset($this->errors['frm_cluster'])) echo ' has-error'; ?>">
         <label for="frm_cluster" class="col-sm-2 control-label"><?php echo $this->translate('SX Cluster Address'); ?></label>
         <div class="col-sm-10">
@@ -81,6 +87,23 @@ endif;
             <span class="help-block"><?php echo $this->translate('The address of the SX cluster you want to use. Format: <code>sx://somecluster.com</code>'); ?></span>
         </div>
     </div>
+
+        <div class="form-group<?php if (isset($this->errors['frm_allow_password_recovery'])) echo ' has-error'; ?>">
+            <label for="frm_allow_password_recovery" class="col-sm-2 control-label"><?php echo $this->translate('Allow Password Recovery'); ?></label>
+            <div class="col-sm-10">
+                <input type="checkbox" name="frm_allow_password_recovery" id="frm_allow_password_recovery" value="y" <?php echo ($this->frm_allow_password_recovery? 'checked="checked"' : '' ) ?> />
+                <span class="help-block"><?php echo $this->translate('If password recovery is enabled, you <strong>must</strong> supply the Admin Key.'); ?></span>
+            </div>
+        </div>
+
+        <div class="form-group<?php if (isset($this->errors['frm_admin_key'])) echo ' has-error'; ?>">
+            <label for="frm_admin_key" class="col-sm-2 control-label"><?php echo $this->translate('Admin Key'); ?></label>
+            <div class="col-sm-10">
+                <input name="frm_admin_key" class="form-control" id="frm_admin_key" type="text" size="25" value="<?php echo $this->escape( $this->frm_admin_key ); ?>" />
+                <span class="help-block"><?php echo $this->translate('The SX cluster admin key. Keep it safe.'); ?></span>
+            </div>
+        </div>
+        </fieldset>
     
     <fieldset>
         <legend><?php echo $this->translate('Advanced settings'); ?></legend>

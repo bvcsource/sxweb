@@ -22,7 +22,7 @@
 
     <div class="login-form">
     <?php echo $this->form('', $this->form->getAttribs()); ?>
-        <input type="email" value="<?php echo $this->escape($user_login); ?>" name="frm_login" placeholder="Email address" />
+        <input type="text" value="<?php echo $this->escape($user_login); ?>" name="frm_login" placeholder="Login" />
         <input type="password" value="<?php echo $this->escape($user_password); ?>" name="frm_password" placeholder="Password" />
         <label for="confirm"><input type="checkbox" name="frm_remember_me" value="yes" id="confirm" />Remember me</label>
         <input type="submit" value="Sign in" />
@@ -30,7 +30,9 @@
     </div>
 
     <div class="login-utils">
+        <?php if (My_Utils::passwordRecoveryIsAllowed()): ?>
         <a href="<?php echo $this->url(array( 'controller' => 'index', 'action' => 'resetpassword' ), 'recover', TRUE, TRUE );  ?>">Forgot Your Password?</a>
+        <?php endif; ?>
     </div>
 <?php
     

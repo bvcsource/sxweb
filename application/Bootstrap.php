@@ -282,8 +282,6 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap {
          // Remove account
         $router->addRoute('remove_account', new Zend_Controller_Router_Route('remove/account', array('controller' => 'rmacc','action' => 'index')));
 
-        // sendmail message / reset password
-        $router->addRoute('recover', new Zend_Controller_Router_Route('reset/password', array( 'controller' => 'index', 'action' => 'resetpassword') ));
 
         // logout
         $router->addRoute('logout', new Zend_Controller_Router_Route('logout', array( 'controller' => 'index', 'action' => 'logout') ) );
@@ -321,11 +319,17 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap {
         $router->addRoute('search', new My_Regex( 'search,(.*)', array( 'controller' => 'search', 'action' => 'index' ), array( 1 => 'vol'	)));
         $router->addRoute('suggest', new Zend_Controller_Router_Route( 'suggest', array( 'controller' => 'search', 'action' => 'suggest' ) ));
 
-        /*
-         * Pasword change
-        */
-        $router->addRoute('reset', new My_Regex( 'reset/password/(.*)', array( 'controller' => 'index', 'action' => 'reset' ), array( 1 => 'hash'	)));
-
+        /**
+         * Password reset must be enabled.
+         */
+        if (My_Utils::passwordRecoveryIsAllowed()) {
+            // Password reset from email
+            $router->addRoute('reset', new My_Regex('reset/password/(.*)', array('controller' => 'index', 'action' => 'reset'), array(1 => 'hash')));
+            
+            // send email message for resetting the password
+            $router->addRoute('recover', new Zend_Controller_Router_Route('reset/password', array('controller' => 'index', 'action' => 'resetpassword')));
+        }
+        
         /*
         * use this if you cant pass mesage by flash/session
         */

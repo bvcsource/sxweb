@@ -107,6 +107,10 @@ class IndexController extends Zend_Controller_Action {
             // URL to use to contact the tech support
             'tech_support_url' => "http://skylable.zendesk.com",
             
+            // Password recovery
+            'password_recovery' => FALSE,
+            'admin_key' => '',
+            
             // DB configuration
             'db.adapter' => "pdo_mysql",
             'db.params.host' => "localhost",
@@ -675,6 +679,8 @@ class IndexController extends Zend_Controller_Action {
             'frm_cluster_ssl' => 'cluster_ssl',
             'frm_cluster_port' => 'cluster_port',
             'frm_cluster_ip' => 'cluster_ip',
+            'frm_admin_key' => 'admin_key',
+            'frm_allow_password_recovery' => 'password_recovery',
 
         );
 
@@ -686,6 +692,22 @@ class IndexController extends Zend_Controller_Action {
             'validators' => array( 
                 new Zend_Validate_StringLength(array('min' => 1, 'max' => 255)),
                 new Zend_Validate_Regex('/^sx:\/\/[a-zA-Z0-9]+/')
+            ),
+            'filters' => array(
+                'StringTrim'
+            ),
+            'required' => TRUE
+        ));
+
+        $form->addElement( 'checkbox', 'frm_allow_password_recovery', array(
+            'checkedValue' => 'y',
+            'uncheckedValue' => 'n',
+            'required' => TRUE
+        ));
+        
+        $form->addElement( 'text', 'frm_admin_key', array(
+            'validators' => array(
+                new My_ValidateUserKey()
             ),
             'filters' => array(
                 'StringTrim'
@@ -721,17 +743,30 @@ class IndexController extends Zend_Controller_Action {
                 $values = $form->getValues();
 
                 foreach($data_map as $field => $param) {
-                    if ($field == 'frm_cluster_ssl') {
+                    if ($field == 'frm_cluster_ssl' || $field == 'frm_allow_password_recovery') {
                         $session->config[$param] = $this->view->$field = ($values[$field] == 'y');
                     } else {
                         $this->view->$field = $values[$field];
                         $session->config[$param] = $values[$field];    
                     }
                 }
+                
+                // If you allow password recovery, you must supply a valid admin key
+                $can_proceed = TRUE;
+                if ($values['frm_allow_password_recovery'] == 'y') {
+                    if (strlen($values['frm_admin_key']) == 0) {
+                        $form->addErrorMessage('You must supply an admin key');
+                        $form->getElement('frm_admin_key')->addErrorMessage( 'You must supply an admin key' );
+                        $this->view->errors = $form->getMessages();
+                        $can_proceed = FALSE;
+                    }
+                }
 
-                $session->last_step = 'step3';
+                if ($can_proceed) {
+                    $session->last_step = 'step3';
 
-                $this->redirect($this->view->ServerUrl() . '/install.php?step=step4');
+                    $this->redirect($this->view->ServerUrl() . '/install.php?step=step4');    
+                } 
 
             } else {
 
@@ -745,7 +780,7 @@ class IndexController extends Zend_Controller_Action {
                         $this->view->$vk = $vv;
                     }
                     
-                    if ($vk == 'frm_cluster_ssl') {
+                    if ($vk == 'frm_cluster_ssl' || $vk == 'frm_allow_password_recovery') {
                         $this->view->$vk = ($this->view->$vk == 'y');
                     }
                 }
@@ -953,7 +988,7 @@ class IndexController extends Zend_Controller_Action {
         $skylable_ini .= 'sx_local = ' . $session->config['sx_local'] . PHP_EOL;
 
         $skylable_ini .= PHP_EOL;
-        $skylable_ini .= '; Dowload limits' . PHP_EOL;
+        $skylable_ini .= '; Download limits' . PHP_EOL;
         $skylable_ini .= ';  maximum concurrent downloads per logged user' . PHP_EOL;
         $skylable_ini .= 'downloads = ' . $session->config['downloads'] . PHP_EOL;
 
@@ -995,6 +1030,13 @@ class IndexController extends Zend_Controller_Action {
         $skylable_ini .= PHP_EOL;
         $skylable_ini .= '; URL to use to contact the tech support' . PHP_EOL;
         $skylable_ini .= 'tech_support_url = "' . $session->config['tech_support_url'] . '"' . PHP_EOL;
+        
+        $skylable_ini .= PHP_EOL;
+        $skylable_ini .= '; Flag to enable or disable password recovery: if enabled, you need also to specify the admin key' . PHP_EOL;
+        $skylable_ini .= 'password_recovery = ' . ($session->config['password_recovery'] ? 'true' : 'false') . PHP_EOL;
+        $skylable_ini .= '; The admin key of your cluster' . PHP_EOL;
+        $skylable_ini .= (strlen($session->config['admin_key']) > 0 ? '' : '; ').'admin_key = "' . $session->config['admin_key'] . '"' . PHP_EOL;
+        
 
         $skylable_ini .= PHP_EOL;
         $skylable_ini .= '; DB configuration' . PHP_EOL;

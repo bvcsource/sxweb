@@ -40,12 +40,9 @@
  * Validate the user login
  *
  */
-class My_ValidateUserLogin extends Zend_Validate_EmailAddress {
+class My_ValidateUserLogin extends Zend_Validate {
     public function __construct() {
-        parent::__construct( array(
-            //'hostname' => new Zend_Validate_Hostname(),
-            'mx' => FALSE,
-            'deep' => FALSE
-        ) );
+        $this->addValidator( new Zend_Validate_StringLength(array( 'min' => 1, 'max' => 255 )), TRUE );
+        $this->addValidator( new Zend_Validate_Regex('/^([\pL\w.@\-]){1,255}$/u'), TRUE);
     }
 }

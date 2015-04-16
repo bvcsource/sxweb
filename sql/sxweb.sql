@@ -22,15 +22,13 @@ CREATE TABLE `tickets` (
 
 DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `login` VARCHAR(255) NOT NULL,
-  `email` varchar(50) NOT NULL,
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `login` VARCHAR(255) NOT NULL UNIQUE,
+  `email` varchar(50) NOT NULL UNIQUE,
   `secret_key` varchar(255) NOT NULL,
   `active` tinyint(4) NOT NULL DEFAULT '0',
   `preferences` text NOT NULL,
-  `user_role` enum('guest','registered','admin') NOT NULL DEFAULT 'registered',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `login` (`login`)
+  `user_role` enum('guest','registered','admin') NOT NULL DEFAULT 'registered'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 DROP TABLE IF EXISTS `user_reset_password`;
