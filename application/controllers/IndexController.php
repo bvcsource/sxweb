@@ -108,7 +108,7 @@ class IndexController extends My_BaseAction {
             $access_sx = new Skylable_AccessSxNew( $user, NULL, array( 'password' => $values['frm_password'], 'initialize' => FALSE ) );
             $init_ok = $access_sx->initialize(TRUE);
             if ($init_ok) {
-                $user_secret_key = $access_sx->getUserSecretKey();
+                $user_secret_key = $access_sx->getLocalUserSecretKey();
                 
                 /*
                  * Read or create the user into the DB
@@ -712,15 +712,39 @@ class IndexController extends My_BaseAction {
                 } else {
                     try {
                         $model = new My_Accounts();
-                        if ($model->doResetPassword($hash, $pwd1)) {
-                            $this->_helper->getHelper('FlashMessenger')->addMessage('Password successfully changed!','info');
-                            $this->redirect("/login");
+                        $usr = $model->getUserFromPasswordRecoveryToken($hash);
+                        if (is_object($usr)) {
+                            // Create a fake admin user into a temp dir
+                            $tempdir = My_Utils::mktempdir( Zend_Registry::get('skylable')->get('sx_local') ,'Skylable_');
+                            if ($tempdir === FALSE) {
+                               throw new Exception('Failed to create temporary directory'); 
+                            }
+                            
+                            $fake_admin = new My_User(NULL, 'admin', '', Zend_Registry::get('skylable')->get('admin_key'));
+                            $access_sx = new Skylable_AccessSxNew($fake_admin, $tempdir, array( 'user_auth_key' => Zend_Registry::get('skylable')->get('admin_key') ) );
+                            $new_user_key = $access_sx->sxaclUserNewKey($pwd1, $usr->getLogin());
+                            My_Utils::deleteDir($tempdir);
+                            if ($new_user_key === FALSE) {
+                                $this->_helper->getHelper('FlashMessenger')->addMessage('Failed to change the user password, please retry.','error');
+                                $this->redirect("/index");
+                            } else {
+                                $model->purgePasswordRecoveryToken($hash);
+                                $this->_helper->getHelper('FlashMessenger')->addMessage('Password successfully changed!','info');
+                                $this->redirect("/login");
+                            }
+                            
                         } else {
-                            $this->_helper->getHelper('FlashMessenger')->addMessage('Failed to change the user password, please retry.','error');
+                            $this->_helper->getHelper('FlashMessenger')->addMessage('Invalid or expired user token, please retry.','error');
                             $this->redirect("/index");
                         }
                     }
                     catch(Exception $e) {
+                        if (isset($tempdir)) {
+                            if (@is_dir($tempdir)) {
+                                My_Utils::deleteDir($tempdir);
+                            }
+                        }
+                        
                         $this->_helper->getHelper('FlashMessenger')->addMessage('Internal error, please retry again later.','error');
                         $this->getLogger()->err(__METHOD__.': exception: '.$e->getMessage() );
                         $this->redirect("/index");

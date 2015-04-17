@@ -43,7 +43,7 @@
  * Before using this class you should configure the services editing
  * the file: application/configs/skylable.ini
  * This file is then read at bootstrap and stored into the Zend_Registry under
- * the key 'skylable', as a Zend_Config istance.
+ * the key 'skylable', as a Zend_Config instance.
  *
  * <code>
  * $skylable_config = Zend_Registry::get('skylable');
@@ -319,12 +319,14 @@ class Skylable_AccessSxNew {
     }
 
     /**
-     * Returns the current user secret key.
+     * Returns the current user secret key stored locally.
+     * 
+     * Don't get the key from the SX server
      * 
      * @return bool|string
      * @throws Zend_Exception
      */
-    public function getUserSecretKey() {
+    public function getLocalUserSecretKey() {
         $path = $this->getBaseDir() .
             '/'.substr(Zend_Registry::get('skylable')->get('cluster'), 5) .
             '/auth/'. (strlen($this->_user->getLogin()) > 0 ? $this->_user->getLogin() : 'default');
@@ -418,7 +420,7 @@ class Skylable_AccessSxNew {
         $cluster_ssl = Zend_Registry::get('skylable')->get('cluster_ssl', TRUE);
         $this->getLogger()->debug(__METHOD__.': Cluster SSL: '.var_export($cluster_ssl, TRUE));
         if (empty($cluster_ssl)) {
-            $cluster_ssl = TRUE; // Use SSL by default
+            $cluster_ssl = FALSE; 
         } else {
             $cluster_ssl = (bool)$cluster_ssl;
         }
@@ -480,10 +482,14 @@ class Skylable_AccessSxNew {
         } else {
             $sxinit_cmd .= ' -p '.My_utils::escapeshellarg($tmp_file);
         }
+        if (isset($params['login'])) {
+            $cluster = 'sx://'.$params['login'] . '@' . parse_url($cluster, PHP_URL_HOST);
+        }
+        /*
         if (!$has_auth_key) {
             $cluster = 'sx://'.$params['login'] . '@' . parse_url($cluster, PHP_URL_HOST);
         }
-        
+        */
         $sxinit_cmd .= ' '.My_utils::escapeshellarg($cluster);
 
         try {
@@ -1650,6 +1656,69 @@ class Skylable_AccessSxNew {
         if ($exit_code == 0) {
             return trim($out);
         }
+        return FALSE;
+    }
+
+    /**
+     * Change (password based) user authentication key.
+     * 
+     * A normal user can change its own key and a cluster administrator 
+     * can change a key of any user.
+     * 
+     * If you don't specify a username, you'll change the key of the current user.
+     * 
+     * @param string $password the password
+     * @param string $username the user of which change the key
+     * @throws Exception
+     * @return bool|string
+     */
+    public function sxaclUserNewKey($password, $username = '') {
+        $this->_last_error_log = '';
+        if (!$this->isInitialized()) {
+            return FALSE;
+        }
+        
+        if (strlen($username) == 0) {
+            $username = $this->_user->getLogin();
+        }
+        
+        $pass_file = tempnam($this->getBaseDir(), 'sxacl_pass_');
+        if ($pass_file === FALSE) {
+            $this->getLogger()->debug(__METHOD__.': failed to create password file into: ' . $this->getBaseDir());
+            throw new Skylable_AccessSxException('Failed to create temporary data file.');
+        }
+        $auth_file = tempnam($this->getBaseDir(), 'sxacl_auth_');
+        if ($auth_file === FALSE) {
+            $this->getLogger()->debug(__METHOD__.': failed to create auth file into: ' . $this->getBaseDir());
+            throw new Skylable_AccessSxException('Failed to create temporary data file.');
+        }
+        if (@file_put_contents($pass_file, $password . PHP_EOL) === FALSE) {
+            $this->getLogger()->debug(__METHOD__.': failed to write password into:  ' . $this->getBaseDir());
+            @unlink($pass_file);
+            @unlink($auth_file);
+            throw new Skylable_AccessSxException('Failed to store password.');
+        }
+
+        $ret = $this->executeShellCommand('sxacl usernewkey '.
+            '-c '.My_utils::escapeshellarg($this->_base_dir).' '.
+            '-p '.My_Utils::escapeshellarg( $pass_file ). ' '.
+            '-a '.My_Utils::escapeshellarg( $auth_file ). ' '.
+            My_utils::escapeshellarg( $username ).' '.
+            My_utils::escapeshellarg( $this->_cluster_string ),
+            '', $out, $exit_code, $this->_last_error_log, NULL, array($this, 'parseErrors'));
+        if ($exit_code == 0) {
+            $new_user_key = @file_get_contents($auth_file);
+            @unlink($pass_file);
+            @unlink($auth_file);
+            if ($new_user_key !== FALSE) {
+                return $new_user_key;
+            }
+        } else {
+            @unlink($pass_file);
+            @unlink($auth_file);    
+        }
+        
+        $this->checkForErrors($this->_last_error_log, TRUE);
         return FALSE;
     }
 

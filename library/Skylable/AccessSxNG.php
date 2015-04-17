@@ -208,9 +208,11 @@ class Skylable_AccessSxNG {
         $res = curl_init();
         if ($res !== FALSE) {
             curl_setopt($res, CURLOPT_URL, $params['url']);
+            $this->getLogger()->err(__METHOD__.' URL: ' .var_export($params['url'], TRUE));
             
             if (!empty($this->_port)) {
                 curl_setopt($res, CURLOPT_PORT, $this->_port);
+                $this->getLogger()->err(__METHOD__.' PORT: ' .var_export($this->_port, TRUE));
             }
 
             if (array_key_exists('verb', $params)) {
@@ -262,6 +264,7 @@ class Skylable_AccessSxNG {
             if (curl_exec($res) === FALSE) {
                 $this->_error = curl_error($res);
                 $this->_error_no = curl_errno($res);
+                $this->getLogger()->err(__METHOD__.' cURL error: ' .var_export($this->_error, TRUE));
             }
 
             curl_close($res);
@@ -272,7 +275,7 @@ class Skylable_AccessSxNG {
 
     public function parseHeaders() {
         /**
-         * FIXME: This approach will fail will folded lines, but... who cares! 8-)
+         * FIXME: This approach will fail with folded lines, but... who cares! 8-)
          */
 
         /*
@@ -564,6 +567,7 @@ class Skylable_AccessSxNG {
         if (strlen($file) == 0 || $file == '/') {
             $this->getLogger()->debug(__METHOD__.' file is empty or /');
             if ($this->volumeExists($path)) {
+                $this->getLogger()->debug(__METHOD__.' volume exists');
                 if ($path[strlen($path) - 1] == '/') {
                     $file_type = self::FILE_TYPE_DIR;
                 } else {
@@ -571,6 +575,7 @@ class Skylable_AccessSxNG {
                 }
                 return TRUE;
             }
+            $this->getLogger()->debug(__METHOD__.' volume don\'t exists');
             return FALSE;
         }
 
@@ -596,10 +601,12 @@ class Skylable_AccessSxNG {
      */
     public function volumeExists($path) {
         $volume = My_Utils::getRootFromPath($path);
+        $this->getLogger()->debug(__METHOD__.' checking volume: ' .var_export($volume, TRUE));
         if ($volume === FALSE || strlen($volume) == 0) {
             return FALSE;
         }
         $volumes = $this->volumeList();
+        $this->getLogger()->debug(__METHOD__.' volumes: ' .var_export($volumes, TRUE));
         if ($volumes === FALSE) {
             return FALSE;
         }

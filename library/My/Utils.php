@@ -49,7 +49,7 @@ class My_Utils {
      * @throws Zend_Exception
      */
     public static function passwordRecoveryIsAllowed() {
-        if (Zend_Registry::get('skylable')->get('password_recovery', FALSE) === TRUE ) {
+        if ((bool)Zend_Registry::get('skylable')->get('password_recovery', FALSE) === TRUE ) {
             return (strlen(Zend_Registry::get('skylable')->get('admin_key', '')) > 0);
         }
         return FALSE;
@@ -94,7 +94,7 @@ class My_Utils {
 
         $cluster_ssl = $cfg->get('cluster_ssl', TRUE);
         if (empty($cluster_ssl)) {
-            $out['use_ssl'] = TRUE;
+            $out['use_ssl'] = FALSE;
         } else {
             $out['use_ssl'] = (bool)$cluster_ssl;
         }

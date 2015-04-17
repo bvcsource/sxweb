@@ -286,54 +286,6 @@ class My_Accounts extends Zend_Db_Table_Abstract  {
         }
         return $user;
     }
-
-    /**
-     * FIXME: you can't change the password.
-     * 
-     * Update the user password.
-     * 
-     * IMPORTANT: this method accepts only passwords hash generated using
-     * {@link getPasswordHash}
-     * 
-     * @param integer $user_id the user id
-     * @param string $oldpasswd the current user password hash
-     * @param string $newpasswd the new user password hash
-     * @return boolean
-     * @throws Exception
-     * @see getPasswordHash
-     * 
-     */
-	public function changePassword($user_id, $oldpasswd, $newpasswd) {
-        
-        return FALSE;
-        
-        if (!is_numeric($user_id)) {
-            return FALSE;
-        }
-        
-        $this->getAdapter()->beginTransaction();
-		try {
-            $res = $this->update(array(
-                'passwd' => $newpasswd
-            ), array( 
-                'id = ?' => $user_id,
-                'passwd = ?' => $oldpasswd
-            ));
-            
-            Zend_Controller_Front::getInstance()->getParam('bootstrap')->getResource('log')->err('new: '.$newpasswd.' old:'.$oldpasswd);
-            
-            if ($res == 1) {
-                $this->getAdapter()->commit();
-                return TRUE;
-            } else {
-                $this->getAdapter()->rollBack();
-                return FALSE;
-            }
-		} catch (Exception $e) {
-            $this->getAdapter()->rollBack();
-            Zend_Controller_Front::getInstance()->getParam('bootstrap')->getResource('log')->err($e->getMessage());
-        }
-	}
     
     /**
      * Generates a password hash from a plain password.
@@ -472,36 +424,55 @@ class My_Accounts extends Zend_Db_Table_Abstract  {
     }
 
     /**
-     * Finalize the password reset procedure: stores the new password.
+     * Get the user given a password recovery token.
      * 
-     * @param string $hash the reset password hash
-     * @param string $plain_password the plain new password
-     * @return bool TRUE on success, FALSE on failure
+     * Checks if the token is expired.
+     * 
+     * @param string $token
+     * @return bool|My_User
      * @throws Exception
      */
-    public function doResetPassword($hash, $plain_password) {
-        // $logger = Zend_Controller_Front::getInstance()->getParam('bootstrap')->getResource('log');
+    public function getUserFromPasswordRecoveryToken($token) {
+        if (empty($token)) return FALSE;
         $db = $this->getAdapter();
         $db->beginTransaction();
-        if (empty($hash)) return FALSE;
         try {
             $db->delete('user_reset_password','TIMESTAMPDIFF(HOUR,`date`, CURRENT_TIMESTAMP()) > 24');
-            $res = $db->fetchRow('SELECT * FROM user_reset_password WHERE hash = ? LIMIT 1', $hash );
+            $res = $db->fetchRow('SELECT u.* FROM users AS u INNER JOIN user_reset_password AS up ON (u.id = up.uid) WHERE up.hash = ? LIMIT 1', $token );
+
+            $db->commit();
             
             if ($res === FALSE) {
-                $db->commit();
                 return FALSE;
             }
             
-            $this->update(
-                array( 
-                    'passwd' => $this->getPasswordHash($plain_password)
-                ), array('id = ?' => $res['uid']) 
-            );
-            $db->delete('user_reset_password','uid = '.$db->quote($res['uid']) );
+            $user = $this->getUserFromDBRow($res);
+            return $user;
+
+        }
+        catch(Exception $e) {
+            $db->rollBack();
+            throw $e;
+        }
+    }
+
+    /**
+     * 
+     * Delete the specified password recovery token and purge expired ones.
+     * 
+     * @param string $token if empty only purge expired tokens
+     * @return bool
+     * @throws Exception
+     */
+    public function purgePasswordRecoveryToken($token) {
+        $db = $this->getAdapter();
+        $db->beginTransaction();
+        try {
+            $db->delete('user_reset_password','TIMESTAMPDIFF(HOUR,`date`, CURRENT_TIMESTAMP()) > 24');
+            if (!empty($token)) $db->delete('user_reset_password','hash = '.$db->quote($token) );
             $db->commit();
             return TRUE;
-            
+
         }
         catch(Exception $e) {
             $db->rollBack();
