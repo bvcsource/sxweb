@@ -89,22 +89,54 @@ class SettingsController extends My_BaseAction {
             return $this->render('account');
         }
         
+        if (!My_Utils::passwordRecoveryIsAllowed()) {
+            return FALSE;
+        }
+        
         try {
-            $model = new My_Accounts();
             $values = $form->getValues();
+
+            // Create a fake admin user into a temp dir
+            $tempdir = My_Utils::mktempdir( Zend_Registry::get('skylable')->get('sx_local') ,'Skylable_');
+            if ($tempdir === FALSE) {
+                throw new Exception('Failed to create temporary directory');
+            }
+
+            $fake_admin = new My_User(NULL, 'admin', '', Zend_Registry::get('skylable')->get('admin_key'));
+            $access_sx = new Skylable_AccessSxNew($fake_admin, $tempdir, array( 'user_auth_key' => Zend_Registry::get('skylable')->get('admin_key') ) );
+            $this->getLogger()->debug(__METHOD__ . ': Old user key: '.var_export( Zend_Auth::getInstance()->getIdentity()->getSecretKey(), TRUE ));
+            $new_user_key = $access_sx->sxaclUserNewKey($values['frm_new_password'], Zend_Auth::getInstance()->getIdentity()->getLogin());
+
+            $this->getLogger()->debug(__METHOD__ . ': New user key: '.var_export( $new_user_key, TRUE ));
             
-            $ok = $model->changePassword(Zend_Auth::getInstance()->getIdentity()->getId(), 
-                    $model->getPasswordHash($values['frm_password']), 
-                    $model->getPasswordHash($values['frm_new_password'])
-                );
-             if ($ok) {
-                $this->view->assign('show_success', TRUE);
-            } else {
+            My_Utils::deleteDir($tempdir);
+            if ($new_user_key === FALSE) {
                 $form->addError('Update failed: the current password isn\'t valid.');
+            } else {
+                $this->view->assign('show_success', TRUE);
+                
+                // Re-initialize the user
+                $this->getLogger()->debug(__METHOD__ . ': Re-initializing the user.');
+                $user = Zend_Auth::getInstance()->getIdentity();
+                $user->setSecretKey('');
+                $access_sx = new Skylable_AccessSxNew( $user, NULL, array( 'password' => $values['frm_new_password'], 'initialize' => FALSE ) );
+                $init_ok = $access_sx->initialize(TRUE);
+                
+                if ($init_ok) {
+                    $user_secret_key = $access_sx->getLocalUserSecretKey();
+                    $user->setSecretKey( $user_secret_key );
+                    $this->getUserModel()->updateUser($user);
+                    Zend_Auth::getInstance()->getStorage()->write($user);
+                }
             }
         }
         catch(Exception $e) {
             $form->addError('Internal error: update failed.');
+            if (isset($tempdir)) {
+                if (@is_dir($tempdir)) {
+                    My_Utils::deleteDir($tempdir);
+                }
+            }
         }
 
     }

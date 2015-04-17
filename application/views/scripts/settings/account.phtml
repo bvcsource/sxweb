@@ -8,8 +8,8 @@ $this->declareVars(
 ?>
 <div class="wrap">
 <h1><?php echo $this->translate('Manage Account'); ?></h1>
+    <?php if (My_Utils::passwordRecoveryIsAllowed()): ?>
 <hr>
-    <p><?php echo $this->translate('Change your login password here.');?></p>
 <?php
     // Should show the success message?
     if ($this->show_success):
@@ -28,7 +28,7 @@ $this->declareVars(
             'action' => $this->url( array(), 'account_settings', FALSE, FALSE )
         ), FALSE);
 ?>
-<p><label for="frm_password"><?php echo $this->translate('Current Password'); ?></label><input name="frm_password" type="password" placeholder="<?php echo $this->translate('Current Password'); ?>" value=""></p>
+<p><?php echo $this->translate('Change your login password here.');?></p>
 <p><label for="frm_new_password"><?php echo $this->translate('New Password'); ?></label><input type="password" name="frm_new_password" placeholder="<?php echo $this->translate('New Password'); ?>" value=""></p>
 <p><label for="frm_new_cpassword"><?php echo $this->translate('Confirm Password'); ?></label><input type="password" name="frm_new_cpassword" placeholder="<?php echo $this->translate('Confirm Password'); ?>" value=""></p>
 <p><input type="submit" name="frm_launch" value="Save!"></p>
@@ -36,6 +36,7 @@ $this->declareVars(
 <?php    
     endif;
 ?>
+    <?php endif; ?>
 <hr>
 <h2><?php echo $this->translate('Delete Account'); ?></h2>
 <p>

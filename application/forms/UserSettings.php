@@ -45,11 +45,6 @@ class Application_Form_UserSettings extends Zend_Form {
     public function init() {
         parent::init();
         
-        $this->addElement( $this->createElement('password', 'frm_password')
-                ->setLabel('Current Password')
-                ->setRequired(TRUE)
-                ->addValidator(new My_ValidateUserPassword())
-                );
         $this->addElement( 
                 $this->createElement('password', 'frm_new_password')
                 ->setLabel('New Password')
