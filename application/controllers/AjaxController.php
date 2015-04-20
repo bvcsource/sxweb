@@ -314,10 +314,16 @@ class AjaxController extends My_BaseAction {
      * Note: to avoid problems with names containing spaces send the
      * 'path' parameter urlencoded.
      *
-     * Must be called with a POST request.
+     * Must be called with a POST request. Works in two steps:
+     * Step 1 - shows a confirmation dialog
+     * Step 2 - create and finish
      *
      * Parameters:
+     * 'create' - string - do the final step 
      * 'path' - The complete path of the file to share (including the volume)
+     * Only present in final step
+     * 'share_password' - string - the plain password to use to protect the file
+     * 'share_expire_time' - integer - hours after which the download link expires
      *
      * @return bool
      */
@@ -351,11 +357,56 @@ class AjaxController extends My_BaseAction {
             return FALSE;
         }
 
+        if (is_null($this->getRequest()->getParam('create'))) {
+            // First step: show the dialog
+            $this->_helper->viewRenderer->setNoRender(FALSE);
+            $this->view->share_path = $path;
+            $this->view->share_file = basename($path);
+            $this->view->share_expire_time = Zend_Registry::get('skylable')->get('shared_file_expire_time') / 3600; // Convert to hours
+            $this->view->share_password = '';
+            $this->render('share-dialog');
+            return TRUE;
+        } else {
+            // Check for errors
+            $errors = array();
+            $password = $this->getRequest()->getParam('share_password');
+            $expire_time = $this->getRequest()->getParam('share_expire_time');
+            
+            if (is_numeric($expire_time)) {
+                // Converts (or tries to) expire time from HOURS to SECONDS
+                $expire_time *= 3600;
+            }
+            
+            $password_check = new My_ValidateSharedFilePassword();
+            if (!$password_check->isValid($password)) {
+                $errors = array_merge($errors, $password_check->getMessages());
+            }
+            
+            $expire_time_check = new My_ValidateSharedFileExpireTime();
+            if (!$expire_time_check->isValid($expire_time)) {
+                $errors[] = $this->view->translate('Invalid expire time');
+                $expire_time = '';
+            }
+            
+            if (!empty($errors)) {
+                $this->_helper->viewRenderer->setNoRender(FALSE);
+                $this->view->errors = $errors;
+                $this->view->share_path = $path;
+                $this->view->share_file = basename($path);
+                $this->view->share_expire_time = $expire_time;
+                $this->view->share_password = '';
+                $this->getResponse()->setHttpResponseCode(400);
+                $this->render('share-dialog');
+                return TRUE;
+            }
+        }
+        
+
         try {
             $sh = new My_Shared();
             $key = '';
             if (!$sh->fileExists($path, Zend_Auth::getInstance()->getIdentity()->getSecretKey(), $key)) {
-                $key = $sh->add($path, Zend_Auth::getInstance()->getIdentity()->getSecretKey(), Zend_Registry::get('skylable')->get('shared_file_expire_time') );
+                $key = $sh->add($path, Zend_Auth::getInstance()->getIdentity()->getSecretKey(), $expire_time, $password );
                 if ($key === FALSE) {
                     $this->sendErrorResponse('<p>Failed to create file link.</p>');
                     return FALSE;
@@ -380,6 +431,7 @@ class AjaxController extends My_BaseAction {
      * Parameters:
      * 'key' - the sha1 key indicating a file to download
      * 'download' - string (value ignored)
+     * 'password' - the plain password of a password protected file
      */
     public function sharedAction() {
 
@@ -406,6 +458,14 @@ class AjaxController extends My_BaseAction {
                 $this->view->assign('error_msg', 'File not found or expired.');
                 return FALSE;
             }
+            
+            $is_password_protected = strlen($file_data['file_password']) > 0;
+            $password_is_valid = FALSE;
+            $password = $this->getRequest()->getParam('password');
+            if (!is_null($password) && $is_password_protected) {
+                $password_is_valid = (strcmp($file_data['file_password'], 
+                        $shared->getPasswordHash( strval($password), array( 'salt' => $file_data['file_password'] ) ) ) == 0);
+            }
 
             /*
              * When called by a browser shows the download page,
@@ -418,7 +478,11 @@ class AjaxController extends My_BaseAction {
             
             // Uses a white-list approach
             if (preg_match('/^(Mozilla|Opera)/', $_SERVER['HTTP_USER_AGENT']) == 0) {
-                $start_download = TRUE;
+                if ($is_password_protected && !$password_is_valid) {
+                    $start_download = FALSE;
+                } else {
+                    $start_download = TRUE;    
+                }
             }
 
             if (is_null($start_download)) {
@@ -426,6 +490,9 @@ class AjaxController extends My_BaseAction {
                 $this->enableView();
                 $this->_helper->layout()->setLayout("shared");
                 $this->view->file = basename($file_data['file_path']);
+                if ($is_password_protected) {
+                    $this->view->ask_password = TRUE;
+                }
             } else {
                 if (Zend_Auth::getInstance()->hasIdentity()) {
                     $user_ip = $_SERVER['REMOTE_ADDR'];
@@ -437,8 +504,16 @@ class AjaxController extends My_BaseAction {
 
                 $tickets = new My_Tickets();
                 $allow_download = TRUE;
-
-                if ($tickets->registerTicket( $user_id, $user_ip ) === FALSE) {
+                
+                if ($is_password_protected && !$password_is_valid ) {
+                    
+                    $this->enableView();
+                    $this->getResponse()->setHttpResponseCode(500);
+                    $this->_helper->layout()->setLayout("shared");
+                    $this->view->assign('error_msg', sprintf($this->view->translate('Invalid password! <a href="%s">Retry...</a>'), $this->view->ServerUrl().'/shared/file/'.$key.'/'.rawurlencode(basename($file_data['file_path'])) ));
+                    return FALSE;
+                    
+                } elseif ($tickets->registerTicket( $user_id, $user_ip ) === FALSE) {
                     $this->getResponse()->setHttpResponseCode(500);
                     $this->view->error_title = 'Too many concurrent downloads!';
                     $this->view->error_message = 'Please wait a minute and retry. ';

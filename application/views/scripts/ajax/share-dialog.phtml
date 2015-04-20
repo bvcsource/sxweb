@@ -1,0 +1,27 @@
+<?php
+    if (isset($this->errors)) {
+        echo '<p>',$this->translate('There are errors!'),'</p>';
+        foreach($this->errors as $errmsg) {
+            echo $errmsg;
+        }
+    }
+?>
+<ul>
+    <li><?php printf($this->translate('File: <span>%s</span>'), $this->share_file); ?><input type="hidden" name="path" value="<?php echo $this->escape($this->share_path); ?>" /></li>
+    <li><label><?php echo $this->translate('Password (Leave empty if none. Max allowed length is 24 characters.)'); ?></label><input class="share-file-link" type="password" name="share_password" value="" /></li>
+    <li><label id="share_expire_time_label"><?php echo $this->translate('Expire Time (in hours)'); ?></label><input class="share-file-link" type="text" name="share_expire_time" value="<?php echo $this->escape($this->share_expire_time); ?>" /></li>
+    <li><?php echo $this->translate('Are you sure you want to share the file?'); ?></li>
+</ul>
+<script>
+    function setExpireTime(time) {
+        $('input[name=share_expire_time]').val(time);    
+    }
+    
+    $(document).ready(function(){
+        var l = $('#share_expire_time_label');
+        l.append(' - <a href="#" style="text-decoration: underline !important; color: #1475C5 !important;" onclick="setExpireTime(24); return false;">One Day</a>');
+        l.append(' / <a href="#" style="text-decoration: underline !important; color: #1475C5 !important;" onclick="setExpireTime(24 * 7); return false;">One Week</a>');
+        l.append(' / <a href="#" style="text-decoration: underline !important; color: #1475C5 !important;" onclick="setExpireTime(24 * 14); return false;">Two Weeks</a>');
+        l.append(' / <a href="#" style="text-decoration: underline !important; color: #1475C5 !important;" onclick="setExpireTime(24 * 31); return false;">One Month</a>');
+    });
+</script>

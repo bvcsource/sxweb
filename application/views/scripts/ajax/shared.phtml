@@ -1,4 +1,11 @@
 <?php
+
+    if (isset($this->ask_password)) {
+        $ask_password = TRUE;
+    } else {
+        $ask_password = FALSE;
+    }
+
     if (isset($this->error_msg)):
 
         echo '<p>',$this->error_msg,'</p>';
@@ -30,12 +37,22 @@ var SharedDownloader = function() {
         return true;
     };
 };
+<?php if (!$ask_password): ?>
     $(document).ready(SharedDownloader);
+<?php endif; ?>
 </script>
-<?php printf( $this->translate('Start downloading file: <b>%s</b> ?'), $this->escape($this->file) );?><br />
+<?php
+    if ($ask_password) {
+        printf( $this->translate('Please enter the password to download the file: <b>%s</b>'), $this->escape($this->file) );
+    } else {
+        printf( $this->translate('Start downloading file: <b>%s</b> ?'), $this->escape($this->file) );
+    } ?><br />
 <span id="iter" ></span>
 <form action="" method="post" id="shared_download_form">
 	<input type="hidden" name="download" value="true" >
+    <?php if ($ask_password): ?>
+        <input type="password" name="password" value=""  />
+    <?php endif; ?>
 	<input type="submit" value="Download now" id="download_button" class="button btwid" />
 </form>
 <?php endif; ?>

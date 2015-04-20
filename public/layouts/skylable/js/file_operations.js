@@ -682,10 +682,14 @@ if (!FileOperations) {
                 {
                   text: Skylable_Lang['yesBtn'],
                     click: function(e) {
+                        var send_data = 'path='+encodeURIComponent( path ) + '&create=y';
+                        send_data += '&share_password=' + $('input[name=share_password]').val();
+                        send_data += '&share_expire_time=' + $('input[name=share_expire_time]').val();
+                        
                         $.ajax({
                                 type:"POST",
                                 url:FileOperations.urls.share_file,
-                                data:'path='+encodeURIComponent( path ),
+                                data: send_data,
                                 async: false,
                                 beforeSend : function(xhr, options) {
                                     FileOperations.is_working = true;
@@ -720,12 +724,14 @@ if (!FileOperations) {
                                 error : function(xhr, status) {
                                     if (!FileOperations.expiredUser(dlg, xhr)) {
                                         dlg.html(xhr.responseText);
+                                        /*
                                         dlg.dialog('option', 'buttons',[{
                                             text : Skylable_Lang['closeBtn'],
                                             click : function(e) {
                                                 dlg.dialog('close');
                                             }
                                         }]);
+                                        */
                                     }
                                 }
                         });
@@ -739,8 +745,37 @@ if (!FileOperations) {
                         }
                     }
             ]);
+
+            $.ajax({
+                type:"POST",
+                url:FileOperations.urls.share_file,
+                data:'path='+encodeURIComponent( path ),
+                async: false,
+                beforeSend : function(xhr, options) {
+                    FileOperations.is_working = true;
+                },
+                success : function(data, status, xhr) {
+                    dlg.html(xhr.responseText);
+                    dlg.dialog('open');
+                },
+                error : function(xhr, status) {
+                    if (!FileOperations.expiredUser(dlg, xhr)) {
+                        dlg.html(xhr.responseText);
+                        dlg.dialog('option', 'buttons',[{
+                            text : Skylable_Lang['closeBtn'],
+                            click : function(e) {
+                                dlg.dialog('close');
+                            }
+                        }]);
+                    }
+                }
+            });
+            FileOperations.is_working = false;
+            
+            /*
             dlg.dialog('open');
             dlg.html( Skylable_Lang['shareFile'] + " <span>"+FileOperations.basename(path)+"</span><br />"+Skylable_Lang['shareMsg'] );
+            */
         },
 
         /**
