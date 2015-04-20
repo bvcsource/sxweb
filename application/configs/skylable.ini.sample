@@ -61,6 +61,12 @@ tech_support_url = "http://skylable.zendesk.com"
 ; Enable/disable version check. Enabled by default
 ; enable_version_check = true
 
+; Enable/disable password recovery: when enabled, you must also supply a valid admin key
+password_recovery = false
+
+; The admin key of your cluster
+; admin_key = ""
+
 ; DB configuration
 db.adapter = "pdo_mysql"
 db.params.host = "localhost"
