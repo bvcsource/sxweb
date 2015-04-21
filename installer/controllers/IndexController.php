@@ -228,7 +228,7 @@ class IndexController extends Zend_Controller_Action {
             if (!$found) {
                 $this->view->can_proceed = FALSE;
             }
-            $this->view->php_components[] = array($label, 'Yes', ($found ? 'Found' : 'Not found' ) );
+            $this->view->php_components[] = array($label, 'Yes', ($found ? 'Found' : '<span class="label label-danger">Not found</span>' ) );
         }
         
         // PHP Uploads conf
@@ -270,7 +270,7 @@ class IndexController extends Zend_Controller_Action {
             $str = exec($cmd.' -V', $output, $ret_val);
             if (empty($output)) {
                 $this->view->can_proceed = FALSE;
-                $this->view->sx_commands[] = array( $cmd, '', 'Not found' );
+                $this->view->sx_commands[] = array( $cmd, '', '<span class="label label-danger">Not found</span>' );
             } else {
                 $this->view->sx_commands[] = array( $cmd, '', 'Found' );
             }
