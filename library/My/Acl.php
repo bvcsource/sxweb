@@ -63,7 +63,6 @@ class My_Acl extends Zend_Acl {
         $this->addResource('default/ajax');
         $this->addResource('default/ajax/shared');
         $this->addResource('default/search');
-        $this->addResource('default/rmacc');
         $this->addResource('default');
         $this->addResource('menu');
         $this->addResource('search');
