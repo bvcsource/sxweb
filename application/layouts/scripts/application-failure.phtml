@@ -38,7 +38,7 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>SXWeb - An error occurred!</title>
+<title><?php echo $this->translate('SXWeb - An error occurred!'); ?></title>
 <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
 <?php echo $this->headMeta(); ?>
     <link href='https://fonts.googleapis.com/css?family=Roboto+Condensed:300italic,400italic,700italic,400,300,700' rel='stylesheet' type='text/css'>
@@ -108,8 +108,8 @@ echo $this->headScript(), PHP_EOL, $this->headStyle();
 </head>
 <body>
 <?php if (!isset($this->layout()->show_message)): ?>
-<h1>Ops!</h1>
-<p>Application encountered an internal error. Please check the configuration.</p>
+<h1><?php echo $this->translate('Ops!'); ?></h1>
+<p><?php echo $this->translate('Application encountered an internal error. Please check the configuration.'); ?></p>
 <?php
         endif;
 

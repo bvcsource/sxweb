@@ -26,6 +26,6 @@
 <p><?php echo $this->translate('Secret Key:'); ?> <input name="secret_key" type="text" placeholder="<?php echo $this->translate('Secret Key'); ?>" size="70" value="<?php echo $this->escape( Zend_Auth::getInstance()->getIdentity()->getSecretKey() ); ?>"></p>
 <p>
     <a class="styled-button" href="<?php echo $this->url( array('controller' => 'settings', 'action' => 'cluster-config'), 'default', TRUE ); ?>" ><?php echo $this->translate('Download SX Drive Cluster Config');?></a>
-    <span class="btn-desc">(You can download SXDrive for Desktop here: <a href="http://cdn.skylable.com/sxdrive/sxdrive-latest.exe">Windows</a> / <a href="http://cdn.skylable.com/sxdrive/sxdrive-latest.dmg">MacOSX</a> / <a href="http://www.skylable.com/download/#sxdrive">Linux</a>)</span>
+    <span class="btn-desc"><?php echo $this->translate('(You can download SXDrive for Desktop here:'); ?> <a href="http://cdn.skylable.com/sxdrive/sxdrive-latest.exe">Windows</a> / <a href="http://cdn.skylable.com/sxdrive/sxdrive-latest.dmg">MacOSX</a> / <a href="http://www.skylable.com/download/#sxdrive">Linux</a>)</span>
 </p>
     </div>

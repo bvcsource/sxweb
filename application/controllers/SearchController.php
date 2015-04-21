@@ -79,7 +79,7 @@ class SearchController extends My_BaseAction {
         // Always check the configuration
         if ($this->checkSearchEngineConfig() == FALSE) {
             $this->getInvokeArg('bootstrap')->getResource('Log')->debug(__METHOD__ . ': Search engine is not configured properly');
-            $this->view->error_msg = 'Upgrade to SX Enterprise Edition to enable full-text search in SXWeb: <a href="http://www.skylable.com/company/#contact-us" onclick="window.open(this.href); return false;">http://www.skylable.com/company/#contact-us</a>.';
+            $this->view->error_msg = sprintf($this->getTranslator()->translate('Upgrade to SX Enterprise Edition to enable full-text search in SXWeb: %s'), '<a href="http://www.skylable.com/company/#contact-us" onclick="window.open(this.href); return false;">http://www.skylable.com/company/#contact-us</a>.');
             return FALSE;
         }
 
@@ -140,12 +140,12 @@ class SearchController extends My_BaseAction {
                 }
 			} else {
 				$this->getInvokeArg('bootstrap')->getResource('Log')->debug('Invalid search parameters: volume: '.var_export($volume, TRUE).' query: '.var_export($query, TRUE));
-				$this->view->error_msg = 'Invalid search parameters, please retry.';
+				$this->view->error_msg = $this->getTranslator()->translate('Invalid search parameters, please retry.');
 			}
 		}
 		catch(Exception $e) {
 			$this->getInvokeArg('bootstrap')->getResource('Log')->err(__METHOD__.': exception: '.$e->getMessage().' Code:'.$e->getCode() );
-			$this->view->error_msg = 'Search engine is unavailable. Contact your sysadmin.';
+			$this->view->error_msg = $this->getTranslator()->translate('Search engine is unavailable. Contact your sysadmin.');
 		}
 
 	}
@@ -170,7 +170,7 @@ class SearchController extends My_BaseAction {
             echo json_encode(
                 array(
                     'status' => FALSE,
-                    'error' => 'Search engine is unavailable. Contact your sysadmin.'
+                    'error' => $this->getTranslator()->translate('Search engine is unavailable. Contact your sysadmin.')
                 )
             );
             return FALSE;
@@ -236,7 +236,7 @@ class SearchController extends My_BaseAction {
 				echo json_encode(
 					array(
 						'status' => FALSE,
-						'error' => 'Search engine is unavailable. Contact your sysadmin.'
+						'error' => $this->getTranslator()->translate('Search engine is unavailable. Contact your sysadmin.')
 					)
 				);
 			}
@@ -245,7 +245,7 @@ class SearchController extends My_BaseAction {
 			echo json_encode(
 				array(
 					'status' => FALSE,
-					'error' => 'Invalid search parameters.'
+					'error' => $this->getTranslator()->translate('Invalid search parameters.')
 				)
 			);
 		}

@@ -53,6 +53,6 @@ var SharedDownloader = function() {
     <?php if ($ask_password): ?>
         <input type="password" name="password" value=""  />
     <?php endif; ?>
-	<input type="submit" value="Download now" id="download_button" class="button btwid" />
+	<input type="submit" value="<?php echo $this->translate('Download now!'); ?>" id="download_button" class="button btwid" />
 </form>
 <?php endif; ?>

@@ -47,11 +47,40 @@
  */
 class My_BaseAction extends Zend_Controller_Action {
     protected
+
             /**
              * @var My_Accounts the user model
              */
             $_user_model = NULL;
 
+    /**
+     * Returns the global Zend_Translate object.
+     * 
+     * @return Zend_Translate
+     * @throws Zend_Controller_Exception
+     */
+    public function getTranslator() {
+        if (!Zend_Registry::isRegistered('Zend_Translate')) {
+            // Use the default Translate object
+            $t = $this->getInvokeArg('bootstrap')->getResource('translate');
+            if (is_object($t)) {
+                Zend_Registry::set('Zend_Translate', $t);
+            } else {
+                $t = new Zend_Translate(
+                    array(
+                        'adapter' => 'array',
+                        'content' => array('Foo' => 'Foo'),
+                        'locale' => 'en',
+                        'disableNotices' => TRUE
+                    )
+                );
+                
+                Zend_Registry::set('Zend_Translate',  $t );
+            }
+        }
+        return Zend_Registry::get('Zend_Translate');
+    }
+    
     /**
      * Disable the view
      */

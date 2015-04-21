@@ -54,11 +54,11 @@
 <body id="login" >
 <div class="login-box error-box"> 
 	<div class="login-logo">
-		<span class="icon-logo ir"></span><h1>Error</h1>
+		<span class="icon-logo ir"></span><h1><?php echo $this->translate('Error'); ?></h1>
 	</div>
 	<div class="login-form">
 		<div class="failure notification-fix">
-		<span class="inf" >Your SX cluster is down for maintenance, please try again later or contact your system administrator.</span>
+		<span class="inf" ><?php echo $this->translate('Your SX cluster is down for maintenance, please try again later or contact your system administrator.'); ?></span>
 		</div>
 	</div>
 </div>

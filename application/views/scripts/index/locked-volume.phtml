@@ -41,8 +41,8 @@
     <h1><?php echo $this->translate('Password required!'); ?></h1>
     <p><?php echo $this->translate('The volume you are trying to access is encrypted. Please provide the password.'); ?></p>
     <?php echo $this->form('', array_merge( $this->form->getAttribs(), array('class' => 'styled-form') ) ); ?>
-    <p><input type="password" name="frm_vol_password" placeholder="Password"/>
-        <input type="submit" name="frm_vol_open" value="<?php echo $this->translate("Unlock volume!");?>"/></p>
+    <p><input type="password" name="frm_vol_password" placeholder="<?php echo $this->translate('Password'); ?>"/>
+        <input type="submit" name="frm_vol_open" value="<?php echo $this->translate('Unlock volume!');?>"/></p>
 </form>
 <?php 
     if ($this->form->hasErrors()) {

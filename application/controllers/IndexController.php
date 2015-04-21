@@ -134,12 +134,12 @@ class IndexController extends My_BaseAction {
                 Zend_Auth::getInstance()->getStorage()->write($user);
             } else {
                 // Assume there are wrong credentials...
-                $form->addError("Login name or password are wrong, please retry.");
+                $form->addError($this->getTranslator()->translate("Login name or password are wrong, please retry."));
                 return $this->render('login');
             }
         }
         catch(Exception $e) {
-            $form->addError("Internal error, please retry later.");
+            $form->addError($this->getTranslator()->translate("Internal error, please retry later."));
             $this->getLogger()->err(__METHOD__ . ': Exception: '.$e->getMessage() );
             Zend_Session::forgetMe();
             Zend_Auth::getInstance()->clearIdentity();
@@ -292,8 +292,8 @@ class IndexController extends My_BaseAction {
         catch(Exception $e) {
             $this->getLogger()->err(__METHOD__ . ': Step #1 Access SX error: ' . $e->getMessage());
 
-            $this->view->error_title = 'Internal error!';
-            $this->view->error_message = 'Application encountered an internal error. Please retry in a few seconds.';
+            $this->view->error_title = $this->getTranslator()->translate('Internal error!');
+            $this->view->error_message = $this->getTranslator()->translate('Application encountered an internal error. Please retry in a few seconds.');
             $this->_helper->layout()->setLayout('application-failure');
             $this->_helper->layout()->assign('exception', $e);
             $this->_helper->layout()->assign('show_message', FALSE);
@@ -380,10 +380,10 @@ class IndexController extends My_BaseAction {
                                    $show_unlock_form = FALSE; 
                                 } else {
                                     $logger->debug(__METHOD__.' unlocking volume errors: '.print_r($access_sx->getLastErrorLog(), TRUE));
-                                    $form->addError("Volume unlock failed. Wrong password?");
+                                    $form->addError($this->getTranslator()->translate("Volume unlock failed. Wrong password?"));
                                 }
                             } else {
-                                $form->addError("Incorrect password.");
+                                $form->addError($this->getTranslator()->translate("Incorrect password."));
                             }
                         }
 
@@ -407,7 +407,7 @@ class IndexController extends My_BaseAction {
             
             $this->view->url = $this->getLastVisitedPath();
             $logger->debug('View URL is: '.$this->view->url);
-            $this->_helper->layout->title = "Index of " . $this->getLastVisitedPath();
+            $this->_helper->layout->title = sprintf($this->getTranslator()->translate("Index of %s") , $this->getLastVisitedPath());
 
             
             $logger->debug("IndexAction - Step #3");
@@ -427,13 +427,13 @@ class IndexController extends My_BaseAction {
                 if (!$this->view->canWriteToVolume() ) {
                     if ($session->readOnlyMSG != true) {
                         $session->readOnlyMSG = true;
-                        $this->view->putMessage()->addInfo('No write access to this volume.');
+                        $this->view->putMessage()->addInfo($this->getTranslator()->translate('No write access to this volume.'));
                     }
                 }
                 if (!$this->view->hasReadAccess()) {
                     if ($session->writeOnlyMSG != true) {
                         $session->writeOnlyMSG = true;
-                        $this->view->putMessage()->addInfo('No read access to this volume.');
+                        $this->view->putMessage()->addInfo($this->getTranslator()->translate('No read access to this volume.'));
                     }
                 }
             }
@@ -454,8 +454,8 @@ class IndexController extends My_BaseAction {
             $logger->err(__METHOD__. ': Skylable_AccessSxNew library error, last command: '.var_export($access_sx->getLastExecutedCommand(), TRUE));
             $logger->err(__METHOD__. ': Error code: '.strval($e->getCode()).' Errors:'. $e->getMessage());
 
-            $this->view->error_title = 'Internal error!';
-            $this->view->error_message = 'Application encountered an internal error. Please retry in a few seconds.';
+            $this->view->error_title = $this->getTranslator()->translate('Internal error!');
+            $this->view->error_message = $this->getTranslator()->translate('Application encountered an internal error. Please retry in a few seconds.');
             $this->_helper->layout()->setLayout('application-failure');
             $this->_helper->layout()->assign('exception', $e);
             $this->_helper->layout()->assign('show_message', FALSE);
@@ -486,7 +486,7 @@ class IndexController extends My_BaseAction {
             $this->_helper->layout()->assign('show_message', FALSE);
             $allow_download = TRUE;
 
-            $continue_browsing = ' <a href="/" title="Continue browsing files...">Continue browsing files...</a>';
+            $continue_browsing = ' <a href="/" title="'.$this->getTranslator()->translate('Continue browsing files...').'">'.$this->getTranslator()->translate('Continue browsing files...').'</a>';
 
             $filename = $this->getRequest()->getParam('path');
             $filename_check = new My_ValidatePath();
@@ -498,8 +498,8 @@ class IndexController extends My_BaseAction {
 
                 if ($tickets->registerTicket( Zend_Auth::getInstance()->getIdentity()->getId(), NULL ) === FALSE) {
                     $this->getResponse()->setHttpResponseCode(500);
-                    $this->view->error_title = 'Too many concurrent downloads!';
-                    $this->view->error_message = 'Please wait a minute and retry. '.$continue_browsing;
+                    $this->view->error_title = $this->getTranslator()->translate('Too many concurrent downloads!');
+                    $this->view->error_message = $this->getTranslator()->translate('Please wait a minute and retry. ').$continue_browsing;
                     $allow_download = FALSE;
                 } else {
                     $access_sx = new Skylable_AccessSxNew( Zend_Auth::getInstance()->getIdentity() );
@@ -511,13 +511,13 @@ class IndexController extends My_BaseAction {
                         // File not found.
                         $allow_download = FALSE;
                         $this->getResponse()->setHttpResponseCode(404);
-                        $this->view->error_title = 'File not found!';
-                        $this->view->error_message = 'The file &quot;'.htmlentities($filename).'&quot; was not found.'.$continue_browsing;
+                        $this->view->error_title = $this->getTranslator()->translate('File not found!');
+                        $this->view->error_message = sprintf($this->getTranslator()->translate('The file &quot;%s&quot; was not found.'),htmlentities($filename)).$continue_browsing;
                     } else {
                         if ($file_data['type'] !== 'FILE') {
                             $this->getResponse()->setHttpResponseCode(500);
-                            $this->view->error_title = 'Invalid file type!';
-                            $this->view->error_message = 'The file &quot;'.htmlentities($filename).'&quot; can\'t be downloaded.'.$continue_browsing;
+                            $this->view->error_title = $this->getTranslator()->translate('Invalid file type!');
+                            $this->view->error_message = sprintf($this->getTranslator()->translate('The file &quot;%s&quot; can\'t be downloaded.'), htmlentities($filename)).$continue_browsing;
                             $allow_download = FALSE;
                         }
                     }
@@ -525,8 +525,8 @@ class IndexController extends My_BaseAction {
             } else {
                 $this->getLogger()->debug(__METHOD__.': Invalid filename: '.print_r($filename, TRUE));
                 $this->getResponse()->setHttpResponseCode(404);
-                $this->view->error_title = 'File not found!';
-                $this->view->error_message = 'The file &quot;'.htmlentities($filename).'&quot; was not found.'.$continue_browsing;
+                $this->view->error_title = $this->getTranslator()->translate('File not found!');
+                $this->view->error_message = sprintf($this->getTranslator()->translate('The file &quot;%s&quot; was not found.'), htmlentities($filename) ).$continue_browsing;
                 $allow_download = FALSE;
             }
 
@@ -542,8 +542,8 @@ class IndexController extends My_BaseAction {
         catch(Exception $e) {
             $this->enableView();
             $this->getResponse()->setHttpResponseCode(500);
-            $this->view->error_title = 'Internal error!';
-            $this->view->error_message = 'Application encountered an internal error.'.$continue_browsing;
+            $this->view->error_title = $this->getTranslator()->translate('Internal error!');
+            $this->view->error_message = $this->getTranslator()->translate('Application encountered an internal error.').$continue_browsing;
             $this->_helper->layout()->setLayout('application-failure');
             $this->_helper->layout()->assign('exception', $e);
             $this->renderScript('error/malfunction.phtml');

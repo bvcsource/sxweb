@@ -77,7 +77,7 @@ class UploadController extends My_BaseAction {
 
             $this->getResponse()->setHttpResponseCode(500);
             $this->getResponse()->setRawHeader('Content-Type: application/json; charset=UTF-8');
-            echo json_encode(array('error' => 'Check your config, upload dir is empty.'));
+            echo json_encode(array('error' => $this->getTranslator()->translate('Check your config, upload dir is empty.')));
 
             return FALSE;
         }

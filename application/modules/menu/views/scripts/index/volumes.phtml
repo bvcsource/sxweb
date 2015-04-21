@@ -58,13 +58,13 @@ if ($has_volumes) {
 			<a href="/vol/<?php echo $this->escape($vol);?>" class="sidebar-volume-current">
 				<span class="icon-volume ir"></span>
 				<span class="sidebar-volume-name"><?php echo $this->escape( $this->cutString($vol, 22) ); ?></span>
-				<span class="sidebar-volume-info"><?php echo $this->translate( sprintf('Size: %s of %s used', $vols['usage'], $this->fileSizeFormat($vols['volume_size'])) ); ?></span>
+				<span class="sidebar-volume-info"><?php printf($this->translate('Size: %s of %s used'), $vols['usage'], $this->fileSizeFormat($vols['volume_size']) ); ?></span>
 				<?php if($vols['filter'] == "aes256"):?>
 					<img src="<?php echo $this->ServerUrl(); ?>/layouts/skylable/css/images/lock.png" class="sidebar-volume-lock" />
 				<?php endif; ?>
 				<div class="note">
 					<div></div>
-					<span><?php echo $this->escape($this->cutString($vol,22)), '<br/>', $this->translate( sprintf('Usage: %s of %s', $vols['usage'], $this->fileSizeFormat($vols['volume_size'])) ); ?></span>
+					<span><?php echo $this->escape($this->cutString($vol,22)), '<br/>'; printf($this->translate('Usage: %s of %s'), $vols['usage'], $this->fileSizeFormat($vols['volume_size']) ); ?></span>
 				</div>
 			</a>
 				</li>
@@ -77,7 +77,7 @@ if ($has_volumes) {
 }
 ?>
 <p class="volumes-title">
-    <span>Volumes (<?php echo ($has_volumes ? count($this->volumes) : 0);?>)</span>
+    <span><?php printf($this->translate('Volumes (%d)'), ($has_volumes ? count($this->volumes) : 0)); ?></span>
 </p>
 </div>
 
@@ -92,13 +92,13 @@ if ($has_volumes):
 			<a href="/vol/<?php echo $this->escape($vol);?>"<?php echo ($vol == $this->current_volume ? ' class="sidebar-volume-current-plain"' :'');?>>
 				<span class="icon-volume ir"></span>
 				<span class="sidebar-volume-name"><?php echo $this->escape( $this->cutString($vol, 22) ); ?></span>
-				<!-- <span class="sidebar-volume-info"><?php echo $this->translate( sprintf('Size: %s of %s used', $vol_el['usage'], $this->fileSizeFormat($vol_el['volume_size'])) ); ?></span> -->
+				<!-- <span class="sidebar-volume-info"><?php printf($this->translate('Size: %s of %s used'), $vol_el['usage'], $this->fileSizeFormat($vol_el['volume_size']) ); ?></span> -->
 				<?php if($vol_el['filter'] == "aes256"):?>
 					<img src="<?php echo $this->ServerUrl(); ?>/layouts/skylable/css/images/lock.png" class="lock" />
 				<?php endif; ?>
 				<div class="note">
 					<div></div>
-					<span><?php echo $this->escape($this->cutString($vol,22)), '<br/>', $this->translate( sprintf('Usage: %s of %s', $vol_el['usage'], $this->fileSizeFormat($vol_el['volume_size'])) ); ?></span>
+					<span><?php echo $this->escape($this->cutString($vol,22)), '<br/>'; printf($this->translate('Usage: %s of %s'), $vol_el['usage'], $this->fileSizeFormat($vol_el['volume_size']) ); ?></span>
 				</div>
 			</a>
 		</li>

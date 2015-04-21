@@ -5,7 +5,7 @@
 	<div id="search" >
 		<form action="/search,<?php echo $this->escape(My_Utils::getRootFromPath($this->url));?>" method="get" >
 			<input type="submit" class="ir icon-search"  />
-			<input type="search" placeholder="Search..." class="search" name="q"  />
+			<input type="search" placeholder="<?php echo $this->translate('Search...'); ?>" class="search" name="q"  />
 		</form>
 		<hr />		
 	</div>
@@ -14,10 +14,10 @@
 		<div class="bulk-actions">
 			<?php if($this->canWriteToVolume()): ?>
 			<ul>
-				<li>Bulk Actions</li>
-				<li><a class="share-trigger"  id="actioncopy"   >Copy</a></li>
-				<li><a class="move-trigger"   id="actionmove"   >Move</a></li>
-				<li><a class="delete-trigger" id="actiondelete" >Delete</a></li>
+				<li><?php echo $this->translate('Bulk Actions'); ?></li>
+				<li><a class="share-trigger"  id="actioncopy"   ><?php echo $this->translate('Copy'); ?></a></li>
+				<li><a class="move-trigger"   id="actionmove"   ><?php echo $this->translate('Move'); ?></a></li>
+				<li><a class="delete-trigger" id="actiondelete" ><?php echo $this->translate('Delete'); ?></a></li>
 			</ul>
 			<?php endif; ?>
 		</div>
@@ -25,18 +25,18 @@
 			<?php if($this->canWriteToVolume()): ?>
 			<a href="javascript:void(0)" class="add-folder create-trigger" id="createdir" >
 				<span class="icon-add-folder ir"></span>
-				<span>New Folder</span>
+				<span><?php echo $this->translate('New Folder'); ?></span>
 			</a>
 			<a href="javascript:void(0)" class="upload" id="addfile" >
 				<span class="icon-upload ir"></span>
-				<span>Upload</span>
+				<span><?php echo $this->translate('Upload'); ?></span>
 			</a>
 			<?php endif; ?>
 		</div>
 		<p class="table-title">
-			<span class="name"><a href="?sort=<?php echo ($this->sort == Skylable_AccessSxNew::SORT_BY_NAME_DESC ? Skylable_AccessSxNew::SORT_BY_NAME_ASC : Skylable_AccessSxNew::SORT_BY_NAME_DESC ); ?>" class="sort-name">Name<span class="icon-sort<?php echo ($this->sort == Skylable_AccessSxNew::SORT_BY_NAME_DESC ? ' down' : ($this->sort == Skylable_AccessSxNew::SORT_BY_NAME_ASC ? ' up' : '' ) ); ?>"></span></a>
-            </span><span class="size"><a href="?sort=<?php echo ($this->sort == Skylable_AccessSxNew::SORT_BY_SIZE_DESC ? Skylable_AccessSxNew::SORT_BY_SIZE_ASC : Skylable_AccessSxNew::SORT_BY_SIZE_DESC ); ?>" class="sort-size">Size<span class="icon-sort<?php echo ($this->sort == Skylable_AccessSxNew::SORT_BY_SIZE_DESC ? ' down' : ($this->sort == Skylable_AccessSxNew::SORT_BY_SIZE_ASC ? ' up' : '' ) ); ?>"></span></a>
-            </span><span class="date"><a href="?sort=<?php echo ($this->sort == Skylable_AccessSxNew::SORT_BY_DATE_DESC ? Skylable_AccessSxNew::SORT_BY_DATE_ASC : Skylable_AccessSxNew::SORT_BY_DATE_DESC ); ?>" class="sort-date">Date<span class="icon-sort<?php echo ($this->sort == Skylable_AccessSxNew::SORT_BY_DATE_DESC ? ' down' : ($this->sort == Skylable_AccessSxNew::SORT_BY_DATE_ASC ? ' up' : '' ) ); ?>"></span></a></span>
+			<span class="name"><a href="?sort=<?php echo ($this->sort == Skylable_AccessSxNew::SORT_BY_NAME_DESC ? Skylable_AccessSxNew::SORT_BY_NAME_ASC : Skylable_AccessSxNew::SORT_BY_NAME_DESC ); ?>" class="sort-name"><?php echo $this->translate('Name'); ?><span class="icon-sort<?php echo ($this->sort == Skylable_AccessSxNew::SORT_BY_NAME_DESC ? ' down' : ($this->sort == Skylable_AccessSxNew::SORT_BY_NAME_ASC ? ' up' : '' ) ); ?>"></span></a>
+            </span><span class="size"><a href="?sort=<?php echo ($this->sort == Skylable_AccessSxNew::SORT_BY_SIZE_DESC ? Skylable_AccessSxNew::SORT_BY_SIZE_ASC : Skylable_AccessSxNew::SORT_BY_SIZE_DESC ); ?>" class="sort-size"><?php echo $this->translate('Size'); ?><span class="icon-sort<?php echo ($this->sort == Skylable_AccessSxNew::SORT_BY_SIZE_DESC ? ' down' : ($this->sort == Skylable_AccessSxNew::SORT_BY_SIZE_ASC ? ' up' : '' ) ); ?>"></span></a>
+            </span><span class="date"><a href="?sort=<?php echo ($this->sort == Skylable_AccessSxNew::SORT_BY_DATE_DESC ? Skylable_AccessSxNew::SORT_BY_DATE_ASC : Skylable_AccessSxNew::SORT_BY_DATE_DESC ); ?>" class="sort-date"><?php echo $this->translate('Date'); ?><span class="icon-sort<?php echo ($this->sort == Skylable_AccessSxNew::SORT_BY_DATE_DESC ? ' down' : ($this->sort == Skylable_AccessSxNew::SORT_BY_DATE_ASC ? ' up' : '' ) ); ?>"></span></a></span>
 		</p>
 	</div>
 </div>	

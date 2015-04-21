@@ -13,7 +13,7 @@
         }
 
         ?>
-        <p><label for="frm_file_list_size"><?php echo $this->translate('File list size:'); ?></label><input name="frm_file_list_size" type="text" placeholder="<?php echo $this->translate('File list size'); ?>" value="<?php echo $page_size; ?>"> <input type="submit" id="frm_view_settings_launch" value="Save!"></p>
+        <p><label for="frm_file_list_size"><?php echo $this->translate('File list size:'); ?></label><input name="frm_file_list_size" type="text" placeholder="<?php echo $this->translate('File list size'); ?>" value="<?php echo $page_size; ?>"> <input type="submit" id="frm_view_settings_launch" value="<?php echo $this->translate('Save!'); ?>"></p>
     </form>
     <script type="text/javascript">
         $(document).ready(function(){
@@ -46,6 +46,6 @@
     </script>
     <hr />
     <p>
-        <a href="#" onclick="window.alert('Currently not implemented... ;)'); return false;" class="styled-button"><?php echo $this->translate('Clear cache');?></a>
+        <a href="#" onclick="window.alert('<?php echo $this->translate('Currently not implemented.'); ?>'); return false;" class="styled-button"><?php echo $this->translate('Clear cache');?></a>
     </p>
 </div>

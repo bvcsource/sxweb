@@ -74,7 +74,7 @@ class AjaxController extends My_BaseAction {
             Zend_Json::encode(array(
                 'status' => FALSE,
                 'url' => '/',
-                'error' => 'Your credentials are expired, you need to login again.'
+                'error' => $this->getTranslator()->translate('Your credentials are expired, you need to login again.')
             ))
         );
     }
@@ -119,7 +119,7 @@ class AjaxController extends My_BaseAction {
 
         if (empty($files) || !$validate_path->isValid($dest)) {
             $this->getResponse()->setHttpResponseCode(400);
-            echo '<p>Invalid input.<p>';
+            echo '<p>',$this->getTranslator()->translate('Invalid input.'),'</p>';
             return FALSE;
         }
 
@@ -129,14 +129,14 @@ class AjaxController extends My_BaseAction {
             if ($status === FALSE) {
                 $errors = $access_sx->getLastErrorLog();
                 $this->getResponse()->setHttpResponseCode(400);
-                echo '<p>Copy failed.<p>';
+                echo '<p>', $this->getTranslator()->translate('Copy failed.'),'</p>';
             } else {
-                echo '<p>Files successfully copied.<p>';
+                echo '<p>',$this->getTranslator()->translate('Files successfully copied.'),'</p>';
             }
         }
         catch(Exception $e) {
             $this->getResponse()->setHttpResponseCode(500);
-            echo '<p>Internal error.<p>';
+            echo '<p>', $this->getTranslator()->translate('Internal error.') ,'</p>';
             return FALSE;
         }
     }
@@ -180,7 +180,7 @@ class AjaxController extends My_BaseAction {
 
         if (empty($files) || !$validate_path->isValid($dest)) {
             $this->getResponse()->setHttpResponseCode(400);
-            echo '<p>Invalid input.<p>';
+            echo '<p>',$this->getTranslator()->translate('Invalid input.'),'</p>';
             return FALSE;
         }
 
@@ -190,14 +190,14 @@ class AjaxController extends My_BaseAction {
             if ($status === FALSE) {
                 $errors = $access_sx->getLastErrorLog();
                 $this->getResponse()->setHttpResponseCode(400);
-                echo '<p>Move failed.<p>';
+                echo '<p>', $this->getTranslator()->translate('Move failed.'),'</p>';
             } else {
-                echo '<p>Files successfully moved.<p>';
+                echo '<p>',$this->getTranslator()->translate('File(s) successfully moved.'),'</p>';
             }
         }
         catch(Exception $e) {
             $this->getResponse()->setHttpResponseCode(500);
-            echo '<p>Internal error.<p>';
+            echo '<p>', $this->getTranslator()->translate('Internal error.') ,'</p>';
             return FALSE;
         }
     }
@@ -227,18 +227,20 @@ class AjaxController extends My_BaseAction {
             }
             catch (Exception $e) {
                 $this->getLogger()->debug(__METHOD__ . ': exception: ' . $e->getMessage() );
-                $this->sendErrorResponse(self::ERROR_MSG_INTERNAL_ERROR, 500);
+                $this->sendErrorResponse('<p>',$this->getTranslator()->translate('Internal error. Can\'t proceed.'),'</p>', 500);
             }
         } else {
-            $this->sendErrorResponse(self::ERROR_MSG_INVALID_INPUT);
+            $this->sendErrorResponse('<p>',$this->getTranslator()->translate('Invalid input.'),'</p>');
         }
     }
 
-    const
-        ERROR_MSG_OPERATION_FAILED = '<p>File operation failed.</p>',
-        ERROR_MSG_INVALID_INPUT = '<p>Invalid input.</p>',
-        ERROR_MSG_INTERNAL_ERROR = '<p>Internal error. Can\'t proceed.</p>';
-
+    /**
+     * Sends an error response
+     * 
+     * @param string $body
+     * @param int $http_error_code
+     * @throws Zend_Controller_Response_Exception
+     */
     protected function sendErrorResponse($body, $http_error_code = 400) {
         $this->getResponse()->setHttpResponseCode($http_error_code);
         $this->getResponse()->clearBody();
@@ -266,7 +268,7 @@ class AjaxController extends My_BaseAction {
 
         $validate_path = new My_ValidatePath();
         if (!$validate_path->isValid($source)) {
-            $this->sendErrorResponse(self::ERROR_MSG_INVALID_INPUT);
+            $this->sendErrorResponse('<p>',$this->getTranslator()->translate('Invalid input.'),'</p>');
             $this->getLogger()->debug(__METHOD__.': invalid source path: '.print_r($source, TRUE));
             return FALSE;
         }
@@ -274,14 +276,14 @@ class AjaxController extends My_BaseAction {
         $validate_filename = new My_ValidateFilename();
         if (!$validate_filename->isValid($new_name)) {
             $this->getLogger()->debug(__METHOD__.': invalid destination name: '.print_r($new_name, TRUE));
-            $this->sendErrorResponse('Invalid destination name.');
+            $this->sendErrorResponse($this->getTranslator()->translate('Invalid destination name.'));
             return FALSE;
         }
 
         $the_new_path = My_Utils::slashPath( dirname($source) ) . $new_name;
         if (!$validate_path->isValid($the_new_path)) {
             $this->getLogger()->debug(__METHOD__.': invalid destination path: '.print_r($the_new_path, TRUE));
-            $this->sendErrorResponse('Invalid destination name.');
+            $this->sendErrorResponse($this->getTranslator()->translate('Invalid destination path.'));
             return FALSE;
         }
 
@@ -298,12 +300,12 @@ class AjaxController extends My_BaseAction {
                 $this->getLogger()->debug(__METHOD__.': rename successful.');
             } else {
                 $this->getLogger()->debug(__METHOD__.': rename failed.');
-                $this->sendErrorResponse('Rename failed.');
+                $this->sendErrorResponse($this->getTranslator()->translate('Rename failed.'));
             }
         }
         catch(Exception $e) {
             $this->getLogger()->debug(__METHOD__.': exception: '.$e->getMessage());
-            $this->sendErrorResponse('Invalid destination name.');
+            $this->sendErrorResponse($this->getTranslator()->translate('Invalid destination name.'));
         }
 
     }
@@ -335,7 +337,7 @@ class AjaxController extends My_BaseAction {
         }
 
         if (!$this->getRequest()->isPost()) {
-            $this->sendErrorResponse(self::ERROR_MSG_INVALID_INPUT);
+            $this->sendErrorResponse('<p>',$this->getTranslator()->translate('Invalid input.'),'</p>');
             return FALSE;
         }
 
@@ -347,13 +349,13 @@ class AjaxController extends My_BaseAction {
             $access_sx = new Skylable_AccessSxNG( My_Utils::getAccessSxNGOpt( Zend_Auth::getInstance()->getIdentity() ) );
             $validate_path = new My_ValidateSxPath( $access_sx, My_ValidateSxPath::FILE_TYPE_FILE );
             if (!$validate_path->isValid($path)) {
-                $this->sendErrorResponse('<p>File not found or invalid.</p>');
+                $this->sendErrorResponse('<p>'.$this->getTranslator()->translate('File not found or invalid.').'</p>');
                 return FALSE;
             }
         }
         catch(Exception $e) {
             $this->getLogger()->debug(__METHOD__.': exception: '.$e->getMessage());
-            $this->sendErrorResponse(self::ERROR_MSG_INTERNAL_ERROR, 500);
+            $this->sendErrorResponse('<p>',$this->getTranslator()->translate('Internal error. Can\'t proceed.'),'</p>', 500);
             return FALSE;
         }
 
@@ -384,7 +386,7 @@ class AjaxController extends My_BaseAction {
             
             $expire_time_check = new My_ValidateSharedFileExpireTime();
             if (!$expire_time_check->isValid($expire_time)) {
-                $errors[] = $this->view->translate('Invalid expire time');
+                $errors[] = $this->getTranslator()->translate('Invalid expire time');
                 $expire_time = '';
             }
             
@@ -412,13 +414,13 @@ class AjaxController extends My_BaseAction {
             if ($sh->fileExists($path, Zend_Auth::getInstance()->getIdentity()->getSecretKey(), $key)) {
                 $ok_up = $sh->updateFile($key, $password, $expire_time);
                 if (!$ok_up) {
-                    $this->sendErrorResponse('<p>Failed to create file link.</p>');
+                    $this->sendErrorResponse('<p>' . $this->getTranslator()->translate('Failed to create the file share link.').'</p>');
                     return FALSE;
                 }
             } else {
                 $key = $sh->add($path, Zend_Auth::getInstance()->getIdentity()->getSecretKey(), $expire_time, $password );
                 if ($key === FALSE) {
-                    $this->sendErrorResponse('<p>Failed to create file link.</p>');
+                    $this->sendErrorResponse('<p>' . $this->getTranslator()->translate('Failed to create the file share link.').'</p>');
                     return FALSE;
                 }
             }
@@ -427,11 +429,11 @@ class AjaxController extends My_BaseAction {
             $this->view->url = Zend_Registry::get('skylable')->get('url') . "/shared/file/" . $key . "/" . rawurlencode(basename($path));
         } catch (My_NotUniqueException $e) {
             $this->getInvokeArg('bootstrap')->getResource('log')->err($e->getMessage());
-            $this->sendErrorResponse('<p>Failed to create file link.</p>');
+            $this->sendErrorResponse('<p>' . $this->getTranslator()->translate('Failed to create the file share link.').'</p>');
             return FALSE;
         } catch (Exception $e) {
             $this->getInvokeArg('bootstrap')->getResource('log')->err($e->getMessage());
-            $this->sendErrorResponse(self::ERROR_MSG_INTERNAL_ERROR, 500);
+            $this->sendErrorResponse('<p>',$this->getTranslator()->translate('Internal error. Can\'t proceed.'),'</p>', 500);
         }
 
     }
@@ -455,7 +457,7 @@ class AjaxController extends My_BaseAction {
             $this->enableView();
             $this->getResponse()->setHttpResponseCode(401);
             $this->_helper->layout()->setLayout("shared");
-            $this->view->assign('error_msg', 'Invalid shared file key');
+            $this->view->assign('error_msg', $this->getTranslator()->translate('Invalid shared file key'));
             return FALSE;
         }
 
@@ -466,7 +468,7 @@ class AjaxController extends My_BaseAction {
                 $this->enableView();
                 $this->getResponse()->setHttpResponseCode(404);
                 $this->_helper->layout()->setLayout("shared");
-                $this->view->assign('error_msg', 'File not found or expired.');
+                $this->view->assign('error_msg', $this->getTranslator()->translate('File not found or expired.'));
                 return FALSE;
             }
             
@@ -521,13 +523,13 @@ class AjaxController extends My_BaseAction {
                     $this->enableView();
                     $this->getResponse()->setHttpResponseCode(500);
                     $this->_helper->layout()->setLayout("shared");
-                    $this->view->assign('error_msg', sprintf($this->view->translate('Invalid password! <a href="%s">Retry...</a>'), $this->view->ServerUrl().'/shared/file/'.$key.'/'.rawurlencode(basename($file_data['file_path'])) ));
+                    $this->view->assign('error_msg', sprintf($this->getTranslator()->translate('Invalid password! <a href="%s">Retry...</a>'), $this->view->ServerUrl().'/shared/file/'.$key.'/'.rawurlencode(basename($file_data['file_path'])) ));
                     return FALSE;
                     
                 } elseif ($tickets->registerTicket( $user_id, $user_ip ) === FALSE) {
                     $this->getResponse()->setHttpResponseCode(500);
-                    $this->view->error_title = 'Too many concurrent downloads!';
-                    $this->view->error_message = 'Please wait a minute and retry. ';
+                    $this->view->error_title = $this->getTranslator()->translate('Too many concurrent downloads!');
+                    $this->view->error_message = $this->getTranslator()->translate('Please wait a minute and retry.');
                     $allow_download = FALSE;
                 } else {
 
@@ -562,13 +564,16 @@ class AjaxController extends My_BaseAction {
                         // File not found.
                         $allow_download = FALSE;
                         $this->getResponse()->setHttpResponseCode(404);
-                        $this->view->error_title = 'File not found!';
-                        $this->view->error_message = 'The file &quot;'.htmlentities(basename($file_data['file_path'])).'&quot; was not found.';
+                        $this->view->error_title = $this->getTranslator()->translate('File not found!');
+
+                        $this->view->error_message = sprintf($this->getTranslator()->translate('The file &quot;%s&quot; was not found.'),$this->view->escape(basename($file_data['file_path'])) );
                     } else {
                         if ($the_file['type'] !== 'FILE') {
                             $this->getResponse()->setHttpResponseCode(500);
-                            $this->view->error_title = 'Invalid file type!';
-                            $this->view->error_message = 'The file &quot;'.htmlentities($file_data['file_path']).'&quot; can\'t be downloaded.';
+                            $this->view->error_title = $this->getTranslator()->translate('Invalid file type!');
+
+                            $this->view->error_message = sprintf($this->getTranslator()->translate('The file &quot;%s&quot; can\'t be downloaded.'), $this->view->escape($file_data['file_path']));
+                            
                             $allow_download = FALSE;
                         }
                     }
@@ -598,7 +603,7 @@ class AjaxController extends My_BaseAction {
             $this->enableView();
             $this->getResponse()->setHttpResponseCode(500);
             $this->_helper->layout()->setLayout("shared");
-            $this->view->assign('error_msg', 'Internal error, please retry later.');
+            $this->view->assign('error_msg', $this->getTranslator()->translate('Internal error, please retry later.'));
             return FALSE;
         }
     }
@@ -634,7 +639,7 @@ class AjaxController extends My_BaseAction {
             $this->getResponse()->setHttpResponseCode(404);
             $this->getLogger()->debug(__METHOD__.': path is invalid, reason:'.print_r($validate_path->getErrors(), TRUE));
             $this->view->has_error = TRUE;
-            $this->view->error = "Invalid path.";
+            $this->view->error = $this->getTranslator()->translate("Invalid path.");
             return false;
         }
         $path = My_Utils::slashPath($path);
@@ -659,13 +664,13 @@ class AjaxController extends My_BaseAction {
             if ($this->view->list === FALSE) {
                 $this->getResponse()->setHttpResponseCode(500);
                 $this->view->has_error = TRUE;
-                $this->view->error = "Internal error. Please retry later.";
+                $this->view->error = $this->getTranslator()->translate("Internal error. Please retry later.");
             }
 
         } catch (Exception $e) {
             $this->getResponse()->setHttpResponseCode(500);
             $this->view->has_error = TRUE;
-            $this->view->error = "Internal error. Please retry later.";
+            $this->view->error = $this->getTranslator()->translate("Internal error. Please retry later.");
         }
     }
 
@@ -734,7 +739,7 @@ class AjaxController extends My_BaseAction {
                     $this->getResponse()->setHttpResponseCode(201);
                     echo Zend_Json::encode(array(
                         'status' => FALSE,
-                        'error' => 'Failed to create directory',
+                        'error' => $this->getTranslator()->translate('Failed to create directory'),
                         'url' => ''
                     ));
                 }
@@ -744,7 +749,7 @@ class AjaxController extends My_BaseAction {
                 $this->getResponse()->setHttpResponseCode(500);
                 echo Zend_Json::encode(array(
                     'status' => FALSE,
-                    'error' => 'Internal error: failed to create directory',
+                    'error' => $this->getTranslator()->translate('Internal error: failed to create directory'),
                     'url' => ''
                 ));
             }
@@ -752,7 +757,7 @@ class AjaxController extends My_BaseAction {
             $this->getResponse()->setHttpResponseCode(400);
             echo Zend_Json::encode(array(
                 'status' => FALSE,
-                'error' => 'Invalid directory name',
+                'error' => $this->getTranslator()->translate('Invalid directory name'),
                 'url' => ''
             ));
         }
@@ -789,7 +794,7 @@ class AjaxController extends My_BaseAction {
 
         if (empty($files)) {
             $this->getResponse()->setHttpResponseCode(400);
-            echo '<p>Invalid input.<p>';
+            echo '<p>'.$this->getTranslator()->translate('Invalid input.'),'</p>';
             return FALSE;
         }
 
@@ -799,14 +804,14 @@ class AjaxController extends My_BaseAction {
             if ($status === FALSE) {
                 $errors = $access_sx->getLastErrorLog();
                 $this->getResponse()->setHttpResponseCode(400);
-                echo '<p>Failed to delete files.<p>';
+                echo '<p>',$this->getTranslator()->translate('Failed to delete files.'),'</p>';
             } else {
-                echo '<p>Files successfully deleted.<p>';
+                echo '<p>',$this->getTranslator()->translate('Files successfully deleted.'),'</p>';
             }
         }
         catch(Exception $e) {
             $this->getResponse()->setHttpResponseCode(500);
-            echo '<p>Internal error.<p>';
+            echo '<p>',$this->getTranslator()->translate('Internal error.'),'</p>';
             return FALSE;
         }
     }
