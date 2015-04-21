@@ -116,6 +116,60 @@ class My_Shared extends Zend_Db_Table_Abstract {
     }
 
     /**
+     * Update the share info for a given file.
+     * 
+     * If a parameter is NULL it is ignored.
+     * 
+     * IMPORTANT: passing an empty string as password will remove the actual password.
+     * 
+     * @param string $file_id the unique file ID
+     * @param string $password the plain password
+     * @param string $expire_time the expire time
+     * @return bool
+     * @throws Exception
+     */
+    public function updateFile($file_id, $password = NULL, $expire_time = NULL) {
+        
+        if (empty($file_id)) {
+            return FALSE;
+        }
+        
+        $upd = array();
+        if (!is_null($password)) {
+            if (strlen($password) == 0) {
+                $upd['file_password'] = '';
+            } else {
+                $upd['file_password'] = $this->getPasswordHash($password);
+            }
+        }
+        
+        if (!is_null($expire_time)) {
+            if (!is_numeric($expire_time)) {
+                return FALSE;
+            }
+            $upd['expire_at'] = new Zend_Db_Expr( 'DATE_ADD(NOW(), INTERVAL '.strval($expire_time).' SECOND)' );
+        }
+        
+        if (empty($upd)) {
+            return FALSE;
+        }
+
+        $upd['created_at'] = new Zend_Db_Expr( 'NOW()' );
+        
+        $db = $this->getAdapter();
+        $db->beginTransaction();
+        try {
+            $this->update($upd, $db->quoteInto('file_id = ?', strval($file_id)) );
+            $db->commit();
+            return TRUE;
+        }
+        catch(Exception $e) {
+            $db->rollBack();
+            throw $e;
+        }
+    }
+
+    /**
      * Generates a password hash from a plain password.
      *
      * Every password stored into the DB is a hash obtained with this method.

@@ -405,13 +405,24 @@ class AjaxController extends My_BaseAction {
         try {
             $sh = new My_Shared();
             $key = '';
-            if (!$sh->fileExists($path, Zend_Auth::getInstance()->getIdentity()->getSecretKey(), $key)) {
+            
+            /*
+             * Update the shared file info, if already exists.
+             * */
+            if ($sh->fileExists($path, Zend_Auth::getInstance()->getIdentity()->getSecretKey(), $key)) {
+                $ok_up = $sh->updateFile($key, $password, $expire_time);
+                if (!$ok_up) {
+                    $this->sendErrorResponse('<p>Failed to create file link.</p>');
+                    return FALSE;
+                }
+            } else {
                 $key = $sh->add($path, Zend_Auth::getInstance()->getIdentity()->getSecretKey(), $expire_time, $password );
                 if ($key === FALSE) {
                     $this->sendErrorResponse('<p>Failed to create file link.</p>');
                     return FALSE;
                 }
             }
+            
             $this->_helper->viewRenderer->setNoRender(FALSE);
             $this->view->url = Zend_Registry::get('skylable')->get('url') . "/shared/file/" . $key . "/" . rawurlencode(basename($path));
         } catch (My_NotUniqueException $e) {
