@@ -78,6 +78,10 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap {
 
         $this->bootstrap('Config');
         $cfg = Zend_Registry::get('skylable');
+
+        $this->bootstrap('Log');
+        $logger = $this->getResource('Log');
+        
         
         // We need strong cryptography
         if (!My_Utils::randomBytesAreSafe()) {
@@ -95,7 +99,8 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap {
         if ($cfg_max_upload_filesize > $max_upload_filesize) {
             throw new Zend_Exception('Internal error: please check the \'max_upload_filesize\' skylable.ini setting, it\'s too high. Maximum allowed upload file size is (in bytes): '.strval($max_upload_filesize));
         } elseif ($cfg_max_upload_filesize < ($max_upload_filesize / 4)) {
-            throw new Zend_Exception('Internal error: please check the \'max_upload_filesize\' skylable.ini setting, it\'s too low. Maximum allowed upload file size is (in bytes): '.strval($max_upload_filesize));
+            $logger->warn( 'Internal error: please check the \'max_upload_filesize\' skylable.ini setting, it\'s too low. Maximum allowed upload file size is (in bytes): '.strval($max_upload_filesize) ); 
+            // throw new Zend_Exception('Internal error: please check the \'max_upload_filesize\' skylable.ini setting, it\'s too low. Maximum allowed upload file size is (in bytes): '.strval($max_upload_filesize));
         }
         
         // Checks the upload dir
