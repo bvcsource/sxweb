@@ -257,7 +257,7 @@ class IndexController extends Zend_Controller_Action {
         
         // SX commands
         $sx_cmd = array(
-            'sxinit','sxcp','sxrm','sxmv','sxacl'
+            'sxinit','sxcp','sxrm','sxmv','sxacl','sxrev'
         );
         
         $this->view->sx_commands_search_path = $this->getExecPath();
