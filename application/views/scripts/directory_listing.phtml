@@ -122,8 +122,12 @@ if(isset($this->list)) {
                             </li>
                             <li><a href="javascript:void(0)" class="elmmove"><?php echo $this->translate('Move'); ?></a>
                             </li>
+                            <?php if ($this->hasRevisionsSupport(My_Utils::getRootFromPath($this->url))): ?>
+                                <li><a href="javascript:void(0)" class="elmrevisions"><?php echo $this->translate('Revisions'); ?></a></li>
+                            <?php endif; ?>
                             <li><a href="javascript:void(0)"
                                    class="elmdelete delete"><?php echo $this->translate('Delete'); ?></a></li>
+                            
                         <?php endif; ?>
                     </ul>
                 </li>
