@@ -47,6 +47,19 @@ require_once 'My/User.php';
  */
 class Bootstrap extends Zend_Application_Bootstrap_Bootstrap {
 
+    protected function _initTranslate() {
+        $translate = new Zend_Translate(
+            array(
+                'adapter' => 'csv',
+                'content' => APPLICATION_PATH . '/languages',
+                'scan' => Zend_Translate::LOCALE_FILENAME,
+                'delimiter' => ',',
+                'disableNotices' => TRUE
+            )
+        );
+        Zend_Registry::set('Zend_Translate', $translate);
+        return $translate;
+    }
 
     /**
      * Converts a php.ini "pretty" value to bytes
