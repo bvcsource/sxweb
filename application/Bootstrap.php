@@ -311,10 +311,6 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap {
         $router->addRoute('upload2', new Zend_Controller_Router_Route_Regex( 'upload/(.+)', array( 'controller' => 'upload', 'action' => 'upload'	), array( 1 => 'vol' ) ) );
         $router->addRoute('upload', new Zend_Controller_Router_Route_Regex( 'upload/(.+)/(.+)', array( 'controller' => 'upload', 'action' => 'upload'),array(1 => 'vol',2 => 'url')));
 
-        /*
-         * sxls for AJAX
-        */
-        $router->addRoute('ajax',  new My_Regex( 'ajax/(.*)', array( 'controller' => 'upload','action' => 'ajax'), array( 1 => 'url' ) ) );
 
         /*
          * List files/directories + layout

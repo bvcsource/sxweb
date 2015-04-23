@@ -75,6 +75,10 @@ if (!Skylable_Lang) {
         settingsPageSizeInvalid : 'Invalid page size.',
 
         // -------- Uploads
-        uploadTitle: 'Uploading...'
+        uploadTitle: 'Uploading...',
+        
+        // -------- Revisions
+        revisionsTitle : 'Revisions',
+        revisionsApply : 'Apply!'
     }
 }

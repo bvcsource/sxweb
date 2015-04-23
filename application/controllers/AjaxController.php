@@ -135,9 +135,9 @@ class AjaxController extends My_BaseAction {
             }
         }
         catch(Exception $e) {
+            $this->getLogger()->err(__METHOD__.': exception: ' .$e->getMessage());
             $this->getResponse()->setHttpResponseCode(500);
             echo '<p>', $this->getTranslator()->translate('Internal error.') ,'</p>';
-            return FALSE;
         }
     }
 
@@ -219,14 +219,14 @@ class AjaxController extends My_BaseAction {
             try {
                 $access_sx  = new Skylable_AccessSxNew( Zend_Auth::getInstance()->getIdentity() );
                 $this->view->url = $path;
-                // $this->view->volumes = $access_sx->listVolumes();
+                $this->view->volumes = $access_sx->listVolumes();
                 $this->paginateFiles($path, $access_sx);
                 // $this->view->list = $access_sx->sxls($path, $this->getFileSortOrder() );
                 $this->view->acl = $access_sx->getVolumeACL( My_Utils::getRootFromPath( $path ) );
                 $this->renderScript("directory_listing.phtml");
             }
             catch (Exception $e) {
-                $this->getLogger()->debug(__METHOD__ . ': exception: ' . $e->getMessage() );
+                $this->getLogger()->err(__METHOD__ . ': exception: ' . $e->getMessage() );
                 $this->sendErrorResponse('<p>',$this->getTranslator()->translate('Internal error. Can\'t proceed.'),'</p>', 500);
             }
         } else {
@@ -304,7 +304,7 @@ class AjaxController extends My_BaseAction {
             }
         }
         catch(Exception $e) {
-            $this->getLogger()->debug(__METHOD__.': exception: '.$e->getMessage());
+            $this->getLogger()->err(__METHOD__.': exception: '.$e->getMessage());
             $this->sendErrorResponse($this->getTranslator()->translate('Invalid destination name.'));
         }
 
@@ -428,11 +428,10 @@ class AjaxController extends My_BaseAction {
             $this->_helper->viewRenderer->setNoRender(FALSE);
             $this->view->url = Zend_Registry::get('skylable')->get('url') . "/shared/file/" . $key . "/" . rawurlencode(basename($path));
         } catch (My_NotUniqueException $e) {
-            $this->getInvokeArg('bootstrap')->getResource('log')->err($e->getMessage());
+            $this->getLogger()->err(__METHOD__.': exception: '.$e->getMessage());
             $this->sendErrorResponse('<p>' . $this->getTranslator()->translate('Failed to create the file share link.').'</p>');
-            return FALSE;
         } catch (Exception $e) {
-            $this->getInvokeArg('bootstrap')->getResource('log')->err($e->getMessage());
+            $this->getLogger()->err(__METHOD__.': exception: '.$e->getMessage());
             $this->sendErrorResponse('<p>',$this->getTranslator()->translate('Internal error. Can\'t proceed.'),'</p>', 500);
         }
 
@@ -599,7 +598,7 @@ class AjaxController extends My_BaseAction {
 
         }
         catch(Exception $e) {
-            $this->getLogger()->debug(__METHOD__.': exception: '.$e->getMessage());
+            $this->getLogger()->err(__METHOD__.': exception: '.$e->getMessage());
             $this->enableView();
             $this->getResponse()->setHttpResponseCode(500);
             $this->_helper->layout()->setLayout("shared");
@@ -668,6 +667,7 @@ class AjaxController extends My_BaseAction {
             }
 
         } catch (Exception $e) {
+            $this->getLogger()->err(__METHOD__.': exception: '.$e->getMessage());
             $this->getResponse()->setHttpResponseCode(500);
             $this->view->has_error = TRUE;
             $this->view->error = $this->getTranslator()->translate("Internal error. Please retry later.");
@@ -746,6 +746,7 @@ class AjaxController extends My_BaseAction {
 
             }
             catch(Exception $e) {
+                $this->getLogger()->err(__METHOD__.': exception: '.$e->getMessage());
                 $this->getResponse()->setHttpResponseCode(500);
                 echo Zend_Json::encode(array(
                     'status' => FALSE,
@@ -810,9 +811,177 @@ class AjaxController extends My_BaseAction {
             }
         }
         catch(Exception $e) {
+            $this->getLogger()->err(__METHOD__.': exception: '.$e->getMessage());
             $this->getResponse()->setHttpResponseCode(500);
             echo '<p>',$this->getTranslator()->translate('Internal error.'),'</p>';
             return FALSE;
+        }
+    }
+
+    /**
+     * Lists revisions.
+     * 
+     * Parameters:
+     * 'path' - complete file path (volume+path) of the file
+     * 
+     * @return bool
+     */
+    public function revisionsListAction() {
+        if (!Zend_Auth::getInstance()->hasIdentity()) {
+            $this->forbidden();
+            return FALSE;
+        }
+
+        $validate_path = new My_ValidatePath();
+        $path = $this->getRequest()->getParam('path');
+        if (!$validate_path->isValid($path)) {
+            $this->getResponse()->setHttpResponseCode(400);
+            echo '<p>'.$this->getTranslator()->translate('Invalid input.'),'</p>';
+            return FALSE;
+        }
+        
+        try {
+            $this->view->path = $path;
+            
+            $access_sx = new Skylable_AccessSxNew( Zend_Auth::getInstance()->getIdentity() );
+            $revisions = $access_sx->sxrevList($path);
+            if ($revisions === FALSE) {
+                $this->getResponse()->setHttpResponseCode(400);
+                echo '<p>',$this->getTranslator()->translate('Path not found or revisions not supported.'),'</p>';
+            } else {
+                $this->view->revisions = $revisions;
+                $this->_helper->viewRenderer->setNoRender(FALSE);
+            }
+        }
+        catch(Exception $e) {
+            $this->getLogger()->err(__METHOD__.': exception: '.$e->getMessage());
+            $this->getResponse()->setHttpResponseCode(500);
+            echo '<p>',$this->getTranslator()->translate('Internal error.'),'</p>';
+        }
+    }
+
+    /**
+     * Manage the delete revision action.
+     * 
+     * Parameters:
+     * 'path' - the path
+     * 'rev_id' - sha1 of the revision name
+     * 
+     * @return bool
+     * @throws Zend_Controller_Response_Exception
+     */
+    public function revisionsDeleteAction() {
+        if (!Zend_Auth::getInstance()->hasIdentity()) {
+            $this->forbidden();
+            return FALSE;
+        }
+
+        $validate_path = new My_ValidatePath();
+        $path = $this->getRequest()->getParam('path');
+        if (!$validate_path->isValid($path)) {
+            $this->getResponse()->setHttpResponseCode(400);
+            echo '<p>'.$this->getTranslator()->translate('Invalid input.'),'</p>';
+            return FALSE;
+        }
+        
+        $rev_id = $this->getRequest()->getParam('rev_id');
+
+        try {
+            $access_sx = new Skylable_AccessSxNew( Zend_Auth::getInstance()->getIdentity() );
+            $revisions = $access_sx->sxrevList($path);
+            if ($revisions === FALSE) {
+                $this->getResponse()->setHttpResponseCode(400);
+                echo '<p>',$this->getTranslator()->translate('Path not found or revisions not supported.'),'</p>';
+            } else {
+                // Search the wanted revision...
+                foreach($revisions as $rev) {
+                    if (strcmp($rev['hash'], $rev_id) == 0) {
+                        if ($access_sx->sxrevDelete($path, $rev['rev'])) {
+                            echo '<p>',$this->getTranslator()->translate('Revision successfully deleted.'),'</p>';
+                        } else {
+                            $this->getResponse()->setHttpResponseCode(400);
+                            echo '<p>',$this->getTranslator()->translate('Failed to delete the revision.'),'</p>';
+                        }
+                        break;
+                    }
+                }
+                
+            }
+        }
+        catch(Exception $e) {
+            $this->getLogger()->err(__METHOD__.': exception: '.$e->getMessage());
+            $this->getResponse()->setHttpResponseCode(500);
+            echo '<p>',$this->getTranslator()->translate('Internal error.'),'</p>';
+        }
+    }
+
+    /**
+     * Manage the copy revision action
+     * 
+     * 'path' - the path
+     * 'rev_id' - sha1 of the revision name
+     * 'dest' - the destination file (can be an empty string)
+     * @return bool
+     * @throws Zend_Controller_Response_Exception
+     */
+    public function revisionsCopyAction() {
+        if (!Zend_Auth::getInstance()->hasIdentity()) {
+            $this->forbidden();
+            return FALSE;
+        }
+
+        $validate_path = new My_ValidatePath();
+        $path = $this->getRequest()->getParam('path');
+        if (!$validate_path->isValid($path)) {
+            $this->getResponse()->setHttpResponseCode(400);
+            echo '<p>'.$this->getTranslator()->translate('Invalid input.'),'</p>';
+            return FALSE;
+        }
+
+        $rev_id = $this->getRequest()->getParam('rev_id');
+        
+        $destination_path = $this->getRequest()->getParam('dest');
+        if (is_null($destination_path) || !is_string($destination_path)) {
+            $this->getResponse()->setHttpResponseCode(400);
+            echo '<p>',$this->getTranslator()->translate('Invalid destination path.'),'</p>';
+            return FALSE;
+        }
+        if (strlen($destination_path) == 0) {
+            $destination_path = $path;
+        } elseif (!$validate_path->isValid($destination_path) || strpos($destination_path, '/') != 0) {
+            $this->getResponse()->setHttpResponseCode(400);
+            echo '<p>',$this->getTranslator()->translate('Invalid destination path.'),'</p>';
+            return FALSE;
+        } else {
+            // Combines destination path with source path, so we can write to the same volume
+            $destination_path = substr($path, 0, strrpos($path, '/')) . '/'.My_Utils::removeSlashes($destination_path);
+        } 
+
+        try {
+            $access_sx = new Skylable_AccessSxNew( Zend_Auth::getInstance()->getIdentity() );
+            $revisions = $access_sx->sxrevList($path);
+            if ($revisions === FALSE) {
+                $this->getResponse()->setHttpResponseCode(400);
+                echo '<p>',$this->getTranslator()->translate('Path not found or revisions not supported.'),'</p>';
+            } else {
+                // Search the wanted revision...
+                foreach($revisions as $rev) {
+                    if (strcmp($rev['hash'], $rev_id) == 0) {
+                        if ($access_sx->sxrevCopy($path, $rev['rev'], $destination_path, TRUE)) {
+                            echo '<p>',$this->getTranslator()->translate('Revision successfully copied.'),'</p>';
+                        } else {
+                            $this->getResponse()->setHttpResponseCode(400);
+                            echo '<p>',$this->getTranslator()->translate('Failed to copy the revision.'),'</p>';
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+        catch(Exception $e) {
+            $this->getLogger()->err(__METHOD__.': exception: '.$e->getMessage());
+            $this->getResponse()->setHttpResponseCode(500);
+            echo '<p>',$this->getTranslator()->translate('Internal error.'),'</p>';
         }
     }
 }

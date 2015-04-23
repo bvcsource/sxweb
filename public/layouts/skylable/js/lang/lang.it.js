@@ -75,6 +75,10 @@ if (!Skylable_Lang) {
         settingsPageSizeInvalid : 'Dimensione pagina non valida.',
 
         // -------- Uploads
-        uploadTitle: 'Upload in corso...'
+        uploadTitle: 'Upload in corso...',
+
+        // -------- Revisions
+        revisionsTitle : 'Revisioni',
+        revisionsApply : 'Applica!'
     }
 }

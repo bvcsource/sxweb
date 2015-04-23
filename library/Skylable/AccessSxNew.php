@@ -1722,4 +1722,153 @@ class Skylable_AccessSxNew {
         return FALSE;
     }
 
+    /**
+     * Lists revisions for a given file.
+     * 
+     * Returns an array of associative array with the revisions, ordered by the most recent first.
+     * 
+     * array(
+     *  array(
+     *   'id' => revision number (used in
+     *   'date' => revision date YYYY-MM-DD
+     *   'time' => revision time hh:mm
+     *   'rev' => revision name
+     *   'size' => revision size
+     *   'hash' => the sha1 of the revision name
+     * )
+     * )
+     * 
+     * @param string $path the complete path
+     * @return bool|array
+     * @throws Exception
+     * @throws Skylable_AccessSxException
+     */
+    public function sxrevList($path) {
+        $this->_last_error_log = '';
+        if (!$this->isInitialized()) {
+            return FALSE;
+        }
+
+        $ret = $this->executeShellCommand('sxrev list '.
+            '-c '.My_utils::escapeshellarg($this->_base_dir).' '.
+            My_utils::escapeshellarg( $this->_cluster_string.'/'.My_Utils::removeSlashes($path, TRUE) ),
+            '', $out, $exit_code, $this->_last_error_log, array($this, 'parseSxrevListOutput'), array($this, 'parseErrors'));
+        if ($exit_code == 0) {
+            return $out;
+        } else {
+            $this->checkForErrors($this->_last_error_log, TRUE);    
+        }
+
+        return FALSE;
+    }
+
+    /**
+     * Parse the sxrev list output.
+     * 
+     * @param $fd
+     * @param $data
+     * @return array
+     */
+    private function parseSxrevListOutput($fd, &$data) {
+        $ret = array(
+            'status' => TRUE,
+            'error' => ''
+        );
+        $data = array();
+
+        while( ($data_line = fgets($fd)) !== FALSE ) {
+            if (preg_match('/^(?<id>\d+)\.\s+(?<date>[^\s]+)\s+(?<time>[^\s]+)\s+size:(?<size>\d+)\s+rev:"(?<rev>[^"]+)/', $data_line, $matches) == 1) {
+                
+                for($i = 0; $i < 6; $i++) {
+                    unset($matches[$i]);
+                }
+                $matches['hash'] = sha1($matches['rev']);
+                $data[] = $matches;
+            }
+        }
+        if (!feof($fd)) { // fgets exited
+            $retval['status'] = FALSE;
+            $retval['error'] = new Exception('Unexpected end of the file', ERROR_UNEXPECTED_END_OF_FILE);
+            $this->getLogger()->debug(__METHOD__.' - Unexpected end of the file');
+        }
+
+        return $ret;
+    }
+
+    /**
+     * Delete the given revision.
+     * 
+     * @param string $path the complete file path
+     * @param string $rev_id the revision ID
+     * @return bool TRUE on success, FALSE on failure
+     * @throws Exception
+     * @throws Skylable_AccessSxException
+     */
+    public function sxrevDelete($path, $rev_id) {
+        $this->_last_error_log = '';
+        if (!$this->isInitialized()) {
+            return FALSE;
+        }
+        
+        if (strlen($rev_id) == 0) {
+            $this->getLogger()->debug(__METHOD__.': Empty revision ID');
+            return FALSE;
+        }
+
+        $ret = $this->executeShellCommand('sxrev delete '.
+            '-c '.My_utils::escapeshellarg($this->_base_dir).' '.
+            '-r '.My_utils::escapeshellarg($rev_id).' '.
+            My_utils::escapeshellarg( $this->_cluster_string.'/'.My_Utils::removeSlashes($path, TRUE) ),
+            '', $out, $exit_code, $this->_last_error_log, NULL, array($this, 'parseErrors'));
+        if ($exit_code == 0) {
+            return TRUE;
+        } else {
+            $this->checkForErrors($this->_last_error_log, TRUE);
+        }
+
+        return FALSE;
+    }
+
+    /**
+     * Copies a revision to a destination.
+     * 
+     * @param string $source_path the complete path of the revision to copy
+     * @param string $rev_id the revision ID
+     * @param string $destination_path the destination of the copy
+     * @param bool $destination_is_remote TRUE copies the destination from cluster to cluster, FALSE copies the revision to a local file
+     * @return bool TRUE on success, FALSE on failure
+     * @throws Exception
+     * @throws Skylable_AccessSxException
+     */
+    public function sxrevCopy($source_path, $rev_id, $destination_path, $destination_is_remote = TRUE) {
+        $this->_last_error_log = '';
+        if (!$this->isInitialized()) {
+            return FALSE;
+        }
+
+        if (strlen($rev_id) == 0) {
+            $this->getLogger()->debug(__METHOD__.': Empty revision ID');
+            return FALSE;
+        }
+        
+        if ($destination_is_remote) {
+            $dest = My_utils::escapeshellarg( $this->_cluster_string.'/'.My_Utils::removeSlashes($destination_path, TRUE) );
+        } else {
+            $dest = $destination_path;
+        }
+
+        $ret = $this->executeShellCommand('sxrev copy '.
+            '-c '.My_utils::escapeshellarg($this->_base_dir).' '.
+            '-r '.My_utils::escapeshellarg($rev_id).' '.
+            My_utils::escapeshellarg( $this->_cluster_string.'/'.My_Utils::removeSlashes($source_path, TRUE) ).' '.
+            $dest,
+            '', $out, $exit_code, $this->_last_error_log, NULL, array($this, 'parseErrors'));
+        if ($exit_code == 0) {
+            return TRUE;
+        } else {
+            $this->checkForErrors($this->_last_error_log, TRUE);
+        }
+
+        return FALSE;
+    }
 }
