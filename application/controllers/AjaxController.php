@@ -885,6 +885,11 @@ class AjaxController extends My_BaseAction {
         }
         
         $rev_id = $this->getRequest()->getParam('rev_id');
+        if (!is_string($rev_id)) {
+            $this->getResponse()->setHttpResponseCode(400);
+            echo '<p>',$this->getTranslator()->translate('Invalid revision.'),'</p>';
+            return FALSE;
+        }
 
         try {
             $access_sx = new Skylable_AccessSxNew( Zend_Auth::getInstance()->getIdentity() );
@@ -895,7 +900,7 @@ class AjaxController extends My_BaseAction {
             } else {
                 // Search the wanted revision...
                 foreach($revisions as $rev) {
-                    if (strcmp($rev['hash'], $rev_id) == 0) {
+                    if (strcmp(sha1($rev['rev']), $rev_id) == 0) {
                         if ($access_sx->sxrevDelete($path, $rev['rev'])) {
                             echo '<p>',$this->getTranslator()->translate('Revision successfully deleted.'),'</p>';
                         } else {
@@ -939,6 +944,11 @@ class AjaxController extends My_BaseAction {
         }
 
         $rev_id = $this->getRequest()->getParam('rev_id');
+        if (!is_string($rev_id)) {
+            $this->getResponse()->setHttpResponseCode(400);
+            echo '<p>',$this->getTranslator()->translate('Invalid revision.'),'</p>';
+            return FALSE;
+        }
         
         $destination_path = $this->getRequest()->getParam('dest');
         if (is_null($destination_path) || !is_string($destination_path)) {
@@ -966,7 +976,7 @@ class AjaxController extends My_BaseAction {
             } else {
                 // Search the wanted revision...
                 foreach($revisions as $rev) {
-                    if (strcmp($rev['hash'], $rev_id) == 0) {
+                    if (strcmp(sha1($rev['rev']), $rev_id) == 0) {
                         if ($access_sx->sxrevCopy($path, $rev['rev'], $destination_path, TRUE)) {
                             echo '<p>',$this->getTranslator()->translate('Revision successfully copied.'),'</p>';
                         } else {

@@ -1734,7 +1734,7 @@ class Skylable_AccessSxNew {
      *   'time' => revision time hh:mm
      *   'rev' => revision name
      *   'size' => revision size
-     *   'hash' => the sha1 of the revision name
+     *   
      * )
      * )
      * 
@@ -1782,7 +1782,6 @@ class Skylable_AccessSxNew {
                 for($i = 0; $i < 6; $i++) {
                     unset($matches[$i]);
                 }
-                $matches['hash'] = sha1($matches['rev']);
                 $data[] = $matches;
             }
         }

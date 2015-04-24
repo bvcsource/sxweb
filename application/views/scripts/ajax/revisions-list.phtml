@@ -4,7 +4,7 @@
 
     $options = array();
     foreach($this->revisions as $rev) {
-        $options[$rev['hash']] = $rev['rev'];
+        $options[sha1($rev['rev'])] = $rev['rev'];
     }
 echo '<p>',$this->translate('Available revisions (most recent first):'),'</p>',PHP_EOL;
 echo $this->formSelect('rev_id', NULL, '', $options);
