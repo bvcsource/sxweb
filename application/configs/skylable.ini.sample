@@ -67,6 +67,9 @@ password_recovery = false
 ; The admin key of your cluster
 ; admin_key = ""
 
+; Sets the default application language
+default_language = "en"
+
 ; DB configuration
 db.adapter = "pdo_mysql"
 db.params.host = "localhost"

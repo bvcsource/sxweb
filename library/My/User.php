@@ -54,6 +54,8 @@ class My_User implements Zend_Acl_Role_Interface {
      
      const
         // Common preferences tags
+         // Preferred user language
+         PREF_LANGUAGE = 'language',
          // File sort order: integer, one of the Skylable_AccessSx::SORT_BY_* constants
         PREF_FILE_SORT_ORDER = 'file_sort_order',
          // Last visited path, complete with volume

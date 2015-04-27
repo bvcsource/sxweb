@@ -51,8 +51,77 @@ class SettingsController extends My_BaseAction {
     public function indexAction() {
         // $this->forward('account');
     }
-    
+
+    /**
+     * Manages user preferences.
+     * 
+     * @throws Zend_Exception
+     * @throws Zend_Form_Exception
+     */
     public function preferencesAction() {
+        $pref_form = new Application_Form_UserPreferences();
+        $pref_form->setAction('/settings/preferences')->setMethod('post');
+        $pref_form->setDecorators(array(
+            'FormErrors',
+            'Form'
+        ));
+        $this->view->form = $pref_form;
+        
+        // Pre-compile the form.
+        $lang = Zend_Auth::getInstance()->getIdentity()->getPreferences()->get(My_User::PREF_LANGUAGE, '');
+        if (empty($lang)) {
+            if (Zend_Registry::isRegistered('Zend_Locale')) {
+                // Gets the current language, if any
+                $lang = Zend_Registry::get('Zend_Locale')->getLanguage();
+            } elseif (Zend_Registry::isRegistered('Zend_Translate')) {
+                // Gets the current language, if any
+                $lang = Zend_Registry::get('Zend_Translate')->getLocale()->getLanguage();
+            } else {
+                $def_lang = Zend_Registry::get('skylable')->get('default_language', NULL);
+                if (!empty($def_lang) && $def_lang !== 'auto' ) {
+                    $lang = $def_lang;
+                } else {
+                    // Defaults to english
+                    $lang = 'en';    
+                }
+            }
+        }
+        $pref_form->setDefault('frm_language', $lang);
+        
+        $page_size = Zend_Auth::getInstance()->getIdentity()->getPreferences()->get(My_User::PREF_PAGE_SIZE, -1);
+        if ($page_size > 0) {
+            $pref_form->setDefault('frm_file_list_size', $page_size);
+        } else {
+            $pref_form->setDefault('frm_file_list_size', 20);
+        }
+        
+
+        if (!$this->getRequest()->isPost()) {
+            return FALSE;
+        }
+
+        if (!$pref_form->isValid($_POST)) {
+            return FALSE;
+        }
+
+        $user = Zend_Auth::getInstance()->getIdentity();
+        
+        $user->getPreferences()->set(My_User::PREF_LANGUAGE, $pref_form->getValue('frm_language'));
+        $user->getPreferences()->set(My_User::PREF_PAGE_SIZE, $pref_form->getValue('frm_file_list_size'));
+        
+        try {
+            if ($this->getUserModel()->updateUserPreferences( Zend_Auth::getInstance()->getIdentity() )) {
+                $this->view->show_success = TRUE;
+                Zend_Auth::getInstance()->getStorage()->write($user);
+                $this->applyUserLocale();
+            } else {
+                $pref_form->addError($this->getTranslator()->translate('Failed to update user preferences, please retry later.'));
+            }
+        }
+        catch(Exception $e) {
+            $pref_form->addError('Internal error: update failed.');
+            $this->getLogger()->err(__METHOD__.': exception: '.$e->getMessage());
+        }
         
     }
     
@@ -139,45 +208,6 @@ class SettingsController extends My_BaseAction {
             }
         }
 
-    }
-
-    /**
-     * Update view settings.
-     *
-     * It's an AJAX method.
-     *
-     * Parameter:
-     * 'page_size' - integer the page size
-     */
-    public function viewAction() {
-        $this->disableView();
-
-        $page_size = strval( $this->_getParam('page_size') );
-        if (preg_match('/^\d+$/', $page_size) == 1) {
-            $page_size = intval($page_size);
-            if ($page_size > 0 && $page_size <= 2000) {
-                Zend_Auth::getInstance()->getIdentity()->getPreferences()->set(My_User::PREF_PAGE_SIZE, $page_size);
-                try {
-                    $this->updateStorage();
-                    echo json_encode(array(
-                        'status' => TRUE
-                    ));
-                    return TRUE;
-                }
-                catch(Exception $e) {
-
-                }
-            } else {
-                echo json_encode(array(
-                    'status' => FALSE,
-                    'reason' => 'Invalid page size, must be between 1 and 2000.'
-                ));
-            }
-        }
-        echo json_encode(array(
-            'status' => FALSE,
-            'reason' => 'Operation failed.'
-        ));
     }
 
     /**

@@ -1,5 +1,4 @@
 <?php
-
 /*
     The contents of this file are subject to the Common Public Attribution License
     Version 1.0 (the "License"); you may not use this file except in compliance with
@@ -36,28 +35,27 @@
     SWCL.
 */
 
-/**
- * Form to set user password
- * 
- */
-class Application_Form_UserSettings extends Zend_Form {
-    public function init() {
-        parent::init();
-        
-        $this->addElement( 
-                $this->createElement('password', 'frm_new_password')
-                ->setLabel('New Password')
-                ->setRequired(TRUE)
-                ->addValidator(new My_ValidateUserPassword())
-                );
-        $this->addElement( 
-                $this->createElement('password', 'frm_new_cpassword')
-                ->setRequired(TRUE)
-                ->setLabel('Confirm Password')
-                ->addValidator( new Zend_Validate_Identical('frm_new_password'))
-                ->addValidator( new My_ValidateUserPassword())
-                );
-        $this->addElement( $this->createElement('submit', 'frm_launch'));
 
+class Application_Form_UserPreferences extends Zend_Form {
+    public function init() {
+        $this->addElement(
+            $this->createElement('select', 'frm_language')
+                ->setLabel('Language')
+            ->addValidator(new Zend_Validate_InArray(array_keys( My_BaseAction::getLanguageList() )))
+            ->setAllowEmpty(FALSE)
+            ->setRequired(TRUE)
+        );
+        
+        $this->addElement(
+            $this->createElement('text', 'frm_file_list_size')
+            ->setLabel('File list size')
+                ->addValidator(new Zend_Validate_Between(array( 'min' => 1, 'max' => 2000, 'inclusive' => TRUE )))
+            ->setRequired(TRUE)
+        );
+        
+        $this->addElement(
+            $this->createElement('submit', 'frm_launch')
+        );
     }
+
 }

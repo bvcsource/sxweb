@@ -47,7 +47,26 @@ require_once 'My/User.php';
  */
 class Bootstrap extends Zend_Application_Bootstrap_Bootstrap {
 
+    /**
+     * Initialize the translator object.
+     * 
+     * Saves the translator into the 'Zend_Translate' Zend_Registry key.
+     * 
+     * You can force a language using the skylable.ini config key 'default_language'.
+     * 
+     * @return Zend_Translate
+     */
     protected function _initTranslate() {
+        if (!Zend_Registry::isRegistered('skylable')) {
+            $this->bootstrap('Config');
+        }
+
+        $def_lang = Zend_Registry::get('skylable')->get('default_language', FALSE);
+        if (is_string($def_lang)) {
+            $locale = new Zend_Locale($def_lang);
+            Zend_Registry::set('Zend_Locale', $locale);
+        }
+        
         $translate = new Zend_Translate(
             array(
                 'adapter' => 'csv',
@@ -58,6 +77,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap {
             )
         );
         Zend_Registry::set('Zend_Translate', $translate);
+        
         return $translate;
     }
 

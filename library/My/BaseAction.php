@@ -53,6 +53,25 @@ class My_BaseAction extends Zend_Controller_Action {
              */
             $_user_model = NULL;
 
+    public function preDispatch() {
+        parent::preDispatch(); 
+        $this->applyUserLocale();
+    }
+
+    /**
+     * Apply the preferred user locale (if any).
+     */
+    public function applyUserLocale() {
+        if (Zend_Auth::getInstance()->hasIdentity()) {
+            $pref_lang = Zend_Auth::getInstance()->getIdentity()->getPreferences()->get(My_User::PREF_LANGUAGE, FALSE);
+            if (is_string($pref_lang)) {
+                $locale = new Zend_Locale($pref_lang);
+                Zend_Registry::set('Zend_Locale', $locale);
+                $this->getTranslator()->setLocale($locale);
+            }
+        }
+    }
+
     /**
      * Returns the global Zend_Translate object.
      * 
@@ -66,6 +85,7 @@ class My_BaseAction extends Zend_Controller_Action {
             if (is_object($t)) {
                 Zend_Registry::set('Zend_Translate', $t);
             } else {
+                // Initializes a fake translator object
                 $t = new Zend_Translate(
                     array(
                         'adapter' => 'array',
@@ -262,4 +282,23 @@ class My_BaseAction extends Zend_Controller_Action {
             return (bool)SXWEB_DEMO_MODE;
         }
     }
+
+    /**
+     * Returns an associative array of available languages.
+     * 
+     * Format is:
+     * array(
+     * 'language string' => 'language name'
+     * )
+     * 
+     * @return array
+     */
+    public static function getLanguageList() {
+        return array(
+            'en' => 'English',
+            'it' => 'Italiano',
+            'pl' => 'Polski'
+        );
+    }
+
 }
