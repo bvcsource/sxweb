@@ -34,13 +34,12 @@ CREATE TABLE `users` (
 DROP TABLE IF EXISTS `user_reset_password`;
 CREATE TABLE `user_reset_password` (
   `hash` varchar(255) NOT NULL,
-  `uid` int(10) unsigned NOT NULL,
   `date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `counter` tinyint(3) unsigned NOT NULL DEFAULT '1',
-  UNIQUE KEY `id` (`uid`),
+  `login` VARCHAR(255) NOT NULL UNIQUE,
+  `email` VARCHAR(255) NOT NULL,
   KEY `hash` (`hash`),
-  KEY `date` (`date`),
-  CONSTRAINT `user_reset_password_ibfk_2` FOREIGN KEY (`uid`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+  KEY `date` (`date`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 DROP TABLE IF EXISTS `users_act_keys`;

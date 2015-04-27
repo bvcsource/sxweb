@@ -616,55 +616,95 @@ class IndexController extends My_BaseAction {
         
         $the_email = $this->getRequest()->getParam('email');
         $validate_email = new Zend_Validate_EmailAddress();
-        
-        if ($validate_email->isValid($the_email)) {
-            $model = new My_Accounts();
-            try {
-                $token = $model->generatePasswordResetToken($the_email);
-                if ($token === FALSE) {
-                    // Invalid user
-                    $this->view->assign('errors', array($this->view->translate('Failed to send the email, please retry again later.')) );
-                    $this->getLogger()->err(__METHOD__.': invalid user email request ');
-                } else {
-                    // Send the email
-                    $view = Zend_Layout::getMvcInstance()->getView();
-                    $view->hash = $token;
-                    $view->url = Zend_Registry::get('skylable')->url;
 
-                    try {
-
-                        $mail = new Zend_Mail();
-                        $html_msg = $view->render("mail.phtml");
-                        $mail->setBodyText( strip_tags( $html_msg ) );
-                        $mail->setBodyHtml( $html_msg );
-                        $mail->addTo($the_email);
-                        $mail->setSubject($view->translate('SXWeb - Password Reset Request'));
-                        
-                        $mail->send( $this->getInvokeArg('bootstrap')->getResource('Mail')->getMail() );
-                        $this->view->assign('notifications', array($this->view->translate('We have sent you an email with a link to follow to reset your password.')) );
-                    }
-                    catch(Zend_Mail_Transport_Exception $e) {
-                        $this->view->assign('errors', array($this->view->translate('Failed to send the email, please retry again later.')) );
-                        $this->getLogger()->err(__METHOD__.': send mail exception: '.$e->getMessage());
-                    }
-                    
-                }
-                
+        if (!$validate_email->isValid($the_email)) {
+            if (!empty($the_email)) {
+                $this->view->assign('errors', array($this->view->translate('The email is invalid, please check it and retry.')) ); 
             }
-            catch(Exception $e) {
-                if ($e->getCode() == My_Accounts::EXCEPTION_RESET_PASSWORD_TOO_MANY_TICKETS) {
-                    $this->view->assign('errors', array($this->view->translate('You have requested too many password reset tickets, please wait 24 hours and retry.')) );       
-                } else {
-                    $this->view->assign('errors', array($this->view->translate('Failed to send the email, please retry again later.')) );    
-                }
-                
-                $this->getLogger()->err(__METHOD__.': exception: '.$e->getMessage());
+            return FALSE;
+        }
+        
+        // Check the user existence using the configured SX cluster
+        $user_exists = FALSE;
+        try {
+            // Create a fake admin user into a temp dir
+            $tempdir = My_Utils::mktempdir( Zend_Registry::get('skylable')->get('sx_local') ,'Skylable_');
+            if ($tempdir === FALSE) {
+                throw new Exception('Failed to create temporary directory');
+            }
+
+            $fake_admin = new My_User(NULL, 'admin', '', Zend_Registry::get('skylable')->get('admin_key'));
+            $access_sx = new Skylable_AccessSxNew($fake_admin, $tempdir, array( 'user_auth_key' => Zend_Registry::get('skylable')->get('admin_key') ) );
+
+            // Check the user list: only users who have the login equal to the email are "valid".
+            $user_list = $access_sx->userlist();
+            if (is_array($user_list)) {
+                foreach($user_list as $u => $ut) {
+                    if ($u == $the_email) {
+                        $user_exists = TRUE;
+                        break;
+                    }
+                }    
             }
             
-        } else {
-            if (!empty($the_email)) {
-                $this->view->assign('errors', array($this->view->translate('The email is invalid, please check it and retry.')) );    
+            My_Utils::deleteDir($tempdir);
+        }
+        catch(Exception $e) {
+            if (isset($tempdir)) {
+                if (@is_dir($tempdir)) {
+                    My_Utils::deleteDir($tempdir);
+                }
             }
+        }
+        
+        if (!$user_exists) {
+            $this->view->assign('errors', array($this->view->translate('Failed to send the email, please retry again later.')) );
+            $this->getLogger()->debug(__METHOD__.': user \''.$the_email.'\' don\'t exists.');
+            return FALSE;
+        }
+
+        try {
+            $model = new My_Accounts();
+            // Remember: supposes that the login is the email
+            $token = $model->generatePasswordResetToken($the_email, $the_email);
+            if ($token === FALSE) {
+                // Invalid user
+                $this->view->assign('errors', array($this->view->translate('Failed to send the email, please retry again later.')) );
+                $this->getLogger()->err(__METHOD__.': invalid user email request ');
+            } else {
+                // Send the email
+                $view = Zend_Layout::getMvcInstance()->getView();
+                $view->hash = $token;
+                $view->url = Zend_Registry::get('skylable')->url;
+
+                try {
+
+                    $mail = new Zend_Mail();
+                    $html_msg = $view->render("mail.phtml");
+                    $mail->setBodyText( strip_tags( $html_msg ) );
+                    $mail->setBodyHtml( $html_msg );
+                    $mail->addTo($the_email);
+                    $mail->setSubject($view->translate('SXWeb - Password Reset Request'));
+                    
+                    $mail->send( $this->getInvokeArg('bootstrap')->getResource('Mail')->getMail() );
+                    $this->view->assign('notifications', array($this->view->translate('We have sent you an email with a link to follow to reset your password.')) );
+                }
+                catch(Zend_Mail_Transport_Exception $e) {
+                    $this->view->assign('errors', array($this->view->translate('Failed to send the email, please retry again later.')) );
+                    $this->getLogger()->err(__METHOD__.': send mail exception: '.$e->getMessage());
+                }
+                
+            }
+            
+        }
+        catch(Exception $e) {
+            if ($e->getCode() == My_Accounts::EXCEPTION_RESET_PASSWORD_TOO_MANY_TICKETS) {
+                $this->view->assign('errors', array($this->view->translate('You have requested too many password reset tickets, please wait 24 hours and retry.')) );       
+            } else {
+                $this->view->assign('errors', array($this->view->translate('Failed to send the email, please retry again later.')) );    
+            }
+            
+            $this->getLogger()->err(__METHOD__.': exception: '.$e->getMessage());
         }
     }
 
@@ -684,7 +724,8 @@ class IndexController extends My_BaseAction {
         }
 
         if (!My_Utils::passwordRecoveryIsAllowed()) {
-            $this->redirect('/index');
+            $this->_redirect('/index');
+            return FALSE;
         }
 
         $this->_helper->layout->setLayout('simple');
@@ -713,7 +754,7 @@ class IndexController extends My_BaseAction {
                     try {
                         $model = new My_Accounts();
                         $usr = $model->getUserFromPasswordRecoveryToken($hash);
-                        if (is_object($usr)) {
+                        if ($usr !== FALSE) {
                             // Create a fake admin user into a temp dir
                             $tempdir = My_Utils::mktempdir( Zend_Registry::get('skylable')->get('sx_local') ,'Skylable_');
                             if ($tempdir === FALSE) {
@@ -722,7 +763,7 @@ class IndexController extends My_BaseAction {
                             
                             $fake_admin = new My_User(NULL, 'admin', '', Zend_Registry::get('skylable')->get('admin_key'));
                             $access_sx = new Skylable_AccessSxNew($fake_admin, $tempdir, array( 'user_auth_key' => Zend_Registry::get('skylable')->get('admin_key') ) );
-                            $new_user_key = $access_sx->sxaclUserNewKey($pwd1, $usr->getLogin());
+                            $new_user_key = $access_sx->sxaclUserNewKey($pwd1, $usr);
                             My_Utils::deleteDir($tempdir);
                             if ($new_user_key === FALSE) {
                                 $this->_helper->getHelper('FlashMessenger')->addMessage('Failed to change the user password, please retry.','error');

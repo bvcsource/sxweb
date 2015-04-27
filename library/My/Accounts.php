@@ -367,20 +367,20 @@ class My_Accounts extends Zend_Db_Table_Abstract  {
     /**
      * Generates a unique token to use into the reset password procedure.
      * 
+     * @param string $login the user login
      * @param string $email the user email
      * @return bool|string the generated token or FALSE on non-existent user
      * @throws Exception
      * @throws Zend_Db_Exception
      * @throws Zend_Exception
      */
-    public function generatePasswordResetToken($email) {
-        $res = $this->fetchRow( $this->select()->where('email = ?', $email)->limit(1) );
-        if (count($res) > 0) {
+    public function generatePasswordResetToken($login, $email) {
+        
             // counts already made tickets
             $this->getAdapter()->beginTransaction();
             try {
                 $this->getAdapter()->delete('user_reset_password','TIMESTAMPDIFF(HOUR,`date`, CURRENT_TIMESTAMP()) > 24');
-                $cnt = $this->getAdapter()->fetchRow('SELECT COALESCE(SUM(counter), 0) as cnt FROM user_reset_password WHERE uid = ?', $res['id']);
+                $cnt = $this->getAdapter()->fetchRow('SELECT COALESCE(SUM(counter), 0) as cnt FROM user_reset_password WHERE login = ?', $login);
                 
                 if ($cnt === FALSE) {
                     $this->getAdapter()->commit();
@@ -398,16 +398,18 @@ class My_Accounts extends Zend_Db_Table_Abstract  {
                     } else {
                         $this->getAdapter()->update('user_reset_password', array(
                             'hash' => $hash,
+                            'email' => $email,
                             'counter' => new Zend_Db_Expr( 'counter + 1' )
                         ), array(
-                            'uid' => $res['id']
+                            'login' => $login
                         ));
                     }
                 } else {
                     // Creates a new record
                     $this->getAdapter()->insert('user_reset_password', array(
                         'hash' => $hash,
-                        'uid' => $res['id'],
+                        'email' => $email,
+                        'login' => $login,
                         'counter' => 1
                     ));
                 }
@@ -419,7 +421,7 @@ class My_Accounts extends Zend_Db_Table_Abstract  {
                 throw $e;
             }
             
-        }
+        
         return FALSE;
     }
 
@@ -438,7 +440,7 @@ class My_Accounts extends Zend_Db_Table_Abstract  {
         $db->beginTransaction();
         try {
             $db->delete('user_reset_password','TIMESTAMPDIFF(HOUR,`date`, CURRENT_TIMESTAMP()) > 24');
-            $res = $db->fetchRow('SELECT u.* FROM users AS u INNER JOIN user_reset_password AS up ON (u.id = up.uid) WHERE up.hash = ? LIMIT 1', $token );
+            $res = $db->fetchRow('SELECT `login` FROM user_reset_password WHERE `hash` = ? LIMIT 1', $token );
 
             $db->commit();
             
@@ -446,8 +448,7 @@ class My_Accounts extends Zend_Db_Table_Abstract  {
                 return FALSE;
             }
             
-            $user = $this->getUserFromDBRow($res);
-            return $user;
+            return $res['login'];
 
         }
         catch(Exception $e) {
@@ -469,7 +470,9 @@ class My_Accounts extends Zend_Db_Table_Abstract  {
         $db->beginTransaction();
         try {
             $db->delete('user_reset_password','TIMESTAMPDIFF(HOUR,`date`, CURRENT_TIMESTAMP()) > 24');
-            if (!empty($token)) $db->delete('user_reset_password','hash = '.$db->quote($token) );
+            if (!empty($token)) {
+                $db->delete('user_reset_password','hash = '.$db->quote($token) );
+            }
             $db->commit();
             return TRUE;
 

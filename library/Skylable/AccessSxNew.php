@@ -1870,4 +1870,51 @@ class Skylable_AccessSxNew {
 
         return FALSE;
     }
+    
+    public function userlist() {
+
+        $this->_last_error_log = '';
+        if (!$this->isInitialized()) {
+            return FALSE;
+        }
+
+        $ret = $this->executeShellCommand('sxacl userlist '.
+            '-c '.My_utils::escapeshellarg($this->_base_dir).' '.
+            My_utils::escapeshellarg( $this->_cluster_string ),
+            '', $out, $exit_code, $this->_last_error_log, array($this, 'parseSxaclUserlistOutput'), array($this, 'parseErrors'));
+        if ($exit_code == 0) {
+            return $out;
+        } else {
+            $this->checkForErrors($this->_last_error_log, TRUE);
+        }
+
+        return FALSE;
+    }
+
+
+    private function parseSxaclUserlistOutput($fd, &$data) {
+        $ret = array(
+            'status' => TRUE,
+            'error' => ''
+        );
+        $data = array();
+
+        while( ($data_line = fgets($fd)) !== FALSE ) {
+            if (preg_match('/^(?<user>[^\(]+)\((?<type>[^\)]+)/', $data_line, $matches) == 1) {
+
+                for($i = 0; $i < 3; $i++) {
+                    unset($matches[$i]);
+                }
+                $data[trim($matches['user'])] = $matches['type'];
+            }
+        }
+        if (!feof($fd)) { // fgets exited
+            $retval['status'] = FALSE;
+            $retval['error'] = new Exception('Unexpected end of the file', ERROR_UNEXPECTED_END_OF_FILE);
+            $this->getLogger()->debug(__METHOD__.' - Unexpected end of the file');
+        }
+
+        return $ret;
+    }
+    
 }
