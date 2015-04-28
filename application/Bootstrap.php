@@ -420,6 +420,9 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap {
 
         // Demo mode route
         $router->addRoute('demo', new Zend_Controller_Router_Route('demo', array( 'controller' => 'index', 'action' => 'demo' ) ));
+        
+        // Revisions
+        $router->addRoute('revisions', new Zend_Controller_Router_Route_Regex( 'revs/(.+)', array( 'controller' => 'revisions', 'action' => 'index' ), array( 1 => 'path' ) ) );
     }
 }
 

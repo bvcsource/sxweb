@@ -2886,3 +2886,13 @@ a, input, .icon-dl, button, .sort-name span, .sort-size span, .sort-date span {
 .cboxIE #cboxMiddleRight {
     filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#00FFFFFF, endColorstr=#00FFFFFF);
 }
+
+
+/* Revisions */
+.table-revisions {
+    margin: 10px 0;
+}
+.table-revisions td {
+    padding: 5px;
+    border: none;
+}

@@ -66,6 +66,7 @@ class My_Acl extends Zend_Acl {
         $this->addResource('search');
         $this->addResource('settings');
         $this->addResource('share/index/share');
+        $this->addResource('default/revisions/index');
         
         $this->addResource('default/index/ping');
         $this->addResource('default/upload/upload');

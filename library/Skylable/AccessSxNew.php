@@ -1870,6 +1870,118 @@ class Skylable_AccessSxNew {
 
         return FALSE;
     }
+
+    /**
+     * Send a revision to the browser.
+     * 
+     * File data array must contain:
+     * 'path' - complete file path
+     * 'size' - file size in bytes
+     * 'rev' - revision string
+     *
+     * @param array $file_data
+     * @param string $password
+     * @param string $disposition
+     * @return array|bool
+     * @throws Exception
+     * @throws Zend_Exception
+     */
+    public function sxrevDownload($file_data, $password = '', $disposition = self::DOWNLOAD_DISPOSITION_ATTACHMENT) {
+
+        // If the file is empty take the easy way
+        if ($file_data['size'] == 0) {
+            $this->getLogger()->debug(__METHOD__ . ': File has zero size, skipping shell command use.');
+            header("Cache-Control: no-cache, must-revalidate");
+            header("Pragma: no-cache");
+            header("Content-Disposition: ".$disposition."; filename=\"".rawurlencode(basename($file_data['path'])).'"');
+            header("Content-Type: ".My_Utils::getFileMIME($file_data['path']));
+            header("Content-Length: ".strval( $file_data['size'] ));
+            header('Content-Transfer-Encoding: binary');
+            return TRUE;
+        }
+
+        $pipes = array();
+
+        $process_log_fd = fopen('php://temp','r+');
+        if ($process_log_fd === FALSE) {
+            throw new Exception("Failed to create error log", self::ERROR_CANT_CREATE_ERROR_LOG);
+        }
+
+        $this->_last_error_log = '';
+
+        $cmd = 'sxrev copy '.
+            '-c '.My_utils::escapeshellarg($this->_base_dir).' '.
+            '-r '.My_utils::escapeshellarg($file_data['rev']).' '.
+            My_utils::escapeshellarg($this->_cluster_string.'/'.My_Utils::removeSlashes($file_data['path'], TRUE) ).
+            ' -';
+
+        $this->getLogger()->debug(__METHOD__ . ': executing: '.$cmd);
+        $process = proc_open($cmd,
+            array(
+                0 => array('pipe', 'r'),
+                1 => array('pipe', 'w'),
+                2 => $process_log_fd
+            ), $pipes);
+
+        if (is_resource($process)) {
+            // This will be returned
+            $ret_val = array(
+                'status' => TRUE,
+                'stdin_process' => array('status' => TRUE, 'error' => NULL),
+                'stdout_process' => array('status' => TRUE, 'error' => NULL),
+                'stderr_process' => array('status' => TRUE, 'error' => NULL)
+            );
+
+            if (strlen($password) > 0) {
+                $status = fwrite($pipes[0], $password.PHP_EOL);
+                $this->getLogger()->debug(__METHOD__.': injecting input: '.($status === FALSE ? 'failed' : 'successful, wrote '.strval($status).' bytes' ));
+                if ($status === FALSE) {
+                    $ret_val['stdin_process']['status'] = FALSE;
+                    $ret_val['stdin_process']['error'] = ERROR_STDIN_INJECT_FAIL;
+                }
+            }
+
+            fclose($pipes[0]);
+
+            // Reads 1KB of data, if is ok, send the rest to the browser
+            if (($first_chunk = fread($pipes[1], 1024)) !== FALSE) {
+                if (strlen($first_chunk) > 0) {
+                    $this->getLogger()->debug(__METHOD__.': Sending file...');
+                    header("Cache-Control: no-cache, must-revalidate");
+                    header("Pragma: no-cache");
+                    header("Content-Disposition: ".$disposition."; filename=\"".rawurlencode(basename($file_data['path'])).'"');
+                    header("Content-Type: ".My_Utils::getFileMIME($file_data['path']));
+                    header("Content-Length: ".strval( $file_data['size'] ));
+                    header('Content-Transfer-Encoding: binary');
+                    ob_end_clean();
+                    Zend_Session::writeClose();
+                    $this->getLogger()->debug(__METHOD__.': Sending first chunk...');
+                    echo $first_chunk;
+                    $this->getLogger()->debug(__METHOD__.': Passthru of the file...');
+                    fpassthru($pipes[1]);
+                } else {
+                    $this->getLogger()->debug(__METHOD__.': First chunk is empty, this is bad.');
+                }
+            } else {
+                $this->getLogger()->debug(__METHOD__.': Reading first chunk failed.');
+            }
+
+            @fclose($pipes[1]);
+
+            $exit_code = proc_close($process);
+            $this->getLogger()->debug(__METHOD__.': command return value is:' . print_r($exit_code, TRUE));
+
+            // Analyses the process error log
+            fseek($process_log_fd, 0, SEEK_SET);
+            $ret_val['stderr_process'] = $this->parseErrors($process_log_fd, $this->_last_error_log);
+
+            @fclose($process_log_fd);
+
+            return $ret_val;
+        } else {
+            throw new Exception('Failed to initialize the process.', self::ERROR_CANT_INITIALIZE_PROCESS);
+        }
+    }
     
     public function userlist() {
 

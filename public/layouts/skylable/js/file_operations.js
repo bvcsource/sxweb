@@ -52,10 +52,7 @@ if (!FileOperations) {
             delete_files: "/delete",
             window: "/ajax/vol",
             rename_files : '/rename',
-            share_file : '/share',
-            revs_list : '/ajax/revisions-list',
-            revs_copy : '/ajax/revisions-copy',
-            revs_delete : '/ajax/revisions-delete'
+            share_file : '/share'
         },
         self: this,
 
@@ -607,11 +604,6 @@ if (!FileOperations) {
                     path = $(this).parent().parent().parent().find("input:checkbox[name=file_element]").val()
                     FileOperations.shareFile(e, path);
                 });
-
-                $(this).find('.elmrevisions').click(function(e){
-                    path = $(this).parent().parent().parent().find("input:checkbox[name=file_element]").val()
-                    FileOperations.revisionsList(e, path);
-                });
                 
                 /*
                 $(this).find('.elmpreview').click(function(e){
@@ -1113,96 +1105,8 @@ if (!FileOperations) {
                 }
             });
             return dlg;
-        },
-
-        /**
-         * Shows and interacts with the revisions list.
-         */
-        revisionsList : function(event, path) {
-            var dlg = this.getDialog(Skylable_Lang.revisionsTitle);
-            dlg.dialog('option', 'buttons', [
-                {
-                    text: Skylable_Lang.revisionsApply,
-                    click: function(e) {
-                        var action = $('input[name=revsaction]:checked').val();
-                        var rev_id = $('#rev_id').val();
-
-                        if (action === 'copy' || action === 'delete') {
-                            var ajax_data = 'path='+encodeURIComponent( path) + '&rev_id=' + rev_id;
-                            var the_url = FileOperations.urls.revs_delete;
-                            if (action === 'copy') {
-                                ajax_data += '&dest=' + encodeURIComponent( document.getElementById('revs_copy_name').value.trim() );
-                                the_url = FileOperations.urls.revs_copy;
-                            } 
-                           
-                            $.ajax({
-                                type:"POST",
-                                url: the_url,
-                                data: ajax_data,
-                                async: false,
-                                beforeSend : function(xhr, options) {
-                                    FileOperations.is_working = true;
-                                },
-                                success : function(data, status, xhr) {
-                                    dlg.dialog('option', 'buttons',[{
-                                        text : Skylable_Lang['closeBtn'],
-                                        click : function(e) {
-                                            dlg.dialog('close');
-                                        }
-                                    }]);
-                                    dlg.html(xhr.responseText);
-                                    FileOperations.updateFileList();
-                                },
-                                error : function(xhr, status) {
-                                    if (!FileOperations.expiredUser(dlg, xhr)) {
-                                        dlg.html(xhr.responseText);
-                                        dlg.dialog('option', 'buttons',[{
-                                            text : Skylable_Lang['closeBtn'],
-                                            click : function(e) {
-                                                dlg.dialog('close');
-                                            }
-                                        }]);
-                                        
-                                    }
-                                }
-                            });
-                            FileOperations.is_working = false;
-                        } 
-                    }    
-                },
-                {
-                    text: Skylable_Lang['closeBtn'],
-                    click: function(e) {
-                        dlg.dialog('close');
-                    }
-                } ]);
-            $.ajax({
-                type:"GET",
-                url:FileOperations.urls.revs_list,
-                data:'path='+encodeURIComponent( path ),
-                async: false,
-                beforeSend : function(xhr, options) {
-                    FileOperations.is_working = true;
-                },
-                success : function(data, status, xhr) {
-                    dlg.html(xhr.responseText);
-                    
-                },
-                error : function(xhr, status) {
-                    if (!FileOperations.expiredUser(dlg, xhr)) {
-                        dlg.html(xhr.responseText);
-                        dlg.dialog('option', 'buttons',[{
-                            text : Skylable_Lang['closeBtn'],
-                            click : function(e) {
-                                dlg.dialog('close');
-                            }
-                        }]);
-                    }
-                }
-            });
-            FileOperations.is_working = false;
-            dlg.dialog('open');
         }
+
     }
 }
 

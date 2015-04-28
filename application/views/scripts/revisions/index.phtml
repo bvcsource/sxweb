@@ -1,0 +1,33 @@
+<div class="wrap">
+<h1><?php echo $this->translate('File Revisions'); ?></h1>
+<hr/>
+<?php if (isset($this->error)): ?>
+    <p><?php echo $this->error; ?></p>
+<?php else:
+
+    echo '<p>',sprintf($this->translate('File: <strong>%s</strong>'), $this->escape($this->path)),'</p>',PHP_EOL;
+    
+    if (empty($this->revisions)) {
+        echo '<p>',$this->translate('No revisions found.'),'</p>',PHP_EOL;
+    } else {
+    
+        $has_revisions = (count($this->revisions) > 1);
+    echo '<p>',$this->translate('Available revisions (most recent first):'),'</p>',PHP_EOL;
+
+        ?>
+        <form action="/revs/<?php echo $this->escape($this->sxUrlEncode($this->path)); ?>" method="post">
+            <table class="table-revisions">
+<?php
+                $is_first = TRUE;
+                foreach($this->revisions as $rev) {
+                    ?><tr><td><?php if ($is_first) { $is_first = FALSE; } else { ?><input type="radio" name="rev_id" value="<?php echo sha1($rev['rev']); ?>"><?php } ?></td><td><?php echo $rev['rev']; ?></td><td><?php echo $rev['date'],' ',$rev['time'];  ?></td><td><?php echo $this->fileSizeFormat($rev['size']); ?></td></tr><?php
+                }
+?>
+            </table>
+            <p><?php if (count($this->revisions) > 1) { ?><input type="submit" class="styled-button" name="frm_revs_action" value="<?php echo $this->translate('Restore'); ?>"> <?php } ?><a href="/vol/<?php echo $this->sxUrlEncode($this->file_path); ?>" ><?php echo $this->translate('Cancel'); ?></a></p>
+        </form>
+<?php
+    }
+endif; 
+?>
+</div>
