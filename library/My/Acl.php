@@ -50,8 +50,6 @@ class My_Acl extends Zend_Acl {
 
         $this->addResource('default/error');
         $this->addResource('default/error/error');
-        $this->addResource('default/activateaccount');
-        $this->addResource('default/activateaccount/index');
         $this->addResource('default/index');
         $this->addResource('default/index/index');
         
@@ -79,7 +77,6 @@ class My_Acl extends Zend_Acl {
         //
         $this->allow(My_User::ROLE_GUEST, 
                 array('default/error', 'default/error/error', 
-            'default/activateaccount/index',  
             'default/index/login', 'default/index/demo', 
             'default/index/resetpassword', 'default/index/reset',
             'default/ajax/shared', 'share/index/share', 'default/index/ping', 'default/ajax', 'default/upload/upload'
