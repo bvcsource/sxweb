@@ -61,7 +61,7 @@ class My_Accounts extends Zend_Db_Table_Abstract  {
      * 'password_is_plain' - flag - TRUE the password is plain an should be encrypted, FALSE the password is already encrypted
      * 'secret_key' - string - SX cluster user auth token
      * 'is_active' - boolean - flag: TRUE the user is active, FALSE otherwise
-     * 'activation_key' - string - a random activation key to use to two pass activation of non active accounts
+     * 
      * 
      * Optional parameters
      * 'preferences' - a Zend_Config object with default user preferences
@@ -117,23 +117,9 @@ class My_Accounts extends Zend_Db_Table_Abstract  {
         
         $this->getAdapter()->beginTransaction();
         try {
-
-            /*
-            $password = $params['password'];
-            if (array_key_exists('password_is_plain', $params)) {
-                if ($params['password_is_plain']) $password = self::getPasswordHash($params['password']);
-            }
-            */
             
             $user_id = $this->insert($data);
-            /*
-            if ($params['is_active'] == FALSE) {
-                $this->getAdapter()->insert('users_act_keys', array(
-                    'activation_key' => $params['activation_key'],
-                    'uid' => $user_id
-                ));
-            }
-            */
+            
             $this->getAdapter()->commit();
             $this->getLogger()->debug(__METHOD__ . ': User successfully created, UID: ' . strval($user_id));
             if ($params instanceof My_User) {

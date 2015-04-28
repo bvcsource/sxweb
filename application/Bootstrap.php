@@ -366,7 +366,6 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap {
         */
         $router->addRoute('message', new My_Regex( 'message,(.*)', array( 'controller' => 'index', 'action' => 'login'), array( 1 => 'msg' )) );
         
-        $router->addRoute('Activateaccount', new My_Regex( 'activate,(.+)', array( 'controller' => 'activateaccount', 'action' => 'index' ), array(1 => 'hash') ));
 
 /*
  *================================================

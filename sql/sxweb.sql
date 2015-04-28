@@ -42,13 +42,6 @@ CREATE TABLE `user_reset_password` (
   KEY `date` (`date`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-DROP TABLE IF EXISTS `users_act_keys`;
-CREATE TABLE `users_act_keys` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `activation_key` VARCHAR(255) UNIQUE NOT NULL,
-  `uid` int(10) unsigned UNIQUE NOT NULL REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  `key_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 DROP TABLE IF EXISTS `sxweb_config`;
 CREATE TABLE `sxweb_config` (
