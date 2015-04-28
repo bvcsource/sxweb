@@ -295,6 +295,7 @@ class My_BaseAction extends Zend_Controller_Action {
      */
     public static function getLanguageList() {
         return array(
+            'de' => 'Deutsch',
             'en' => 'English',
             'it' => 'Italiano',
             'pl' => 'Polski'
