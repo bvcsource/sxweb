@@ -1,3 +1,10 @@
+<?php 
+    $pretty_print_rev_hash = function($hash) {
+        $hash = substr($hash, 0, strrpos($hash, ':'));
+        $hash = substr($hash, 0, strrpos($hash, '.'));
+        return $hash;
+    }
+?>
 <div class="wrap">
 <h1><?php echo $this->translate('File Revisions'); ?></h1>
 <hr/>
@@ -19,8 +26,10 @@
             <table class="table-revisions">
 <?php
                 $is_first = TRUE;
+                $rev_no = 1;
                 foreach($this->revisions as $rev) {
-                    ?><tr><td><?php if ($is_first) { $is_first = FALSE; } else { ?><input type="radio" name="rev_id" value="<?php echo sha1($rev['rev']); ?>"><?php } ?></td><td><a href="/revdl/<?php echo sha1($rev['rev']),'/', $this->escape($this->sxUrlEncode($this->path)); ?>" title="<?php echo $this->translate('Download this revision'); ?>"><?php echo $rev['rev']; ?></a></td><td><?php echo $rev['date'],' ',$rev['time'];  ?></td><td><?php echo $this->fileSizeFormat($rev['size']); ?></td></tr><?php
+                    ?><tr><td><?php if ($is_first) { $is_first = FALSE; } else { ?><input type="radio" name="rev_id" value="<?php echo sha1($rev['rev']); ?>"><?php } ?></td><td><a href="/revdl/<?php echo sha1($rev['rev']),'/', $this->escape($this->sxUrlEncode($this->path)); ?>" title="<?php echo $this->translate('Download this revision'); ?>"><?php printf($this->translate('Rev. %d'), $rev_no); ?></a></td><td><?php echo $pretty_print_rev_hash($rev['rev']);  ?></td><td><?php echo $this->fileSizeFormat($rev['size']); ?></td></tr><?php
+                    $rev_no++;
                 }
 ?>
             </table>
