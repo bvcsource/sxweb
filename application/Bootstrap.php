@@ -423,6 +423,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap {
         
         // Revisions
         $router->addRoute('revisions', new Zend_Controller_Router_Route_Regex( 'revs/(.+)', array( 'controller' => 'revisions', 'action' => 'index' ), array( 1 => 'path' ) ) );
+        $router->addRoute('revision_download', new Zend_Controller_Router_Route_Regex( 'revdl/([a-f0-9]{40})/(.+)', array( 'controller' => 'revisions', 'action' => 'download' ), array( 1 => 'rev_id', 2 => 'path' ) ) );
     }
 }
 

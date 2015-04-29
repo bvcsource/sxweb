@@ -72,8 +72,7 @@ class RevisionsController extends My_BaseAction {
          * A POST request means an action.
          */
         if ($this->getRequest()->isPost()) {
-            $rev_id = $this->getRequest()->getParam('rev_id');
-            if (!empty($rev_id) && is_string($rev_id)) {
+            if ($this->checkRevisionHash('rev_id', $rev_id)) {
                 try {
                     $access_sx = new Skylable_AccessSxNew( Zend_Auth::getInstance()->getIdentity() );
                     $revisions = $access_sx->sxrevList($path);
@@ -114,7 +113,7 @@ class RevisionsController extends My_BaseAction {
                 $this->view->error = $this->getTranslator()->translate('Path not found or revisions not supported.');
             } else {
                 // Save the path
-                $this->view->file_path = substr( $path, 0, strrpos($path, '/') );
+                $this->view->file_path = pathinfo( $path, PATHINFO_DIRNAME );
                 $this->setLastVisitedPath($this->view->file_path);
                 
                 $this->view->revisions = $revisions;
@@ -124,5 +123,114 @@ class RevisionsController extends My_BaseAction {
             $this->getLogger()->err(__METHOD__.': exception: '.$e->getMessage());
             $this->view->error = $this->getTranslator()->translate('Internal error.');
         }
+    }
+
+    /**
+     * Lets you download specific revisions.
+     *
+     * Parameters:
+     * 'path' - the file path to download
+     * 'rev_id' - the revision hash
+     *
+     */
+    public function downloadAction() {
+        
+
+            $this->view->error_title = '';
+            $this->view->error_message = '';
+            $this->_helper->layout()->assign('show_message', FALSE);
+            $allow_download = TRUE;
+
+            $continue_browsing = ' <a href="%s" title="'.$this->getTranslator()->translate('Continue browsing files...').'">'.$this->getTranslator()->translate('Continue browsing files...').'</a>';
+
+            $filename = $this->getRequest()->getParam('path');
+            $filename_check = new My_ValidatePath();
+            
+            if (!$filename_check->isValid($filename)) {
+                $this->getLogger()->debug(__METHOD__.': Invalid filename: '.print_r($filename, TRUE));
+                $this->getResponse()->setHttpResponseCode(404);
+                $this->view->error_title = $this->getTranslator()->translate('Revision not found!');
+                $this->view->error_message = $this->getTranslator()->translate('The requested revisions was not found') . sprintf($continue_browsing, '/');
+                $allow_download = FALSE;
+            } elseif (!$this->checkRevisionHash('rev_id', $rev_id)) {
+                $this->getLogger()->debug(__METHOD__.': Invalid revision hash ');
+                $this->getResponse()->setHttpResponseCode(404);
+                $this->view->error_title = $this->getTranslator()->translate('Revision not found!');
+                $this->view->error_message = $this->getTranslator()->translate('The requested revisions was not found') . sprintf($continue_browsing, pathinfo($filename, PATHINFO_DIRNAME));
+                $allow_download = FALSE;
+            }
+
+        try {
+            
+            if ($allow_download) {
+
+                $this->getLogger()->debug(__METHOD__.': Downloading: '.print_r($filename, TRUE));
+
+                $tickets = new My_Tickets();
+
+                if ($tickets->registerTicket( Zend_Auth::getInstance()->getIdentity()->getId(), NULL ) === FALSE) {
+                    $this->getResponse()->setHttpResponseCode(500);
+                    $this->view->error_title = $this->getTranslator()->translate('Too many concurrent downloads!');
+                    $this->view->error_message = $this->getTranslator()->translate('Please wait a minute and retry. ').sprintf($continue_browsing, pathinfo($filename, PATHINFO_DIRNAME));
+                    $allow_download = FALSE;
+                } else {
+                    $access_sx = new Skylable_AccessSxNew( Zend_Auth::getInstance()->getIdentity() );
+
+                    // Get file data
+                    $rev_data = $access_sx->sxrevList($filename);
+
+                    if ($rev_data === FALSE || empty($rev_data)) {
+                        // File not found.
+                        $allow_download = FALSE;
+                        $this->getResponse()->setHttpResponseCode(404);
+                        $this->view->error_title = $this->getTranslator()->translate('File not found!');
+                        $this->view->error_message = sprintf($this->getTranslator()->translate('The file &quot;%s&quot; was not found.'),$this->view->escape($filename)).sprintf($continue_browsing, pathinfo($filename, PATHINFO_DIRNAME));
+                    } else {
+                        
+                        foreach($rev_data as $rev) {
+                            if (strcmp(sha1($rev['rev']), $rev_id) == 0) {
+                                $file_data = $rev;
+                                $file_data['path'] = $filename;
+                                break;
+                            }
+                        }
+                        if (!isset($file_data)) {
+                            $this->getResponse()->setHttpResponseCode(500);
+                            $this->view->error_title = $this->getTranslator()->translate('Invalid file type!');
+                            $this->view->error_message = sprintf($this->getTranslator()->translate('The file &quot;%s&quot; can\'t be downloaded.'), $this->view->escape($filename)).sprintf($continue_browsing, pathinfo($filename, PATHINFO_DIRNAME));
+                            $allow_download = FALSE;
+                        }
+                    }
+                }
+            } 
+
+            if ($allow_download) {
+                $this->disableView();
+                $res = new My_DownloadRevisionResponse($access_sx, $file_data);
+                $this->getFrontController()->setResponse($res);
+            } else {
+                $this->_helper->layout()->setLayout('application-failure');
+                $this->renderScript('error/malfunction.phtml');
+            }
+        }
+        catch(Exception $e) {
+            $this->enableView();
+            $this->getResponse()->setHttpResponseCode(500);
+            $this->view->error_title = $this->getTranslator()->translate('Internal error!');
+            $this->view->error_message = $this->getTranslator()->translate('Application encountered an internal error.').sprintf($continue_browsing, pathinfo($filename, PATHINFO_DIRNAME));
+            $this->_helper->layout()->setLayout('application-failure');
+            $this->_helper->layout()->assign('exception', $e);
+            $this->renderScript('error/malfunction.phtml');
+        }
+    }
+    
+    public function checkRevisionHash($name, &$rev) {
+        $rev = $this->getRequest()->getParam($name);
+        $v = new Zend_Validate_Regex('/^[a-f0-9]{40}$/');
+        if ($v->isValid($rev)) {
+            return TRUE;
+        }
+        $rev = NULL;
+        return FALSE;
     }
 }

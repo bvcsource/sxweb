@@ -20,7 +20,7 @@
 <?php
                 $is_first = TRUE;
                 foreach($this->revisions as $rev) {
-                    ?><tr><td><?php if ($is_first) { $is_first = FALSE; } else { ?><input type="radio" name="rev_id" value="<?php echo sha1($rev['rev']); ?>"><?php } ?></td><td><?php echo $rev['rev']; ?></td><td><?php echo $rev['date'],' ',$rev['time'];  ?></td><td><?php echo $this->fileSizeFormat($rev['size']); ?></td></tr><?php
+                    ?><tr><td><?php if ($is_first) { $is_first = FALSE; } else { ?><input type="radio" name="rev_id" value="<?php echo sha1($rev['rev']); ?>"><?php } ?></td><td><a href="/revdl/<?php echo sha1($rev['rev']),'/', $this->escape($this->sxUrlEncode($this->path)); ?>" title="<?php echo $this->translate('Download this revision'); ?>"><?php echo $rev['rev']; ?></a></td><td><?php echo $rev['date'],' ',$rev['time'];  ?></td><td><?php echo $this->fileSizeFormat($rev['size']); ?></td></tr><?php
                 }
 ?>
             </table>
