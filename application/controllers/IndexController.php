@@ -330,18 +330,40 @@ class IndexController extends My_BaseAction {
             }
             
             // If we don't have an URL use the first volume
-            // in the volume list or the last visited volume.
+            // in the volume list or the last visited volume, if still existent.
             if (empty($volume)) {
                 $volume = My_Utils::getRootFromPath($this->getLastVisitedPath());
                 if (!empty($volume)) {
-                    $path = $volume;
-                    $this->setLastVisitedPath($path);
-                    $logger->debug('Using last visited volume: '.$path);
+                    // Check if the volume exists
+                    $path = '';
+                    foreach($this->view->volumes as $vol) {
+                        if (strcmp($volume, My_Utils::getRootFromPath($vol['path']) ) == 0) {
+                            $path = $volume;
+                            $logger->debug('Using last visited volume: '.$path);
+                        }
+                    }
+                    
+                    // Use the first volume, if the last visited path isn't valid anymore
+                    if (empty($path)) {
+                        if ( count($this->view->volumes) > 0 ) {
+                            $vol = reset( $this->view->volumes );
+                            $path = $vol['path'];
+                            $volume = My_Utils::getRootFromPath($path);
+                            $logger->debug('Using first volume: '.$path);
+                        } else {
+                            // No volumes...
+                            $logger->debug('No volumes found!');
+                            // Shows a blank page: no volumes at all.
+                            $this->_helper->layout->setLayout('clean');
+                            $this->render('no-volumes');
+                            return FALSE;
+                        }
+                    }
                 } elseif (count($this->view->volumes) > 0) {
                     $vol = reset( $this->view->volumes );
                     $path = $vol['path'];
                     $volume = My_Utils::getRootFromPath($path);
-                    $this->setLastVisitedPath($path);
+                    // $this->setLastVisitedPath($path);
                     $logger->debug('Using first volume: '.$path);
                 } else {
                     $logger->debug('No volumes found!');
