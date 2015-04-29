@@ -84,6 +84,16 @@ By default the `data/` directory will hold logs, session data, user data and tem
 
 The directory ``application/configs/` holds all the application configuration files and should be writable by the web server, but this is not mandatory: you can simply create the needed files here, but they must be readable by the web server and the PHP module.
 
+Assuming that you installed SXWeb under /var/www/sxweb, you can use these commands to fix the permissions, after replacing $WEBSERVER_USER with the user under which PHP executes the scripts (check phpinfo() output when in doubt):
+
+    # find /var/www/sxweb -type f -exec chmod 640 {} \;
+    # chown -R root:$WEBSERVER_USER /var/www/sxweb
+    # find /var/www/sxweb/data -type d -exec chmod 700 {} \;
+    # chown -R $WEBSERVER_USER /var/www/sxweb/data
+    # touch /var/www/sxweb/application/configs/skylable.ini
+    # chmod 640 /var/www/sxweb/application/configs/skylable.ini
+    # chown $WEBSERVER_USER /var/www/sxweb/application/configs/skylable.ini
+
 ## APPLICATION
 
 The main configuration file is `application/configs/skylable.ini`. Usually you don't need to edit this file manually, it is generated automatically by the web installer.
