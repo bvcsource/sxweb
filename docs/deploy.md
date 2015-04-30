@@ -86,8 +86,9 @@ The directory ``application/configs/` holds all the application configuration fi
 
 Assuming that you installed SXWeb under /var/www/sxweb, you can use these commands to fix the permissions, after replacing $WEBSERVER_USER with the user under which PHP executes the scripts (check phpinfo() output when in doubt):
 
-    # find /var/www/sxweb -type f -exec chmod 640 {} \;
-    # chown -R root:$WEBSERVER_USER /var/www/sxweb
+    # find /var/www/sxweb -type d -exec chmod 755 {} \;
+    # find /var/www/sxweb -type f -exec chmod 644 {} \;
+    # chown -R root:root /var/www/sxweb
     # find /var/www/sxweb/data -type d -exec chmod 700 {} \;
     # chown -R $WEBSERVER_USER /var/www/sxweb/data
     # touch /var/www/sxweb/application/configs/skylable.ini
