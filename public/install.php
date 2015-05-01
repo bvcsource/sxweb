@@ -63,6 +63,15 @@ define('APP_CONFIG_BASE_PATH', realpath(dirname(__FILE__).'/../application').'/c
 require_once 'Zend/Loader/Autoloader.php';
 Zend_Loader_Autoloader::getInstance()->registerNamespace('My');
 
+// Prepare the translator object
+$translate = new Zend_Translate(
+    array(
+        'adapter' => 'array',
+        'content' => array('foo' => 'foo'),
+        'disableNotices' => TRUE
+    )
+);
+Zend_Registry::set('Zend_Translate', $translate);
 
 // Prepare the front controller
 $front = Zend_Controller_Front::getInstance();

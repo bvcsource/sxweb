@@ -35,6 +35,14 @@
     SWCL.
 */
 class IndexController extends Zend_Controller_Action {
+
+    protected
+        /**
+         * The translator.
+         * 
+         * @var Zend_Translate
+         */
+        $_translator = NULL;
     
     public
         /**
@@ -160,6 +168,36 @@ class IndexController extends Zend_Controller_Action {
         return $cfg;
     }
 
+    public function init() {
+        $this->_translator = $this->getTranslator();
+    }
+
+    /**
+     * Return the translator object.
+     * 
+     * @return Zend_Translate|null
+     * @throws Zend_Exception
+     */
+    public function getTranslator() {
+        if (Zend_Registry::isRegistered('Zend_Translate')) {
+            return Zend_Registry::get('Zend_Translate');
+        }
+        return NULL;
+    }
+
+    /**
+     * Translate the given string.
+     * 
+     * @param string $str string to translate
+     * @return string
+     */
+    public function translate($str) {
+        if (is_object($this->_translator)) {
+            return $this->_translator->translate($str);
+        }
+        return $str;
+    }
+
     /**
      * Convert a php.ini "pretty" value to bytes
      * @param $value
@@ -183,7 +221,7 @@ class IndexController extends Zend_Controller_Action {
     }
     
     public function indexAction() {
-        $this->view->headTitle('Welcome!');
+        $this->view->headTitle($this->translate('Welcome!'));
         
         // Prepares the session
         $session = new Zend_Session_Namespace();
@@ -196,7 +234,7 @@ class IndexController extends Zend_Controller_Action {
      */
     public function step1Action() {
 
-        $this->view->headTitle('Step #1');
+        $this->view->headTitle($this->translate('Step #1'));
 
         if (!$this->sessionIsValid('index')) {
             $this->redirect( $this->view->ServerUrl() . '/install.php' );
@@ -208,27 +246,27 @@ class IndexController extends Zend_Controller_Action {
         
         // PHP version
         $this->view->can_proceed = version_compare(PHP_VERSION, '5.3.9', '>=');
-        $this->view->php_components[] = array('PHP', 'At least 5.3.9', (version_compare(PHP_VERSION, '5.3.9', '>=') ? 'Found' : 'Upgrade needed' ) );
+        $this->view->php_components[] = array('PHP', sprintf($this->translate('At least %s'), '5.3.9'), (version_compare(PHP_VERSION, '5.3.9', '>=') ? $this->translate('Found') : $this->translate('Upgrade needed') ) );
 
         // PHP extensions
         $ext = get_loaded_extensions();
 
         $needed = array(
-            'date' => 'Date extension',
-            'PDO' => 'PDO extension',
-            'pdo_mysql' => 'PDO MySql extension',
-            'openssl' => 'OpenSSL extension',
-            'curl' => 'cUrl extension',
-            'SPL' => 'PHP SPL extension library',
-            'json' => 'JSON extension',
-            'session' => 'Session extension'
+            'date' => $this->translate('Date extension'),
+            'PDO' => $this->translate('PDO extension'),
+            'pdo_mysql' => $this->translate('PDO MySql extension'),
+            'openssl' => $this->translate('OpenSSL extension'),
+            'curl' => $this->translate('cUrl extension'),
+            'SPL' => $this->translate('PHP SPL extension library'),
+            'json' => $this->translate('JSON extension'),
+            'session' => $this->translate('Session extension')
         );
         foreach($needed as $need_ext => $label) {
             $found = in_array($need_ext, $ext); 
             if (!$found) {
                 $this->view->can_proceed = FALSE;
             }
-            $this->view->php_components[] = array($label, 'Yes', ($found ? 'Found' : '<span class="label label-danger">Not found</span>' ) );
+            $this->view->php_components[] = array($label, $this->translate('Yes'), ($found ? $this->translate('Found') : sprintf('<span class="label label-danger">%s</span>', $this->translate('Not found')) ) );
         }
         
         // PHP Uploads conf
@@ -262,7 +300,7 @@ class IndexController extends Zend_Controller_Action {
         
         $this->view->sx_commands_search_path = $this->getExecPath();
         if (empty($this->view->sx_commands_search_path)) {
-            $this->view->sx_commands_search_path_error = $this->view->translate('The path is empty!');
+            $this->view->sx_commands_search_path_error = $this->translate('The path is empty!');
         }
             
         $this->view->sx_commands = array();
@@ -270,9 +308,9 @@ class IndexController extends Zend_Controller_Action {
             $str = exec($cmd.' -V', $output, $ret_val);
             if (empty($output)) {
                 $this->view->can_proceed = FALSE;
-                $this->view->sx_commands[] = array( $cmd, '', '<span class="label label-danger">Not found</span>' );
+                $this->view->sx_commands[] = array( $cmd, '', sprintf('<span class="label label-danger">%s</span>', $this->translate('Not found')) );
             } else {
-                $this->view->sx_commands[] = array( $cmd, '', 'Found' );
+                $this->view->sx_commands[] = array( $cmd, '', $this->translate('Found') );
             }
         }    
         
@@ -282,18 +320,18 @@ class IndexController extends Zend_Controller_Action {
             
             if (!@mkdir(APPLICATION_DATA_PATH, 0775)) {
                 $this->view->can_proceed = FALSE;
-                $this->view->data_path_problem = $this->view->translate('Can&apos;t create the directory.');
+                $this->view->data_path_problem = $this->translate('Can&apos;t create the directory.');
             }
 
         } else {
             if (@is_dir(APPLICATION_DATA_PATH)) {
                 if (!@is_writable(APPLICATION_DATA_PATH)) {
                     $this->view->can_proceed = FALSE;
-                    $this->view->data_path_problem = $this->view->translate('Data path is not writable.');
+                    $this->view->data_path_problem = $this->translate('Data path is not writable.');
                 }
             } else {
                 $this->view->can_proceed = FALSE;
-                $this->view->data_path_problem = $this->view->translate('Data path is not a directory.');
+                $this->view->data_path_problem = $this->translate('Data path is not a directory.');
             }
         }
         
@@ -351,13 +389,13 @@ class IndexController extends Zend_Controller_Action {
      */
     public function initdbAction() {
 
-        $this->view->headTitle('Step #2');
+        $this->view->headTitle($this->translate('Step #2'));
         
         if (!$this->sessionIsValid('step2')) {
             $this->redirect($this->view->ServerUrl() . '/install.php?step=step1');
         }
 
-        $this->view->headTitle('Setting up the DB');
+        $this->view->headTitle($this->translate('Setting up the DB'));
 
         $session = new Zend_Session_Namespace();
 
@@ -380,8 +418,8 @@ class IndexController extends Zend_Controller_Action {
         catch(Exception $e) {
             $session->last_step = 'step1';
             $this->view->error = $e->getMessage();
-            $this->view->error_title = $this->view->translate('<strong>Fail!</strong> Database connection failed!');
-            $this->view->message = $this->view->translate('Please check your connection parameters and retry.');
+            $this->view->error_title = $this->translate('<strong>Fail!</strong> Database connection failed!');
+            $this->view->message = $this->translate('Please check your connection parameters and retry.');
             return FALSE;
         }
         
@@ -407,18 +445,18 @@ class IndexController extends Zend_Controller_Action {
                         $db_conn->query($sql);    
                     }
                     
-                    $this->view->message = $this->view->translate('Successfully created the database schema.');
+                    $this->view->message = $this->translate('Successfully created the database schema.');
                 }
                 catch(Exception $e) {
                     $session->last_step = 'step1';
                     $this->view->error = $e->getMessage();
-                    $this->view->error_title = $this->view->translate('<strong>Fail!</strong> Database creation failed!');
-                    $this->view->message = $this->view->translate('Failed to create the database schema.');
+                    $this->view->error_title = $this->translate('<strong>Fail!</strong> Database creation failed!');
+                    $this->view->message = $this->translate('Failed to create the database schema.');
                 }
 
             } else {
-                $this->view->error_title = $this->view->translate('<strong>Fail!</strong> I/O error!');
-                $this->view->error = $this->view->translate('Failed to load <code>sxweb.sql</code>. Please check your installation.');
+                $this->view->error_title = $this->translate('<strong>Fail!</strong> I/O error!');
+                $this->view->error = $this->translate('Failed to load <code>sxweb.sql</code>. Please check your installation.');
                 $session->last_step = 'step1';
             }
         } else {
@@ -441,17 +479,17 @@ class IndexController extends Zend_Controller_Action {
             catch(Exception $e) {
                 $session->last_step = 'step2';
                 $this->view->error = $e->getMessage();
-                $this->view->error_title = $this->view->translate('<strong>Fail!</strong> Database access error!');
-                $this->view->message = $this->view->translate('Failed to retrieve the DB schema version, you should upgrade manually.');
+                $this->view->error_title = $this->translate('<strong>Fail!</strong> Database access error!');
+                $this->view->message = $this->translate('Failed to retrieve the DB schema version, you should upgrade manually.');
                 
                 $this->view->can_proceed = FALSE;
                 return FALSE;
             }
 
             if ($db_version === FALSE) {
-                $this->view->message = $this->view->translate('Something went wrong...');
-                $this->view->error_title = $this->view->translate('<strong>Fail!</strong> Database access error!');
-                $this->view->error = $this->view->translate('Failed to retrieve the DB schema version, you should upgrade manually.');
+                $this->view->message = $this->translate('Something went wrong...');
+                $this->view->error_title = $this->translate('<strong>Fail!</strong> Database access error!');
+                $this->view->error = $this->translate('Failed to retrieve the DB schema version, you should upgrade manually.');
                 $this->view->can_proceed = FALSE;
                 
                 return FALSE;
@@ -492,7 +530,7 @@ class IndexController extends Zend_Controller_Action {
                         $sql_arr = $this->getSQLArray($sql_file);
                         if ($sql_arr === FALSE) {
                             $upgrade_success = FALSE;
-                            $upgrade_problems[] = sprintf( $this->view->translate('Failed to load SQL file: <code>%s</code>') , $sql_file);
+                            $upgrade_problems[] = sprintf( $this->translate('Failed to load SQL file: <code>%s</code>') , $sql_file);
                         } else {
                             try {
                                 foreach($sql_arr as $sql) {
@@ -501,7 +539,7 @@ class IndexController extends Zend_Controller_Action {
                             }
                             catch(Exception $e) {
                                 $upgrade_success = FALSE;
-                                $upgrade_problems[] = sprintf( $this->view->translate('Failed to apply SQL file: <code>%s</code>, SQL error: <code>%s</code>') , $sql_file, $e->getMessage());
+                                $upgrade_problems[] = sprintf( $this->translate('Failed to apply SQL file: <code>%s</code>, SQL error: <code>%s</code>') , $sql_file, $e->getMessage());
                             }
                         }
                         
@@ -512,12 +550,12 @@ class IndexController extends Zend_Controller_Action {
                 }
 
                 if ($upgrade_success) {
-                    $this->view->message = $this->view->translate('Database successfully upgraded.');
+                    $this->view->message = $this->translate('Database successfully upgraded.');
                 } else {
                     $session->last_step = 'step1';
                     $this->view->error =  implode('<br />'.PHP_EOL, $upgrade_problems);
-                    $this->view->error_title = $this->view->translate('<strong>Fail!</strong> Database upgrade failed!');
-                    $this->view->message = $this->view->translate('Something went wrong...');
+                    $this->view->error_title = $this->translate('<strong>Fail!</strong> Database upgrade failed!');
+                    $this->view->message = $this->translate('Something went wrong...');
                     $this->view->can_proceed = FALSE; 
                 }
             }
@@ -534,7 +572,7 @@ class IndexController extends Zend_Controller_Action {
             $this->redirect($this->view->ServerUrl() . '/install.php?step=step1');
         }
 
-        $this->view->headTitle('Step #2');
+        $this->view->headTitle($this->translate('Step #2'));
 
         $session = new Zend_Session_Namespace();
 
@@ -609,10 +647,10 @@ class IndexController extends Zend_Controller_Action {
                     
                     if (is_null($db_conn->getConnection())) {
                         $session->last_step = 'step1';
-                        $this->view->error = $this->view->translate('Connection failed.');
+                        $this->view->error = $this->translate('Connection failed.');
                     } else {
                         $session->last_step = 'step2';
-                        $this->view->message = $this->view->translate('<strong>Important!</strong> If you are upgrading, before continuing to prevent data loss, please <em>backup your database</em>.');
+                        $this->view->message = $this->translate('<strong>Important!</strong> If you are upgrading, before continuing to prevent data loss, please <em>backup your database</em>.');
                     }
                 }
                 catch(Exception $e) {
@@ -669,7 +707,7 @@ class IndexController extends Zend_Controller_Action {
             $this->redirect($this->view->ServerUrl() . '/install.php?step=step1');
         }
 
-        $this->view->headTitle('Step #3');
+        $this->view->headTitle($this->translate('Step #3'));
 
         $session = new Zend_Session_Namespace();
         $session->last_step = 'step2';
@@ -755,8 +793,8 @@ class IndexController extends Zend_Controller_Action {
                 $can_proceed = TRUE;
                 if ($values['frm_allow_password_recovery'] == 'y') {
                     if (strlen($values['frm_admin_key']) == 0) {
-                        $form->addErrorMessage('You must supply an admin key');
-                        $form->getElement('frm_admin_key')->addErrorMessage( 'You must supply an admin key' );
+                        $form->addErrorMessage($this->translate('You must supply an admin key'));
+                        $form->getElement('frm_admin_key')->addErrorMessage( $this->translate('You must supply an admin key') );
                         $this->view->errors = $form->getMessages();
                         $can_proceed = FALSE;
                     }
@@ -809,7 +847,7 @@ class IndexController extends Zend_Controller_Action {
             $this->redirect($this->view->ServerUrl() . '/install.php?step=step1');
         }
 
-        $this->view->headTitle('Step #4');
+        $this->view->headTitle($this->translate('Step #4'));
         
         $session = new Zend_Session_Namespace();
 
@@ -954,7 +992,7 @@ class IndexController extends Zend_Controller_Action {
             $this->redirect($this->view->ServerUrl() . '/install.php?step=step1');
         }
 
-        $this->view->headTitle('Step #5');
+        $this->view->headTitle($this->translate('Step #5'));
         
         $session = new Zend_Session_Namespace();
         
@@ -1105,19 +1143,19 @@ class IndexController extends Zend_Controller_Action {
         
         if (@file_exists($skylable_ini_path)) {
             $this->view->write_success = FALSE;
-            $this->view->reason = $this->view->translate('File already exists.');
+            $this->view->reason = $this->translate('File already exists.');
             return FALSE;
         }
    
         if (!@is_writable(APP_CONFIG_BASE_PATH)) {
             $this->view->write_success = FALSE;
-            $this->view->reason = $this->view->translate('Destination directory is not writable.');
+            $this->view->reason = $this->translate('Destination directory is not writable.');
             return FALSE;
         }
         
         if (@file_put_contents($skylable_ini_path, $skylable_ini) === FALSE ) {
             $this->view->write_success = FALSE;
-            $this->view->reason = $this->view->translate('Failed to write the file.');
+            $this->view->reason = $this->translate('Failed to write the file.');
         } else {
             $this->view->write_success = TRUE;
         }

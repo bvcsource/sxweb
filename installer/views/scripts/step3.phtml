@@ -49,12 +49,12 @@ if (isset($this->errors)): ?>
         <div class="panel-body">
             <?php
             $map = array(
-                'frm_cluster' => 'SX Cluster Address',
-                'frm_cluster_ssl' => 'Use SSL',
-                'frm_cluster_port' => 'Cluster Port',
-                'frm_cluster_ip' => 'Cluster IP',
-                'frm_admin_key' => 'Admin Key',
-                'frm_allow_password_recovery' => 'Allow Password Recovery'
+                'frm_cluster' => $this->translate('SX Cluster Address'),
+                'frm_cluster_ssl' => $this->translate('Use SSL'),
+                'frm_cluster_port' => $this->translate('Cluster Port'),
+                'frm_cluster_ip' => $this->translate('Cluster IP'),
+                'frm_admin_key' => $this->translate('Admin Key'),
+                'frm_allow_password_recovery' => $this->translate('Allow Password Recovery')
             );
 
             echo '<p>',$this->translate('The following field(s) have errors, please correct them:'),'</p>',PHP_EOL;
