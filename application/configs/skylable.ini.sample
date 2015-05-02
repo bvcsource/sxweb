@@ -88,8 +88,8 @@ mail.transport.host = "localhost"
 ; Default values are 25 for TLS and 465 for SSL
 ;mail.transport.port = 25
 ;mail.transport.auth = login
-;mail.transport.username = myUsername
-;mail.transport.password = myPassword
+;mail.transport.username = "myUsername"
+;mail.transport.password = "myPassword"
 mail.transport.register = true 
 
 mail.defaultFrom.email = "noreply@example.com"

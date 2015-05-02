@@ -1,0 +1,88 @@
+<?php
+/*
+    The contents of this file are subject to the Common Public Attribution License
+    Version 1.0 (the "License"); you may not use this file except in compliance with
+    the License. You may obtain a copy of the License at
+    http://opensource.org/licenses/cpal_1.0. The License is based on the Mozilla
+    Public License Version 1.1 but Sections 14 and 15 have been added to cover use
+    of software over a computer network and provide for limited attribution for the
+    Original Developer. In addition, Exhibit A has been modified to be consistent with
+    Exhibit B.
+    
+    Software distributed under the License is distributed on an "AS IS" basis, WITHOUT
+    WARRANTY OF ANY KIND, either express or implied. See the License for the
+    specific language governing rights and limitations under the License.
+    
+    The Original Code is the SXWeb project.
+    
+    The Original Developer is the Initial Developer.
+    
+    The Initial Developer of the Original Code is Skylable Ltd (info-copyright@skylable.com). 
+    All portions of the code written by Initial Developer are Copyright (c) 2013 - 2015
+    the Initial Developer. All Rights Reserved.
+
+    Contributor(s):    
+
+    Alternatively, the contents of this file may be used under the terms of the
+    Skylable White-label Commercial License (the SWCL), in which case the provisions of
+    the SWCL are applicable instead of those above.
+    
+    If you wish to allow use of your version of this file only under the terms of the
+    SWCL and not to allow others to use your version of this file under the CPAL, indicate
+    your decision by deleting the provisions above and replace them with the notice
+    and other provisions required by the SWCL. If you do not delete the provisions
+    above, a recipient may use your version of this file under either the CPAL or the
+    SWCL.
+*/
+?>
+<div class="page-header">
+    <h1><?php echo $this->translate('SXWeb Settings'); ?></h1>
+</div>
+<p><?php echo $this->translate('Here you can configure default SXWeb settings.'); ?></p>
+<?php
+if (isset($this->errors)): ?>
+    
+    <div class="panel panel-danger">
+        <div class="panel-heading">
+            <h3 class="panel-title"><?php echo $this->translate('There are errors!'); ?></h3>
+        </div>
+        <div class="panel-body">
+<?php
+            $map = array(
+                'frm_default_language' => $this->translate('Default Language')
+            );
+
+            echo '<p>',$this->translate('The following field(s) have errors, please correct them:'),'</p>',PHP_EOL;
+            echo '<dl>';
+            foreach($this->errors as $field => $err_msg) {
+
+                echo '<dt>',$map[ $field ],'</dt>',PHP_EOL;
+                foreach($err_msg as $m) {
+                    echo '<dd>',$m,'</dd>',PHP_EOL;
+                }
+
+            }
+            echo '</dl>'; 
+?>
+        </div>
+    </div>
+<?php
+
+endif;
+?>
+<form method="post" class="form-horizontal" action="<?php echo $this->escape( $this->ServerUrl() . '/install.php?step=base' )?>">
+    
+    <fieldset>
+        <legend><?php echo $this->translate('SXWeb Language'); ?></legend>
+
+        <div class="form-group<?php if (isset($this->errors['frm_default_language'])) echo ' has-error'; ?>">
+            <label for="frm_default_language" class="col-sm-2 control-label"><?php echo $this->translate('Default Language'); ?></label>
+            <div class="col-sm-10">
+                <?php echo $this->formSelect('frm_default_language', $this->frm_default_language, array('class' => 'form-control'), My_BaseAction::getLanguageList() );  ?>
+                <span class="help-block"><?php echo $this->translate('The default language to use.'); ?></span>
+            </div>
+        </div>
+
+    <p><button type="submit" class="btn btn-primary"><?php echo $this->translate('Submit!') ?></button> <a class="btn btn-default" href="<?php echo $this->ServerUrl(); ?>/install.php?step=step1"><?php echo $this->translate('Go to previous step...');?></a></p>
+    
+</form>

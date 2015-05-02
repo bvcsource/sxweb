@@ -34,7 +34,10 @@
     above, a recipient may use your version of this file under either the CPAL or the
     SWCL.
 */
-
 ?>
-<h1><?php echo $this->translate('Unknown action!'); ?></h1>
-<p><?php echo $this->translate('Please don&apos;t be silly!'); ?></p>
+<div class="page-header">
+    <h1><?php echo $this->translate('Final step'); ?></h1>
+</div>
+<p><?php echo $this->translate('Configuration is not complete, please go back and retry.'); ?></p>
+    <p><a href="<?php echo $this->ServerUrl(); ?>/install.php?step=step1" class="btn btn-default"><?php echo $this->translate('Ok, let me review the configuration...'); ?></a></p>
+

@@ -87,12 +87,14 @@ if (is_null($step)) {
 $action_map = array(
     // step -> controller file, controller class,  action, view
     'index' => array('IndexController.php', 'IndexController', 'index', '/index.phtml'),
+    'base' => array('IndexController.php', 'IndexController', 'base', '/base.phtml'),
     'step1' => array('IndexController.php', 'IndexController', 'step1', '/step1.phtml'),
     'step2' => array('IndexController.php', 'IndexController', 'step2', '/step2.phtml'),
     'step3' => array('IndexController.php', 'IndexController', 'step3', '/step3.phtml'),
     'step4' => array('IndexController.php', 'IndexController', 'step4', '/step4.phtml'),
     'step5' => array('IndexController.php', 'IndexController', 'step5', '/step5.phtml'),
     'initdb' => array('IndexController.php', 'IndexController', 'initdb', '/initdb.phtml'),
+    'mailtest' => array('IndexController.php', 'IndexController', 'mailtest', '/emailtest.phtml'),
     'none' => array('IndexController.php', 'IndexController', 'none', '/none.phtml'),
 );
 

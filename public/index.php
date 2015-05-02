@@ -60,9 +60,15 @@ set_include_path(implode(PATH_SEPARATOR, array(
 
 
 // Before continuing checks if the application is properly configured
-if (!file_exists(APPLICATION_PATH . '/configs/skylable.ini')) {
-    header('Location: /install.php');
-    exit();
+if (!@file_exists(APPLICATION_PATH . '/configs/skylable.ini')) {
+    if (@is_readable(APPLICATION_PATH . '/../public/install.php')) {
+        header('Location: /install.php');
+        exit();    
+    } else {
+        header($_SERVER['SERVER_PROTOCOL'] . ' 500 Internal Server Error', TRUE, 500);
+        error_log('SXWeb Fatal Error: configuration file and installer missing.');
+        die('Mis-configured application, can\'t proceed. Please contact your sysadmin.');        
+    }
 }
 
 /** Zend_Application */

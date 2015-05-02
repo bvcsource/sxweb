@@ -64,7 +64,7 @@ class IndexController extends Zend_Controller_Action {
             //sx cluster url sx://...
             'cluster' => "sx://cluster.example.com",
             
-            'cluster_ssl' => true,
+            'cluster_ssl' => TRUE,
             'cluster_port' => '',
             'cluster_ip' => '',
 
@@ -119,6 +119,9 @@ class IndexController extends Zend_Controller_Action {
             'password_recovery' => FALSE,
             'admin_key' => '',
             
+            // Default language
+            'default_language' => 'en',
+            
             // DB configuration
             'db.adapter' => "pdo_mysql",
             'db.params.host' => "localhost",
@@ -137,7 +140,7 @@ class IndexController extends Zend_Controller_Action {
             'mail.transport.password' => '',
             'mail.transport.ssl' => '',
             'mail.transport.port' => '',
-            'mail.transport.register' => true, 
+            'mail.transport.register' => TRUE, 
     
             'mail.defaultFrom.email' => "noreply@example.com",
             'mail.defaultFrom.name' => "SXWeb",
@@ -148,6 +151,9 @@ class IndexController extends Zend_Controller_Action {
         // Parameters to skip
         $skip_list = array('db.params.username','db.params.password',
             'db.adapter','db.isDefaultTableAdapter','db.params.charset');
+        $booleans_values = array(
+            'mail.transport.register', 'password_recovery', 'cluster_ssl'
+        );
         
         // Check for a valid skylable.ini and integrate its configuration
         if (@file_exists(APP_CONFIG_BASE_PATH . 'skylable.ini')) {
@@ -157,7 +163,11 @@ class IndexController extends Zend_Controller_Action {
                     if (trim($k) == 'production') {
                         foreach($skylable_ini[$k] as $dk => $dv) {
                             if (array_key_exists($dk, $cfg) && !in_array($dk, $skip_list)) {
-                                $cfg[$dk] = $dv;
+                                if (in_array($dk, $booleans_values)) {
+                                    $cfg[$dk] = strcasecmp($dv, 'true') == 0;
+                                } else {
+                                    $cfg[$dk] = $dv;    
+                                }
                             }
                         }
                     }    
@@ -226,7 +236,17 @@ class IndexController extends Zend_Controller_Action {
         // Prepares the session
         $session = new Zend_Session_Namespace();
         $session->config = $this->getBaseConfig();
-        $session->last_step = 'index';
+
+        $session->steps_registry = array(
+            'step0' => TRUE,
+            'base' => FALSE,
+            'step1' => FALSE,
+            'step2' => FALSE,
+            'step2_initdb' => FALSE,
+            'step3' => FALSE,
+            'step4' => FALSE
+        );
+        
     }
 
     /**
@@ -234,11 +254,11 @@ class IndexController extends Zend_Controller_Action {
      */
     public function step1Action() {
 
-        $this->view->headTitle($this->translate('Step #1'));
-
-        if (!$this->sessionIsValid('index')) {
+        if (!$this->sessionIsValid('step0')) {
             $this->redirect( $this->view->ServerUrl() . '/install.php' );
         }
+
+        $this->view->headTitle($this->translate('Requirements'));
         
         $session = new Zend_Session_Namespace();
         
@@ -294,8 +314,14 @@ class IndexController extends Zend_Controller_Action {
         }
         
         // SX commands
+        
         $sx_cmd = array(
-            'sxinit','sxcp','sxrm','sxmv','sxacl','sxrev'
+            'sxinit' => array('1.0-127-gfaa1018', '>='),
+            'sxcp' => array('1.0-127-gfaa1018', '>='),
+            'sxrm' => array('1.0-127-gfaa1018', '>='),
+            'sxmv' => array('1.0-127-gfaa1018', '>='),
+            'sxacl' => array('1.0-127-gfaa1018', '>='),
+            'sxrev' => array('1.0-127-gfaa1018', '>=')
         );
         
         $this->view->sx_commands_search_path = $this->getExecPath();
@@ -304,14 +330,25 @@ class IndexController extends Zend_Controller_Action {
         }
             
         $this->view->sx_commands = array();
-        foreach($sx_cmd as $cmd) {
+        foreach($sx_cmd as $cmd => $cmd_ver) {
             $str = exec($cmd.' -V', $output, $ret_val);
             if (empty($output)) {
                 $this->view->can_proceed = FALSE;
                 $this->view->sx_commands[] = array( $cmd, '', sprintf('<span class="label label-danger">%s</span>', $this->translate('Not found')) );
             } else {
-                $this->view->sx_commands[] = array( $cmd, '', $this->translate('Found') );
+                if (preg_match('/^' . $cmd . '\s+(.+)/', $output[0], $matches) == 1) {
+                    if (version_compare($matches[1], $cmd_ver[0], $cmd_ver[1]) == FALSE) {
+                        $this->view->can_proceed = FALSE;
+                        $this->view->sx_commands[] = array( $cmd, '', sprintf('<span class="label label-danger">%s %s. %s %s</span>', $this->translate('Found version:'),$matches[1], $this->translate('Required version:'), $cmd_ver[1] . $cmd_ver[0]) );
+                    } else {
+                        $this->view->sx_commands[] = array( $cmd, '', sprintf('%s %s', $this->translate('Found version:'),$matches[1]) );
+                    }
+                } else {
+                    $this->view->sx_commands[] = array( $cmd, '', $this->translate('Found') );    
+                }
+                
             }
+            $output = '';
         }    
         
         
@@ -334,12 +371,9 @@ class IndexController extends Zend_Controller_Action {
                 $this->view->data_path_problem = $this->translate('Data path is not a directory.');
             }
         }
+
+        $session->steps_registry['step1'] = $this->view->can_proceed;
         
-        if ($this->view->can_proceed) {
-            $session->last_step = 'step1';   
-        } else {
-            $session->last_step = FALSE;
-        }
     }
 
     /**
@@ -389,19 +423,17 @@ class IndexController extends Zend_Controller_Action {
      */
     public function initdbAction() {
 
-        $this->view->headTitle($this->translate('Step #2'));
-        
         if (!$this->sessionIsValid('step2')) {
-            $this->redirect($this->view->ServerUrl() . '/install.php?step=step1');
+            $this->redirect($this->view->ServerUrl() . '/install.php?step=step2');
         }
 
         $this->view->headTitle($this->translate('Setting up the DB'));
 
         $session = new Zend_Session_Namespace();
+        
+        $session->steps_registry['step2_initdb'] = FALSE;
 
         // Install or upgrade the DB
-        $session->last_step = 'step2';
-
         try {
             $db_conn = Zend_Db::factory('Pdo_Mysql', array(
                 'username' => $session->config['db.params.username'],
@@ -416,7 +448,6 @@ class IndexController extends Zend_Controller_Action {
             $tables = $db_conn->listTables();    
         }
         catch(Exception $e) {
-            $session->last_step = 'step1';
             $this->view->error = $e->getMessage();
             $this->view->error_title = $this->translate('<strong>Fail!</strong> Database connection failed!');
             $this->view->message = $this->translate('Please check your connection parameters and retry.');
@@ -428,7 +459,7 @@ class IndexController extends Zend_Controller_Action {
         if (empty($tables)) {
             $do_create_db = TRUE;
         } else {
-            $base_tables = array('shared', 'tickets', 'user_reset_password', 'users', 'users_act_keys');
+            $base_tables = array('shared', 'tickets', 'user_reset_password', 'users');
             foreach($base_tables as $t) {
                 if (!in_array($t, $tables)) {
                     $do_create_db = TRUE;
@@ -446,9 +477,9 @@ class IndexController extends Zend_Controller_Action {
                     }
                     
                     $this->view->message = $this->translate('Successfully created the database schema.');
+                    $session->steps_registry['step2_initdb'] = TRUE;
                 }
                 catch(Exception $e) {
-                    $session->last_step = 'step1';
                     $this->view->error = $e->getMessage();
                     $this->view->error_title = $this->translate('<strong>Fail!</strong> Database creation failed!');
                     $this->view->message = $this->translate('Failed to create the database schema.');
@@ -457,7 +488,6 @@ class IndexController extends Zend_Controller_Action {
             } else {
                 $this->view->error_title = $this->translate('<strong>Fail!</strong> I/O error!');
                 $this->view->error = $this->translate('Failed to load <code>sxweb.sql</code>. Please check your installation.');
-                $session->last_step = 'step1';
             }
         } else {
             // Guess the DB schema version
@@ -477,7 +507,6 @@ class IndexController extends Zend_Controller_Action {
                 }
             }
             catch(Exception $e) {
-                $session->last_step = 'step2';
                 $this->view->error = $e->getMessage();
                 $this->view->error_title = $this->translate('<strong>Fail!</strong> Database access error!');
                 $this->view->message = $this->translate('Failed to retrieve the DB schema version, you should upgrade manually.');
@@ -550,15 +579,80 @@ class IndexController extends Zend_Controller_Action {
                 }
 
                 if ($upgrade_success) {
+                    $session->steps_registry['step2_initdb'] = TRUE;
                     $this->view->message = $this->translate('Database successfully upgraded.');
                 } else {
-                    $session->last_step = 'step1';
                     $this->view->error =  implode('<br />'.PHP_EOL, $upgrade_problems);
                     $this->view->error_title = $this->translate('<strong>Fail!</strong> Database upgrade failed!');
                     $this->view->message = $this->translate('Something went wrong...');
                     $this->view->can_proceed = FALSE; 
                 }
             }
+        }
+    }
+
+    /**
+     * Base SXWeb settings
+     */
+    public function baseAction() {
+        if (!$this->sessionIsValid('step1')) {
+            $this->redirect($this->view->ServerUrl() . '/install.php?step=step1');
+        }
+
+        $this->view->headTitle($this->translate('Base settings'));
+
+        $session = new Zend_Session_Namespace();
+
+        $form = new Zend_Form();
+        $form->addElement( 'text', 'frm_default_language', array(
+            'validators' => array( new Zend_Validate_InArray( array_keys( My_BaseAction::getLanguageList() ) ) ),
+            'filters' => array(
+                'StringTrim'
+            ),
+            'required' => TRUE
+        ));
+
+        $data_map = array(
+            'frm_default_language' => 'default_language'
+        );
+
+        if ($this->getRequest()->isPost()) {
+            $session->steps_registry['base'] = FALSE;
+            
+            if ($form->isValid( $this->getRequest()->getParams() )) {
+                $values = $form->getValues();
+
+                foreach ($data_map as $field => $param) {
+                    $session->config[$param] = $values[$field];
+
+                    $this->view->$field = $session->config[$param];
+                }
+
+                $session->steps_registry['base'] = TRUE;
+                $this->redirect($this->view->ServerUrl() . '/install.php?step=step2');
+                
+            } else {
+                $this->view->errors = $form->getMessages();
+                $values = $form->getValues();
+
+                foreach($values as $vk => $vv) {
+                    if (array_key_exists($vk, $this->view->errors)) {
+                        $this->view->$vk = '';
+                    } else {
+                        $this->view->$vk = $vv;
+                    }
+                }
+                foreach($data_map as $field => $param) {
+                    $session->config[$param] = $this->view->$field;
+                }
+            }
+
+        } else {
+
+            foreach($data_map as $field => $param) {
+                $this->view->$field = $session->config[$param];
+            }
+
         }
     }
     
@@ -568,11 +662,11 @@ class IndexController extends Zend_Controller_Action {
      */
     public function step2Action() {
         
-        if (!$this->sessionIsValid('step1')) {
-            $this->redirect($this->view->ServerUrl() . '/install.php?step=step1');
+        if (!$this->sessionIsValid('base')) {
+            $this->redirect($this->view->ServerUrl() . '/install.php?step=base');
         }
 
-        $this->view->headTitle($this->translate('Step #2'));
+        $this->view->headTitle($this->translate('Database Configuration'));
 
         $session = new Zend_Session_Namespace();
 
@@ -624,6 +718,9 @@ class IndexController extends Zend_Controller_Action {
         
         // Check for the form
         if ($this->getRequest()->isPost()) {
+            // The step is valid only when the form gives a valid connection
+            $session->steps_registry['step2'] = FALSE;            
+
             
             if ($form->isValid( $this->getRequest()->getParams() )) {
                 $values = $form->getValues();
@@ -646,18 +743,15 @@ class IndexController extends Zend_Controller_Action {
                     ));
                     
                     if (is_null($db_conn->getConnection())) {
-                        $session->last_step = 'step1';
                         $this->view->error = $this->translate('Connection failed.');
                     } else {
-                        $session->last_step = 'step2';
                         $this->view->message = $this->translate('<strong>Important!</strong> If you are upgrading, before continuing to prevent data loss, please <em>backup your database</em>.');
+                        
+                        $session->steps_registry['step2'] = TRUE;
                     }
                 }
                 catch(Exception $e) {
-                    $session->last_step = 'step1';
-                    
                     $this->view->error = $e->getMessage();
-                    echo $this->view->render('step2b.phtml');
                 }
                 
                 $this->render_the_script = FALSE;
@@ -704,13 +798,12 @@ class IndexController extends Zend_Controller_Action {
          */
         
         if (!$this->sessionIsValid('step2')) {
-            $this->redirect($this->view->ServerUrl() . '/install.php?step=step1');
+            $this->redirect($this->view->ServerUrl() . '/install.php?step=step2');
         }
 
-        $this->view->headTitle($this->translate('Step #3'));
+        $this->view->headTitle($this->translate('SX Cluster configuration'));
 
         $session = new Zend_Session_Namespace();
-        $session->last_step = 'step2';
 
         $data_map = array(
             'frm_cluster' => 'cluster',
@@ -776,6 +869,7 @@ class IndexController extends Zend_Controller_Action {
         ));
 
         if ($this->getRequest()->isPost()) {
+            $session->steps_registry['step3'] = FALSE;
 
             if ($form->isValid($this->getRequest()->getParams())) {
                 $values = $form->getValues();
@@ -801,8 +895,7 @@ class IndexController extends Zend_Controller_Action {
                 }
 
                 if ($can_proceed) {
-                    $session->last_step = 'step3';
-
+                    $session->steps_registry['step3'] = TRUE;
                     $this->redirect($this->view->ServerUrl() . '/install.php?step=step4');    
                 } 
 
@@ -838,16 +931,21 @@ class IndexController extends Zend_Controller_Action {
      * Action for unknown actions
      */
     public function noneAction() {
-
+        $this->deleteSession();
     }
-    
+
+    /**
+     * SMTP/Mail configuration
+     * 
+     * @throws Zend_Form_Exception
+     */
     public function step4Action() {
         
         if (!$this->sessionIsValid('step3')) {
-            $this->redirect($this->view->ServerUrl() . '/install.php?step=step1');
+            $this->redirect($this->view->ServerUrl() . '/install.php?step=step3');
         }
 
-        $this->view->headTitle($this->translate('Step #4'));
+        $this->view->headTitle($this->translate('Mail transport configuration'));
         
         $session = new Zend_Session_Namespace();
 
@@ -946,6 +1044,7 @@ class IndexController extends Zend_Controller_Action {
 
 
         if ($this->getRequest()->isPost()) {
+            $session->steps_registry['step4'] = FALSE;
 
             if ($form->isValid($this->getRequest()->getParams())) {
                 $values = $form->getValues();
@@ -956,9 +1055,12 @@ class IndexController extends Zend_Controller_Action {
                     $session->config[$param] = $values[$field];
                 }
 
-                $session->last_step = 'step4';
-                $this->redirect($this->view->ServerUrl() . '/install.php?step=step5');
-                
+                $session->steps_registry['step4'] = TRUE;
+
+                // Show the mail test
+                $this->render_the_script = FALSE;
+                echo $this->view->render('mailtest.phtml');
+
             } else {
                 
                 $this->view->errors = $form->getMessages();
@@ -984,17 +1086,105 @@ class IndexController extends Zend_Controller_Action {
     }
 
     /**
+     * Test the mail transport configuration
+     */
+    public function mailtestAction() {
+        
+        if (!$this->sessionIsValid('step4')) {
+            $this->redirect($this->view->ServerUrl() . '/install.php?step=step4');
+        }
+
+        $this->view->headTitle($this->translate('Mail transport test'));
+
+        $session = new Zend_Session_Namespace();
+        
+        if ($this->getRequest()->isPost()) {
+            $email_validator = new Zend_Validate_EmailAddress(array(
+                'mx' => FALSE,
+                'deep' => FALSE
+            ));
+            $email = $this->getRequest()->getParam('frm_test_email');
+            if (!$email_validator->isValid($email)) {
+                $this->view->error = $this->translate('Invalid email address.');
+                return FALSE;
+            }
+
+            try {
+                if ($session->config['mail.transport.type']) {
+                    $transport_cfg = array();
+                    if (!empty($session->config['mail.transport.name'])) {
+                        $transport_cfg['name'] = $session->config['mail.transport.name'];
+                    }
+
+                    if (!empty($session->config['mail.transport.port'])) {
+                        $transport_cfg['port'] = $session->config['mail.transport.port'];
+                    }
+
+                    if (!empty($session->config['mail.transport.auth']) && $session->config['mail.transport.auth'] !== 'none') {
+                        $transport_cfg['auth'] = $session->config['mail.transport.auth'];
+                        $transport_cfg['username'] = $session->config['mail.transport.username'];
+                        $transport_cfg['password'] = $session->config['mail.transport.password'];
+                    }
+
+                    if (!empty($session->config['mail.transport.ssl'])) {
+                        $transport_cfg['ssl'] = $session->config['mail.transport.ssl'];
+                    }
+                    
+                    $transport = new Zend_Mail_Transport_Smtp($session->config['mail.transport.host'], $transport_cfg);
+                } else {
+                    $transport = new Zend_Mail_Transport_Sendmail();
+                }
+
+                Zend_Mail::setDefaultTransport($transport);
+                    
+                $zm = new Zend_Mail();
+                $zm->addTo($email);
+                $zm->setSubject($this->translate('SXWeb Test Email'));
+                $zm->setBodyText($this->translate('It worked!'));
+                $zm->setBodyHtml('<p>'.$this->translate('It worked!').'</p>');
+                $zm->setDefaultFrom($session->config['mail.defaultFrom.email'], $session->config['mail.defaultFrom.name']);
+                if (!empty($session->config['mail.defaultReplyTo.email'])) {
+                    $zm->setDefaultReplyTo($session->config['mail.defaultReplyTo.email'], $session->config['mail.defaultReplyTo.name']);
+                }
+                
+                
+                $zm->send();
+                $this->view->success = TRUE;
+            }
+            catch(Exception $e) {
+                $this->view->error = $e->getMessage();
+            }
+        } 
+    }
+
+    /**
      * The final step, generates the skylable.ini file
      */
     public function step5Action() {
         
         if (!$this->sessionIsValid('step4')) {
-            $this->redirect($this->view->ServerUrl() . '/install.php?step=step1');
+            $this->redirect($this->view->ServerUrl() . '/install.php?step=step4');
         }
 
-        $this->view->headTitle($this->translate('Step #5'));
+        $this->view->headTitle($this->translate('Final step'));
         
         $session = new Zend_Session_Namespace();
+        
+        $cfg_is_complete = TRUE;
+        if (isset($session->steps_registry)) {
+            foreach($session->steps_registry as $step => $completed) {
+                if (!$completed) $cfg_is_complete = FALSE;
+            }    
+        } else {
+            $cfg_is_complete = FALSE;
+        }
+       
+        if (!$cfg_is_complete) {
+            $this->render_the_script = FALSE;
+            echo $this->view->render('step5b.phtml');
+            return FALSE;
+        }
+        
         
         // Prepare the ini string
         $skylable_ini = '; This file holds all the application configuration'. PHP_EOL;
@@ -1068,6 +1258,10 @@ class IndexController extends Zend_Controller_Action {
         $skylable_ini .= PHP_EOL;
         $skylable_ini .= '; URL to use to contact the tech support' . PHP_EOL;
         $skylable_ini .= 'tech_support_url = "' . $session->config['tech_support_url'] . '"' . PHP_EOL;
+
+        $skylable_ini .= PHP_EOL;
+        $skylable_ini .= '; SXWeb Default language'.PHP_EOL;
+        $skylable_ini .= 'default_language = "' . $session->config['default_language'] . '"' . PHP_EOL;
         
         $skylable_ini .= PHP_EOL;
         $skylable_ini .= '; Flag to enable or disable password recovery: if enabled, you need also to specify the admin key' . PHP_EOL;
@@ -1174,12 +1368,14 @@ class IndexController extends Zend_Controller_Action {
      * @return bool
      */
     public function sessionIsValid($step = NULL) {
+        
         $session = new Zend_Session_Namespace();
-        if (isset($session->last_step) && isset($session->config)) {
+        if (isset($session->steps_registry) && isset($session->config)) {
+            
             if (is_null($step)) {
-                return TRUE;
+                return $session->steps_registry['step0'];
             } else {
-                return ($session->last_step == $step);
+                return $session->steps_registry[$step];
             }
         }    
         return FALSE;

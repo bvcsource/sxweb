@@ -34,8 +34,6 @@
     above, a recipient may use your version of this file under either the CPAL or the
     SWCL.
 */
-
-$this->headTitle($this->translate('Requirements'));
 ?>
 <div class="page-header">
 <h1><?php echo $this->translate('Requirements'); ?></h1>
@@ -107,10 +105,15 @@ endif;
 <p><?php echo $this->translate('<strong>Status</strong>: '), (isset($this->data_path_problem) ? $this->data_path_problem : $this->translate('OK!') ); ?> </p>
 <?php if (isset($this->data_path_problem)): ?>
     <p><?php echo $this->translate('<em>Tip:</em> Verify that SELinux is not blocking the access to this directory.'); ?></p>
+    <p><?php echo $this->translate('You can try the following commands:'); ?></p>
+    <code>
+        $ chmod 775 <?php echo APPLICATION_DATA_PATH; ?><br/>
+        $ chown http_user:http_group <?php echo APPLICATION_DATA_PATH; ?><br/>
+    </code>
 <?php endif; ?>
 <?php if ($this->can_proceed): ?>
-<p><a class="btn btn-default" href="<?php echo $this->ServerUrl(); ?>/install.php?step=step2"><?php echo $this->translate('Continue');?></a></p>
+<p><a class="btn btn-default" href="<?php echo $this->ServerUrl(); ?>/install.php?step=base"><?php echo $this->translate('Continue...');?></a></p>
     <?php else: ?>
         <?php echo $this->translate('Please fulfill the basic requirements before continuing.'); ?></p>
-        <p><a class="btn btn-default" href="<?php echo $this->ServerUrl(); ?>/install.php"><?php echo $this->translate('Retry');?></a></p>
+        <p><a class="btn btn-default" href="<?php echo $this->ServerUrl(); ?>/install.php"><?php echo $this->translate('Retry!');?></a></p>
     <?php endif; ?>

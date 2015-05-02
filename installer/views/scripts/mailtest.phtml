@@ -36,26 +36,30 @@
 */
 ?>
 <div class="page-header">
-    <h1><?php echo $this->translate('Database Setup'); ?></h1>
+    <h1><?php echo $this->translate('Mail Transport Setup'); ?></h1>
 </div>
-<?php
-    if (isset($this->error)):
-        ?>
-        <div class="alert alert-danger"><?php echo $this->translate('<strong>Fail!</strong> Database connection error!'); ?></div>
+<?php if (isset($this->error)): ?>
+        <div class="alert alert-danger"><?php echo $this->translate('<strong>Fail!</strong> There was an error sending the email!'); ?></div>
         <p><?php echo $this->translate('<strong>Reason:</strong> '), $this->error; ?></p>
-        <p><?php echo $this->translate('Please check your connection parameters and retry'); ?></p>
-<?php
-    else:
-        ?>
-        <div class="alert alert-success"><?php echo $this->translate('<strong>Success!</strong> Database connection successfully established!'); ?></div>
-    <?php
-    endif;
-?>
+        <p><?php echo $this->translate('Please check your connection parameters or the destination email and retry.'); ?></p>
+<?php elseif(isset($this->success)): ?>
+        <div class="alert alert-success"><?php echo $this->translate('<strong>Success!</strong> Email successfully sent!'); ?></div>
+        <p><?php echo $this->translate('Please check your mailbox for the confirmation email.'); ?></p>
+        <p><?php echo $this->translate('Don\'t forget to look also into the SPAM folder.'); ?></p>
+<?php endif; ?>
 <?php if (isset($this->message)): ?>
     <p><?php echo $this->message; ?></p>
 <?php endif; ?>
-<?php if (isset($this->error)): ?>
-        <p><a class="btn btn-default" href="<?php echo $this->ServerUrl(); ?>/install.php?step=step2"><?php echo $this->translate('Review connection parameters...');?></a></p>
-    <?php else: ?>
-        <p><a class="btn btn-default" href="<?php echo $this->ServerUrl(); ?>/install.php?step=initdb"><?php echo $this->translate('Continue to create or upgrade the DB schema...');?></a></p>
-    <?php endif; ?>
+<?php if (isset($this->success)): ?>
+    <p><a class="btn btn-default" href="<?php echo $this->ServerUrl(); ?>/install.php?step=step5"><?php echo $this->translate('Continue...');?></a></p>
+<?php else: ?>
+<p><?php echo $this->translate('We will send you a test email to check the connection parameters. Don\'t forget to look into the SPAM folder of your mail user agent software.'); ?></p>
+<form action="<?php echo $this->ServerUrl(); ?>/install.php?step=mailtest" method="post">
+    <div class="form-group">
+        <label for="frm_test_email"><?php echo $this->translate('Email address'); ?></label>
+        <input type="email" class="form-control" name="frm_test_email" id="frm_test_email" placeholder="<?php echo $this->translate('Enter email'); ?>">
+    </div>
+    <p><?php if (isset($this->error)): ?><a class="btn btn-default" href="<?php echo $this->ServerUrl(); ?>/install.php?step=step4"><?php echo $this->translate('Check mail transport parameters...');?></a><?php endif; ?>
+        <button type="submit" class="btn btn-primary"><?php echo $this->translate('Send the test email!');?></button> <a class="btn btn-default" href="<?php echo $this->ServerUrl(); ?>/install.php?step=step5"><?php echo $this->translate('Skip this step!');?></a></p>
+</form>
+<?php endif; ?>
