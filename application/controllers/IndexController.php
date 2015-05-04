@@ -134,7 +134,7 @@ class IndexController extends My_BaseAction {
                 Zend_Auth::getInstance()->getStorage()->write($user);
             } else {
                 // Assume there are wrong credentials...
-                $form->addError($this->getTranslator()->translate("Login name or password are wrong, please retry."));
+                $form->addError($this->getTranslator()->translate("Username or password are wrong, please retry."));
                 return $this->render('login');
             }
         }

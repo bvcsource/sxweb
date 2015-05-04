@@ -22,7 +22,7 @@
 
     <div class="login-form">
     <?php echo $this->form('', $this->form->getAttribs()); ?>
-        <input type="text" value="<?php echo $this->escape($user_login); ?>" name="frm_login" placeholder="<?php echo $this->translate('Login'); ?>" />
+        <input type="text" value="<?php echo $this->escape($user_login); ?>" name="frm_login" placeholder="<?php echo $this->translate('Username'); ?>" />
         <input type="password" value="<?php echo $this->escape($user_password); ?>" name="frm_password" placeholder="<?php echo $this->translate('Password'); ?>" />
         <label for="confirm"><input type="checkbox" name="frm_remember_me" value="yes" id="confirm" /><?php echo $this->translate('Remember me'); ?></label>
         <input type="submit" value="<?php echo $this->translate('Sign in'); ?>" />
