@@ -51,4 +51,9 @@
 <?php if (defined('SXWEB_FAQ_URL')): ?>
     <p><?php printf($this->translate('You can find the SXWeb FAQ here: %s'), '<a href="' . $this->escape(SXWEB_FAQ_URL) .'" onclick="window.open(this.href); return false;">' . $this->escape(SXWEB_FAQ_URL) .'</a>'); ?></p>
 <?php endif; ?>
+<?php if (isset($this->installer_not_writable)): ?>
+<div class="alert alert-danger" role="alert">
+    <strong><?php echo $this->translate('Security Risk Alert!'); ?></strong> <?php printf($this->translate('The installer script <code>%s</code> seems not modifiable. At the end of the installation/upgrade process you should remove it or make it unreadable by the web server to avoid security risks.'), realpath(INSTALLER_SCRIPT_PATH)); ?>
+</div>
+<?php endif; ?>
 <p><a class="btn btn-default" href="<?php echo $this->ServerUrl(); ?>/install.php?step=base"><?php echo $this->translate('Continue...'); ?></a></p>

@@ -247,6 +247,12 @@ class IndexController extends Zend_Controller_Action {
             'step4' => FALSE
         );
         
+        // Check if the installer script is modifiable
+        @clearstatcache();
+        if (!@is_writable(INSTALLER_SCRIPT_PATH)) {
+            $this->view->installer_not_writable = TRUE;
+        }
+        
     }
 
     /**
@@ -1335,15 +1341,27 @@ class IndexController extends Zend_Controller_Action {
 
         $this->view->skylable_ini_path = APP_CONFIG_BASE_PATH;
         
+        $this->view->title = $this->translate('SXWeb successfully installed!');
+        
         if (@file_exists($skylable_ini_path)) {
             $this->view->write_success = FALSE;
-            $this->view->reason = $this->translate('File already exists.');
+            $this->view->reason = $this->translate('Configuration file already exists.');
+
+            if (!$this->inhibitInstallScript()) {
+                $this->view->installer_not_writable = TRUE;
+            }
+            
             return FALSE;
         }
    
         if (!@is_writable(APP_CONFIG_BASE_PATH)) {
             $this->view->write_success = FALSE;
             $this->view->reason = $this->translate('Destination directory is not writable.');
+            
+            if (!$this->inhibitInstallScript()) {
+                $this->view->installer_not_writable = TRUE;
+            }
+            
             return FALSE;
         }
         
@@ -1353,6 +1371,23 @@ class IndexController extends Zend_Controller_Action {
         } else {
             $this->view->write_success = TRUE;
         }
+
+        if (!$this->inhibitInstallScript()) {
+            $this->view->installer_not_writable = TRUE;
+        }
+    }
+
+    /**
+     * Make the install.php script not readable anymore
+     * @return bool TRUE on success, FALSE on failure
+     */
+    public function inhibitInstallScript() {
+        if (@unlink(INSTALLER_SCRIPT_PATH)) {
+            @clearstatcache();
+            @flush();
+            return TRUE;
+        }
+        return FALSE;
     }
  
     /**

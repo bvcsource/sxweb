@@ -58,6 +58,7 @@ set_include_path(implode(PATH_SEPARATOR, array(
 define('APPLICATION_DATA_PATH', realpath(dirname(__FILE__).'/..').'/data');
 define('INSTALLER_SQL_PATH', realpath(dirname(__FILE__).'/..').'/sql');
 define('APP_CONFIG_BASE_PATH', realpath(dirname(__FILE__).'/../application').'/configs/');
+define('INSTALLER_SCRIPT_PATH', __FILE__);
 
 // Setup the autoloader
 require_once 'Zend/Loader/Autoloader.php';
