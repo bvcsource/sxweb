@@ -1382,7 +1382,8 @@ class IndexController extends Zend_Controller_Action {
      * @return bool TRUE on success, FALSE on failure
      */
     public function inhibitInstallScript() {
-        if (@unlink(INSTALLER_SCRIPT_PATH)) {
+        $this->view->new_install_script_name = dirname(INSTALLER_SCRIPT_PATH).'/install.txt';
+        if (@rename(INSTALLER_SCRIPT_PATH, $this->view->new_install_script_name)) {
             @clearstatcache();
             @flush();
             return TRUE;

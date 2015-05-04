@@ -44,7 +44,7 @@
     </div>
 <?php else: ?>
     <div class="alert alert-info" role="alert">
-        <strong><?php echo $this->translate('Important!'); ?></strong> <?php printf($this->translate('The installer script <code>%s</code> has been deleted for security reasons.'), INSTALLER_SCRIPT_PATH); ?> 
+        <strong><?php echo $this->translate('Important!'); ?></strong> <?php printf($this->translate('The installer script <code>%s</code> has been renamed to <code>%s</code> for security reasons.'), INSTALLER_SCRIPT_PATH, $this->new_install_script_name); ?> 
     </div>
 <?php endif; ?>
 <?php
