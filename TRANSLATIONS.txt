@@ -1,0 +1,13 @@
+If you want to contribute translations to SXWeb, copy application/languages/en.csv to COUNTRYCODE.csv and public/layouts/skylable/js/lang/lang.en.js to lang.COUNTRYCODE.js.
+
+In COUNTRYCODE.csv translate the second column, in lang.COUNTRYCODE.js translate the part after the colon.
+
+Do NOT change indentation, punctuation, tags, and format strings (e.g. %s).
+
+Use only UTF8.
+
+Send your files to sx-translations -at- skylable -dot- com as attachments, and we will include your files in the public git repository and in the next release of SXWeb.
+
+When submitting the files, let us know if you would like to be contacted when there are new strings to be translated and how you would like to be credited in the ChangeLog (first name, surname, nick, email). 
+
+We appreciate your help!
