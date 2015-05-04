@@ -110,6 +110,9 @@ endif;
         $ chmod 775 <?php echo APPLICATION_DATA_PATH; ?><br/>
         $ chown http_user:http_group <?php echo APPLICATION_DATA_PATH; ?><br/>
     </code>
+    <?php if (defined('SXWEB_FAQ_URL')): ?>
+        <p><?php printf($this->translate('You can find the SXWeb FAQ here: %s'), '<a href="' . $this->escape(SXWEB_FAQ_URL) .'" onclick="window.open(this.href); return false;">' . $this->escape(SXWEB_FAQ_URL) .'</a>'); ?></p>
+    <?php endif; ?>
 <?php endif; ?>
 <?php if ($this->can_proceed): ?>
 <p><a class="btn btn-default" href="<?php echo $this->ServerUrl(); ?>/install.php?step=base"><?php echo $this->translate('Continue...');?></a></p>

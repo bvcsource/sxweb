@@ -10,6 +10,9 @@ if (!defined('SXWEB_VERSION_CHECK_URL')) define('SXWEB_VERSION_CHECK_URL', 'http
 // URL for downloading the upgraded version
 if (!defined('SXWEB_UPGRADE_URL'))  define('SXWEB_UPGRADE_URL', 'http://www.skylable.com/download/sxweb/#upgrade');
 
+// URL for the SXWeb FAQ
+if (!defined('SXWEB_FAQ_URL'))  define('SXWEB_FAQ_URL', 'http://www.skylable.com/docs/faq/sxweb');
+
 // Include the special PHP config if present
 if (@file_exists('./config.inc.php')) {
     require_once realpath('./config.inc.php');
