@@ -1,5 +1,5 @@
 /**
- * English translations
+ * German translations
  */
 if (!Skylable_Lang) {
     var Skylable_Lang = {
@@ -29,7 +29,7 @@ if (!Skylable_Lang) {
         createDirTitle: "Verzeichnis erstellen",
 
         // Create dir "create" button
-        createDirBtn: "erstellen",
+        createDirBtn: "Erstellen",
 
         // Input form label
         createDirNameLabel : "Verzeichnisname:",
@@ -50,7 +50,7 @@ if (!Skylable_Lang) {
 
         // --------- Delete window
         deleteTitle : "Datei(en) löschen",
-        deleteMsg: "Bist Du sicher, dass du die ausgewählten Dateien löschen möchtest?",
+        deleteMsg: "Bist Du sicher, dass du die ausgewählte(n) Datei(en) löschen möchtest?",
         deleteNoFiles: "Keine Dateien ausgewählt",
 
         // --------- Share window
