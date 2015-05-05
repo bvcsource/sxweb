@@ -42,7 +42,7 @@
  * Variables the you must define elsewhere:
  * 'upload_url' - string, the URL to call for uploading files
  *
- * You must include jQuery, jQueryUI, the language file
+ * You must include jQuery, jQueryUI, sprintf.js, the language file
  * and the file_operations.js before this file.
  */
 
@@ -132,14 +132,14 @@ $(document).ready(function(){
 					var the_file = data.result.files[idx];
 					if (the_file.error) {
 						Skylable_Uploads.has_errors = true;
-						reply_box.append('<p class="upload_error">' + trs(the_file.old_name, 55) +': upload failed, reason: ' + the_file.error + '</p>');
+                        reply_box.append('<p class="upload_error">' + sprintf(Skylable_Lang.uploadFailed, trs(the_file.old_name, 55), the_file.error) + '</p>');
 					} else {
-						reply_box.append('<p class="upload_success">'+ trs(the_file.old_name, 55) +': successfully uploaded</p>');
+                        reply_box.append('<p class="upload_success">'+ sprintf(Skylable_Lang.uploadSuccess, trs(the_file.old_name, 55)) + '</p>');
 					}
 				}
 			} else {
 				Skylable_Uploads.has_errors = true;
-				reply_box.append('<p class="upload_error">Upload failed. Reason: ' + data.errorThrown + '</p>');
+                reply_box.append('<p class="upload_error">' + sprintf(Skylable_Lang.uploadError , data.errorThrown ) + '</p>');
 			}
 		},
 		fail: function(e, data) {
@@ -156,7 +156,7 @@ $(document).ready(function(){
 
 			Skylable_Uploads.has_errors = true;
 
-			reply_box.append('<p class="upload_error">Upload failed. Reason: ' + err_msg + '</p>');
+            reply_box.append('<p class="upload_error">' + sprintf(Skylable_Lang.uploadError , err_msg ) + '</p>');
 
 		},
 		stop: function(e, data) {

@@ -76,9 +76,9 @@ if (!Skylable_Lang) {
 
         // -------- Uploads
         uploadTitle: 'Upload in corso...',
-
-        // -------- Revisions
-        revisionsTitle : 'Revisioni',
-        revisionsApply : 'Applica!'
+        uploadFailed: "%s: upload fallito, motivo: %s",
+        uploadSuccess: '%s: upload riuscito',
+        uploadError: 'Upload fallito. Motivo: %s'
+        
     }
 }

@@ -51,6 +51,7 @@ if (!Skylable_Lang) {
         // --------- Delete window
         deleteTitle : "Datei(en) löschen",
         deleteMsg: "Bist Du sicher, dass du die ausgewählte(n) Datei(en) löschen möchtest?",
+
         deleteNoFiles: "Keine Dateien ausgewählt",
 
         // --------- Share window
@@ -75,6 +76,10 @@ if (!Skylable_Lang) {
         settingsPageSizeInvalid : 'Ungültige Seitengröße.',
 
         // -------- Uploads
-        uploadTitle: 'Hochladen...'
+        uploadTitle: 'Hochladen...',
+        uploadFailed: "%s: upload failed, reason: %s",
+        uploadSuccess: '%s: successfully uploaded',
+        uploadError: 'Upload failed. Reason: %s'
+        
     }
 }
