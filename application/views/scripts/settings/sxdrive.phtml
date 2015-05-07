@@ -1,3 +1,24 @@
+<?php
+// Prepare the QR code.
+$qr_code_str = Zend_Registry::get('skylable')->get('cluster') . '/?token='.Zend_Auth::getInstance()->getIdentity()->getSecretKey();
+$cluster_ip = Zend_Registry::get('skylable')->get('cluster_ip', FALSE);
+if (!empty($cluster_port)) {
+    $qr_code_str .= '&ip='.strval($cluster_ip);
+}
+
+$cluster_ssl = Zend_Registry::get('skylable')->get('cluster_ssl', TRUE);
+if (empty($cluster_ssl)) {
+    $qr_code_str .= '&ssl=n';
+} else {
+    $qr_code_str .= '&ssl='.((bool)$cluster_ssl ? 'y' : 'n');
+}
+
+$cluster_port = Zend_Registry::get('skylable')->get('cluster_port', FALSE);
+if (is_numeric($cluster_port)) {
+    $qr_code_str .= '&port='.strval($cluster_port);
+}
+
+?>
 <div class="wrap">
 <h1><?php echo $this->translate('Connect with SXDrive'); ?></h1>
     <hr/>
@@ -9,19 +30,14 @@
 <script src="<?php echo $this->ServerUrl(); ?>/layouts/skylable/js/jquery.qrcode-0.9.4.min.js" type="text/javascript" ></script>
 <script type="text/javascript" >
     $(document).ready(function(){
-        $("div#qr_android").qrcode({
+        $("div#qr_code").qrcode({
             render:'div',size: 208,background:'#fff',fill: '#000',
-            text: '<?php echo Zend_Registry::get('skylable')->get('cluster') . "/" .Zend_Auth::getInstance()->getIdentity()->getSecretKey();?>'
-        });
-        $("div#qr_ios").qrcode({
-            render:'div',size: 208,background:'#fff',fill: '#000',
-            text: '<?php echo Zend_Registry::get('skylable')->get('cluster') . ";token=" .Zend_Auth::getInstance()->getIdentity()->getSecretKey();?>'
+            text: '<?php echo $qr_code_str; ?>'
         });
     });
 </script>
 <div id="qr">
-    <p><?php echo $this->translate('QR Code for Android:'); ?></p><div id="qr_android"></div>
-    <p><?php echo $this->translate('QR Code for iOS:'); ?></p><div id="qr_ios"></div>
+    <p><?php echo $this->translate('QR Code:'); ?></p><div id="qr_code"></div>
 </div>
 <p><?php echo $this->translate('Secret Key:'); ?> <input name="secret_key" type="text" placeholder="<?php echo $this->translate('Secret Key'); ?>" size="70" value="<?php echo $this->escape( Zend_Auth::getInstance()->getIdentity()->getSecretKey() ); ?>"></p>
 <p>
