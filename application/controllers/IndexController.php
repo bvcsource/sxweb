@@ -408,9 +408,15 @@ class IndexController extends My_BaseAction {
                             $validate_vol_password = new My_ValidateVolumePassword();
                             if ($validate_vol_password->isValid($unlock_password)) {
                                 $result = NULL;
-                                if ($access_sx->unlockVolume($volume, $unlock_password)) {
-                                   $show_unlock_form = FALSE; 
-                                } else {
+                                try {
+                                    if ($access_sx->unlockVolume($volume, $unlock_password)) {
+                                        $show_unlock_form = FALSE;
+                                    } else {
+                                        $logger->debug(__METHOD__.' unlocking volume errors: '.print_r($access_sx->getLastErrorLog(), TRUE));
+                                        $form->addError($this->getTranslator()->translate("Volume unlock failed. Wrong password?"));
+                                    }    
+                                }
+                                catch(Exception $e){
                                     $logger->debug(__METHOD__.' unlocking volume errors: '.print_r($access_sx->getLastErrorLog(), TRUE));
                                     $form->addError($this->getTranslator()->translate("Volume unlock failed. Wrong password?"));
                                 }
