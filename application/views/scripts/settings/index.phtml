@@ -3,6 +3,6 @@
     <hr />
     <p><a href="/settings/sxdrive" title="<?php echo $this->translate('Connect with SXDrive'); ?>"><?php echo $this->translate('Connect with SXDrive'); ?></a></p>
     <p><a href="/settings/preferences" title="<?php echo $this->translate('Change preferences for your account'); ?>"><?php echo $this->translate('SXWeb Preferences'); ?></a></p>
-    <p><a href="/account_settings" title="<?php echo $this->translate('Change your password or delete your account'); ?>"><?php echo $this->translate('Manage account'); ?></a></p>
+    <?php if (My_Utils::passwordRecoveryIsAllowed()): ?><p><a href="/account_settings" title="<?php echo $this->translate('Change your password or delete your account'); ?>"><?php echo $this->translate('Manage account'); ?></a></p><?php endif; ?>
     
 </div>

@@ -36,5 +36,8 @@ $this->declareVars(
 <?php    
     endif;
 ?>
+    <?php else: ?>
+        <hr>
+        <p><?php echo $this->translate('Account management is currently disabled.'); ?></p>
     <?php endif; ?>
 </div>
