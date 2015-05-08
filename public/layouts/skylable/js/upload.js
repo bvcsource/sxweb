@@ -79,6 +79,7 @@ $(document).ready(function(){
 	$('#fileupload').fileupload({
 		url: upload_url,
 		dataType: 'json',
+        sequentialUpload: true,
 		start : function(e) {
 
 			Skylable_Uploads.dlg = $('#dialog');
@@ -155,6 +156,9 @@ $(document).ready(function(){
 			}
 
 			Skylable_Uploads.has_errors = true;
+            if (err_msg.length == 0) {
+                err_msg = 'Aborted';
+            }
 
             reply_box.append('<p class="upload_error">' + sprintf(Skylable_Lang.uploadError , err_msg ) + '</p>');
 
