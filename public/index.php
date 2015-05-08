@@ -141,7 +141,7 @@ catch(Exception $e) {
         // Tries to log...
         $log = $application->getBootstrap()->getResource('Log');
         if (is_object($log)) {
-            $log->debug($e->getMessage());
+            $log->err($e->getMessage());
         } else {
             error_log($e->getMessage());
         }
