@@ -123,6 +123,9 @@ if (!FileOperations) {
                         id: 'action_btn',
                         text: (move ? Skylable_Lang["moveBtn"] : Skylable_Lang["copyBtn"]),
                         click: function() {
+
+                            FileOperations.dest_dir = $(dlg).find('#index_ajax_vols').val() + FileOperations.slashPath( $(dlg).find('#index_ajax_patch').val()) ;
+                            
                             console.log('From: ' + FileOperations.source_dir);
                             console.log('To: ' + FileOperations.dest_dir);
 
@@ -145,7 +148,7 @@ if (!FileOperations) {
                             $.ajax({
                                 url : (move ? FileOperations.urls.move_files : FileOperations.urls.copy_files ),
                                 async: false,
-                                data: 'dest='+FileOperations.dest_dir+f,
+                                data: 'dest='+encodeURIComponent( FileOperations.dest_dir )+f,
                                 method : 'POST',
                                 beforeSend : function(xhr, options) {
                                     FileOperations.is_working = true;
@@ -208,7 +211,7 @@ if (!FileOperations) {
 
             $(progressbar).progressbar("option", "value", 25);
 
-            $('#action_btn').hide();
+            // $('#action_btn').hide();
             dialog.dialog("open");
 
             $.ajax({
@@ -242,9 +245,11 @@ if (!FileOperations) {
                         FileOperations.populateCopyMoveWindow(dialog, source_dir, '/' + volume );
                     });
 
+                    /*
                     if (source_dir !== dest_dir) {
                         $('#action_btn').show();
                     }
+                    */
                 },
                 error : function (xhr, status) {
                     $(progressbar).progressbar("option", "value", 100);
@@ -297,6 +302,22 @@ if (!FileOperations) {
                     return path.substring(p1 + 1, p2);
                 }
             }
+        },
+
+        /**
+         * Add a slash to the beginnig part of a path
+         * @param string path
+         * @returns string
+         */
+        slashPath : function(path) {
+            if (path.length == 0) {
+                return '/';
+            }
+            var p1 = path.indexOf('/');
+            if (p1 > 0) {
+                return '/' + path;
+            }
+            return path;
         },
 
         /**
@@ -507,7 +528,7 @@ if (!FileOperations) {
             } else {
                 dlg.html('<p>'+Skylable_Lang['deleteMsg']+'</p>');
                 for (idx in FileOperations.files) {
-                    FileOperations.files[idx] = 'files[]='+FileOperations.files[idx];
+                    FileOperations.files[idx] = 'files[]='+encodeURIComponent( FileOperations.files[idx] );
                 }
 
                 dlg.dialog("option", 'buttons', [
