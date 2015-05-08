@@ -130,6 +130,16 @@ class IndexController extends My_BaseAction {
                 $user->getPreferences()->set('whoami', $values['frm_login']);
                 $this->getLogger()->debug('You are: '.var_export($values['frm_login'], TRUE));
                 
+                // Get the user role
+                $access_sx->setUser($user);
+                $cluster_role = $access_sx->getUserRole();
+                $this->getLogger()->debug('User role is: '.var_export($cluster_role, TRUE));
+                if ($cluster_role !== FALSE) {
+                    if ($cluster_role === 'admin') {
+                        $user->setRoleId(My_User::ROLE_ADMIN);
+                    }
+                }
+                
                 // Finally save the user into session
                 Zend_Auth::getInstance()->getStorage()->write($user);
             } else {

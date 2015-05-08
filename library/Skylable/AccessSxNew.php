@@ -1660,6 +1660,33 @@ class Skylable_AccessSxNew {
     }
 
     /**
+     * Tells the user role on the SX cluster.
+     *
+     * @return bool|string FALSE on error, a string with the user role
+     * @throws Exception
+     * @throws Zend_Exception
+     */
+    public function getUserRole() {
+        $this->_last_error_log = '';
+        if (!$this->isInitialized()) {
+            return FALSE;
+        }
+
+        $ret = $this->executeShellCommand('sxacl whoami --role '.
+            '-c '.My_utils::escapeshellarg($this->_base_dir).' '.
+            My_utils::escapeshellarg( $this->_cluster_string ),
+            '', $out, $exit_code, $this->_last_error_log, NULL, array($this, 'parseErrors'));
+        if ($exit_code == 0) {
+            if (preg_match('/\(([^\)]+)\)$/', trim($out), $matches) == 1) {
+                return $matches[1];
+            } else {
+                return '';
+            }
+        }
+        return FALSE;
+    }
+
+    /**
      * Change (password based) user authentication key.
      * 
      * A normal user can change its own key and a cluster administrator 
@@ -2028,5 +2055,9 @@ class Skylable_AccessSxNew {
 
         return $ret;
     }
+
     
+    public function setUser(My_User $user) {
+        $this->_user = $user;
+    }
 }

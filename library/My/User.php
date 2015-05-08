@@ -260,6 +260,15 @@ class My_User implements Zend_Acl_Role_Interface {
     }
 
     /**
+     * Set the role id (a string).
+     * 
+     * @param string $role
+     */
+    public function setRoleId($role) {
+        $this->_role = $role;
+    }
+
+    /**
      * Tells if the user is active.
      * 
      * @return bool TRUE if is active, FALSE otherwise
@@ -277,4 +286,6 @@ class My_User implements Zend_Acl_Role_Interface {
         $this->_role  = $source->_role;
         $this->_prefs = clone $source->_prefs;
     }
+    
+    
 }
