@@ -520,7 +520,7 @@ class AjaxController extends My_BaseAction {
                 if ($is_password_protected && !$password_is_valid ) {
                     
                     $this->enableView();
-                    $this->getResponse()->setHttpResponseCode(500);
+                    $this->getResponse()->setHttpResponseCode(403);
                     $this->_helper->layout()->setLayout("shared");
                     $this->view->assign('error_msg', sprintf($this->getTranslator()->translate('Invalid password! <a href="%s">Retry...</a>'), $this->view->ServerUrl().'/shared/file/'.$key.'/'.rawurlencode(basename($file_data['file_path'])) ));
                     return FALSE;
