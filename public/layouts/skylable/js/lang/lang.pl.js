@@ -78,7 +78,9 @@ if (!Skylable_Lang) {
         uploadTitle: 'Przesyłanie...',
         uploadFailed: "%s: upload failed, reason: %s",
         uploadSuccess: '%s: successfully uploaded',
-        uploadError: 'Upload failed. Reason: %s'
+        uploadError: 'Upload failed. Reason: %s',
+        uploadAborted: 'Aborted (maybe you are trying to upload an invalid file type?).',
+        uploadExceedingFileSize: 'Upload failed!\nThe file "%s" is too big (%d bytes)!\nMaximum allowed file size is %d bytes.'
         
     }
 }

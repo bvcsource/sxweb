@@ -80,6 +80,21 @@ $(document).ready(function(){
 		url: upload_url,
 		dataType: 'json',
         sequentialUpload: true,
+        
+        add : function(e, data) {
+            // Check the file size before uploading
+            var errors = [];
+            $.each(data.files, function (index, file) {
+                if (file.size > maxFileSize) {
+                    errors.push(sprintf(Skylable_Lang.uploadExceedingFileSize, file.name, file.size, maxFileSize));
+                }
+            });
+            if (errors.length > 0) {
+                alert(errors.join("\n"));
+            } else {
+                data.submit();
+            }
+        },
 		start : function(e) {
 
 			Skylable_Uploads.dlg = $('#dialog');
@@ -157,7 +172,7 @@ $(document).ready(function(){
 
 			Skylable_Uploads.has_errors = true;
             if (err_msg.length == 0) {
-                err_msg = 'Aborted';
+                err_msg = Skylable_Lang.uploadAborted;
             }
 
             reply_box.append('<p class="upload_error">' + sprintf(Skylable_Lang.uploadError , err_msg ) + '</p>');
