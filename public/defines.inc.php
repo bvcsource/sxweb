@@ -13,6 +13,14 @@ if (!defined('SXWEB_UPGRADE_URL'))  define('SXWEB_UPGRADE_URL', 'http://www.skyl
 // URL for the SXWeb FAQ
 if (!defined('SXWEB_FAQ_URL'))  define('SXWEB_FAQ_URL', 'http://www.skylable.com/docs/faq/sxweb');
 
+// Try to fix the timezone
+$timezone = @date_default_timezone_get();
+if (empty($timezone)) {
+    @date_default_timezone_set('UTC');
+} else {
+    @date_default_timezone_set($timezone);
+}
+
 // Include the special PHP config if present
 if (@file_exists('./config.inc.php')) {
     require_once realpath('./config.inc.php');
