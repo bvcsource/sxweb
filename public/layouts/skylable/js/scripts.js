@@ -62,13 +62,7 @@ $(document).ready(function() {
         $( ".inner-scroll-wrap" ).toggleClass( "spread" );
         $( ".sidebar .slimScrollDiv" ).toggleClass( "spread" );
     });
-
-
-    $( ".actions-trigger" ).click(function() {
-        $(this).next().toggleClass("active", 200, 'easeInOutExpo' );
-        $(this).toggleClass("active", 200, 'easeInOutExpo' );
-    });
-
+    
     $(".icon-failure, .icon-success").click(function() {
         $(this).parent().parent().remove();
     });

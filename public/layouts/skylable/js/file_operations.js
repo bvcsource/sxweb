@@ -650,6 +650,11 @@ if (!FileOperations) {
                     }
                 
             });
+
+            $("a.actions-trigger" ).click(function() {
+                $(this).next().toggleClass("active", 200, 'easeInOutExpo' );
+                $(this).toggleClass("active", 200, 'easeInOutExpo' );
+            });
         },
 
         /**
