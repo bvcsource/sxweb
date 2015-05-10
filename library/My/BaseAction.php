@@ -302,4 +302,48 @@ class My_BaseAction extends Zend_Controller_Action {
         );
     }
 
+    /**
+     * Centralized way to manage the userUse this method when you 
+     * @param string $where where in the code the problem happened, set always as __METHOD__
+     * @param Exception $e the exception
+     * @param Skylable_AccessSxNew $access_sx the source of the exception
+     */
+    public function invalidCredentialsExceptionHandler($where = '', Exception $e, Skylable_AccessSxNew $access_sx, $http_response_code = 403) {
+        $this->getResponse()->setHttpResponseCode($http_response_code);
+        if (empty($where)) {
+            $where = __METHOD__;
+        }
+        $this->getLogger()->err($where. ': Skylable_AccessSxNew library error, last command: '.var_export($access_sx->getLastExecutedCommand(), TRUE));
+        $this->getLogger()->err($where. ': Error code: '.strval($e->getCode()).' Errors:'. $e->getMessage());
+
+        $this->view->error_title = $this->getTranslator()->translate('Invalid credentials!');
+        $this->view->error_message = $this->getTranslator()->translate('Your credentials are changed, please authenticate again.');
+        $this->view->error_message .= ' '.sprintf('<a href="/login" title="%s">%s</a>', $this->getTranslator()->translate('Sign in again...'), $this->getTranslator()->translate('Lets you sign in again') );
+        $this->_helper->layout()->setLayout('application-failure');
+        $this->_helper->layout()->assign('exception', $e);
+        $this->_helper->layout()->assign('show_message', FALSE);
+        $this->renderScript('error/malfunction.phtml');
+
+        $this->logoutUser();
+    }
+
+    /**
+     * Do what's needed to log out an user.
+     */
+    protected function logoutUser() {
+        if (!Zend_Auth::getInstance()->hasIdentity()) {
+            return FALSE;
+        }
+        try {
+            $access_sx = new Skylable_AccessSxNew( Zend_Auth::getInstance()->getIdentity(), '', array('initialize' => FALSE) );
+            $access_sx->purgeProfile();
+        }
+        catch(Exception $e) {
+
+        }
+        Zend_Auth::getInstance()->clearIdentity();
+        Zend_Session::forgetMe();
+        Zend_Session::destroy();
+    }
+
 }

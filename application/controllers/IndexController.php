@@ -437,6 +437,11 @@ class IndexController extends My_BaseAction {
                     }
                 }
             }
+            catch (Skylable_InvalidCredentialsException $e) {
+                $this->invalidCredentialsExceptionHandler(__METHOD__, $e, $access_sx);
+                
+                return FALSE;
+            }
             catch(Exception $e) {
                 $logger->debug('Exception: '.$e->getMessage());
                 $this->forward('error', 'error');
@@ -487,6 +492,11 @@ class IndexController extends My_BaseAction {
                 $this->view->show_welcome_window = FALSE;
             }
 
+        }
+        catch (Skylable_InvalidCredentialsException $e) {
+            $this->invalidCredentialsExceptionHandler(__METHOD__, $e, $access_sx);
+            
+            return FALSE;
         }
         catch (Skylable_AccessSxException $e) {
             $logger->err(__METHOD__. ': Skylable_AccessSxNew library error, last command: '.var_export($access_sx->getLastExecutedCommand(), TRUE));
@@ -577,6 +587,13 @@ class IndexController extends My_BaseAction {
                 $this->renderScript('error/malfunction.phtml');
             }
         }
+        catch (Skylable_InvalidCredentialsException $e) {
+            $this->enableView();
+            
+            $this->invalidCredentialsExceptionHandler(__METHOD__, $e, $access_sx, 500);
+
+            return FALSE;
+        }
         catch(Exception $e) {
             $this->enableView();
             $this->getResponse()->setHttpResponseCode(500);
@@ -594,18 +611,8 @@ class IndexController extends My_BaseAction {
     public function logoutAction() {
         $this->_helper->viewRenderer->setNoRender(true);
         $this->_helper->layout->disableLayout();
-        
-        try {
-            $access_sx = new Skylable_AccessSxNew( Zend_Auth::getInstance()->getIdentity(), '', array('initialize' => FALSE) );
-            $access_sx->purgeProfile();
-        }
-        catch(Exception $e) {
-            
-        }
 
-        Zend_Auth::getInstance()->clearIdentity();
-        Zend_Session::forgetMe();
-        Zend_Session::destroy();
+        $this->logoutUser();
         
         $this->redirect('/index');
     }

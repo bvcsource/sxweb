@@ -73,7 +73,7 @@ class AjaxController extends My_BaseAction {
         $this->getResponse()->setBody(
             Zend_Json::encode(array(
                 'status' => FALSE,
-                'url' => '/',
+                'url' => '/logout',
                 'error' => $this->getTranslator()->translate('Your credentials are expired, you need to login again.')
             ))
         );
@@ -133,6 +133,10 @@ class AjaxController extends My_BaseAction {
             } else {
                 echo '<p>',$this->getTranslator()->translate('Files successfully copied.'),'</p>';
             }
+        }
+        catch (Skylable_InvalidCredentialsException $e) {
+            $this->getLogger()->err(__METHOD__.': exception: ' .$e->getMessage());
+            $this->forbidden();
         }
         catch(Exception $e) {
             $this->getLogger()->err(__METHOD__.': exception: ' .$e->getMessage());
@@ -195,7 +199,12 @@ class AjaxController extends My_BaseAction {
                 echo '<p>',$this->getTranslator()->translate('File(s) successfully moved.'),'</p>';
             }
         }
+        catch (Skylable_InvalidCredentialsException $e) {
+            $this->getLogger()->err(__METHOD__.': exception: ' .$e->getMessage());
+            $this->forbidden();
+        }
         catch(Exception $e) {
+            $this->getLogger()->err(__METHOD__.': exception: ' .$e->getMessage());
             $this->getResponse()->setHttpResponseCode(500);
             echo '<p>', $this->getTranslator()->translate('Internal error.') ,'</p>';
             return FALSE;
@@ -303,6 +312,10 @@ class AjaxController extends My_BaseAction {
                 $this->sendErrorResponse($this->getTranslator()->translate('Rename failed.'));
             }
         }
+        catch (Skylable_InvalidCredentialsException $e) {
+            $this->getLogger()->err(__METHOD__.': exception: ' .$e->getMessage());
+            $this->forbidden();
+        }
         catch(Exception $e) {
             $this->getLogger()->err(__METHOD__.': exception: '.$e->getMessage());
             $this->sendErrorResponse($this->getTranslator()->translate('Invalid destination name.'));
@@ -352,6 +365,11 @@ class AjaxController extends My_BaseAction {
                 $this->sendErrorResponse('<p>'.$this->getTranslator()->translate('File not found or invalid.').'</p>');
                 return FALSE;
             }
+        }
+        catch (Skylable_InvalidCredentialsException $e) {
+            $this->getLogger()->err(__METHOD__.': exception: ' .$e->getMessage());
+            $this->forbidden();
+            return FALSE;
         }
         catch(Exception $e) {
             $this->getLogger()->debug(__METHOD__.': exception: '.$e->getMessage());
@@ -666,7 +684,14 @@ class AjaxController extends My_BaseAction {
                 $this->view->error = $this->getTranslator()->translate("Internal error. Please retry later.");
             }
 
-        } catch (Exception $e) {
+        }
+        catch (Skylable_InvalidCredentialsException $e) {
+            $this->getLogger()->err(__METHOD__.': exception: ' .$e->getMessage());
+            $this->getResponse()->setHttpResponseCode(403);
+            $this->view->has_error = TRUE;
+            $this->view->error = $this->getTranslator()->translate('Your credentials are expired, you need to login again.');
+        }
+        catch (Exception $e) {
             $this->getLogger()->err(__METHOD__.': exception: '.$e->getMessage());
             $this->getResponse()->setHttpResponseCode(500);
             $this->view->has_error = TRUE;
@@ -745,6 +770,10 @@ class AjaxController extends My_BaseAction {
                 }
 
             }
+            catch(Skylable_InvalidCredentialsException $e) {
+                $this->getLogger()->err(__METHOD__.': exception: '.$e->getMessage());
+                $this->forbidden();
+            }
             catch(Exception $e) {
                 $this->getLogger()->err(__METHOD__.': exception: '.$e->getMessage());
                 $this->getResponse()->setHttpResponseCode(500);
@@ -809,6 +838,10 @@ class AjaxController extends My_BaseAction {
             } else {
                 echo '<p>',$this->getTranslator()->translate('Files successfully deleted.'),'</p>';
             }
+        }
+        catch(Skylable_InvalidCredentialsException $e) {
+            $this->getLogger()->err(__METHOD__.': exception: '.$e->getMessage());
+            $this->forbidden();
         }
         catch(Exception $e) {
             $this->getLogger()->err(__METHOD__.': exception: '.$e->getMessage());

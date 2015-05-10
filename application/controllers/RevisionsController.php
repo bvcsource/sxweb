@@ -213,6 +213,13 @@ class RevisionsController extends My_BaseAction {
                 $this->renderScript('error/malfunction.phtml');
             }
         }
+        catch (Skylable_InvalidCredentialsException $e) {
+            $this->enableView();
+            
+            $this->invalidCredentialsExceptionHandler(__METHOD__, $e, $access_sx, 500);
+
+            return FALSE;
+        }
         catch(Exception $e) {
             $this->enableView();
             $this->getResponse()->setHttpResponseCode(500);

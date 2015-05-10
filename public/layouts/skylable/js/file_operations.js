@@ -782,9 +782,10 @@ if (!FileOperations) {
                 },
                 success : function(data, status, xhr) {
                     dlg.html(xhr.responseText);
-                    dlg.dialog('open');
+                    // dlg.dialog('open');
                 },
                 error : function(xhr, status) {
+                    
                     if (!FileOperations.expiredUser(dlg, xhr)) {
                         dlg.html(xhr.responseText);
                         dlg.dialog('option', 'buttons',[{
@@ -798,10 +799,9 @@ if (!FileOperations) {
             });
             FileOperations.is_working = false;
             
-            /*
             dlg.dialog('open');
-            dlg.html( Skylable_Lang['shareFile'] + " <span>"+FileOperations.basename(path)+"</span><br />"+Skylable_Lang['shareMsg'] );
-            */
+            // dlg.html( Skylable_Lang['shareFile'] + " <span>"+FileOperations.basename(path)+"</span><br />"+Skylable_Lang['shareMsg'] );
+            
         },
 
         /**

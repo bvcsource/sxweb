@@ -1625,6 +1625,13 @@ class Skylable_AccessSxNew {
                 if (is_array($log['errors'])) {
                     if (count($log['errors']) > 0) {
                         if ($throw_exception) {
+                            // Check to see if the credentials are invalid
+                            // this can throw a wrong exception
+                            foreach($log['errors'] as $err) {
+                                if (strpos(strtolower($err), 'invalid credentials') !== FALSE) {
+                                    throw new Skylable_InvalidCredentialsException(implode('\n', $log['errors']));
+                                }
+                            }
                             throw new Skylable_AccessSxException(implode('\n', $log['errors']));
                         } else {
                             return TRUE;
