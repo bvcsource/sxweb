@@ -394,6 +394,8 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap {
 
         $router->addRoute('share', new Zend_Controller_Router_Route('share', array( 'controller' => 'ajax', 'action' => 'share' ) ));
 
+        $router->addRoute('fileexists', new Zend_Controller_Router_Route('fileexists', array( 'controller' => 'ajax', 'action' => 'fileexists' ) ));
+
         /*
         $route = new My_Regex(
                 'shared/file/(.+)/(.+)',

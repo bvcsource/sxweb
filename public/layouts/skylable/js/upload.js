@@ -53,6 +53,10 @@ function trs(str, length) {
 	return (str.length > (length - 3) ? str.substring(0, length - 3) + '...' : str);
  }
 
+function nl2br(str) {
+    return str.replace(/(?:\r\n|\r|\n)/g, '<br />');
+}
+
 if (!Skylable_Uploads) {
 	/**
 	 * Holds the parameters for the upload handler
@@ -82,18 +86,90 @@ $(document).ready(function(){
         sequentialUpload: true,
         
         add : function(e, data) {
-            // Check the file size before uploading
-            var errors = [];
             $.each(data.files, function (index, file) {
                 if (file.size > maxFileSize) {
-                    errors.push(sprintf(Skylable_Lang.uploadExceedingFileSize, file.name, file.size, maxFileSize));
+                    var dlg = $('<div id="upload_too_big"></div>').appendTo('body');
+                    dlg.dialog({
+                        autoOpen: false,
+                        modal : true,
+                        resizable: true,
+                        title: Skylable_Lang.uploadTitle,
+                        buttons :[{
+                            text: Skylable_Lang.cancelBtn,
+                            click : function() {
+                                $(this).dialog('close');
+                                $(this).dialog('destroy');
+                            }
+                        }]
+                    });
+                    dlg.html('<p>'+ nl2br(sprintf(Skylable_Lang.uploadExceedingFileSize, file.name, file.size, maxFileSize)) +'</p>');
+                    dlg.dialog('open');
+                    
+                } else {
+                    // Check if the file exists, and asks what to do
+                    $.ajax({
+                        async: false,
+                        url: "/fileexists",
+                        data: 'path=' + encodeURIComponent(current_path + file.name),
+                        dataType: "json",
+                        success : function(qdata, status, xhr) {
+                           if (qdata.status == false) {
+                               data.submit();
+                           } else {
+                               var dlg = $('<div id="upload_ask_confirm"></div>').appendTo('body');
+                               dlg.dialog({
+                                   autoOpen: false,
+                                   modal : true,
+                                   resizable: true,
+                                   title: Skylable_Lang.uploadTitle,
+                                   buttons :[{
+                                       text: Skylable_Lang.yesBtn,
+                                       click : function() {
+                                           $(this).dialog('close');
+                                           data.submit();
+                                       }
+                                   },{
+                                       text: Skylable_Lang.noBtn,
+                                       click : function() {
+                                           $(this).dialog('close');
+                                           $(this).dialog('destroy');
+                                       }
+                                   }]
+                               });
+                               dlg.html('<p>'+ nl2br(sprintf(Skylable_Lang.uploadFileAlreadyExistsOverwrite, file.name)) +'</p>');
+                               dlg.dialog('open');
+                           } 
+                        },
+                        error : function(xhr, status) {
+                            
+                            var dlg = $('<div id="upload_add_error"></div>').appendTo('body');
+                            dlg.dialog({
+                                autoOpen: false,
+                                modal : true,
+                                resizable: true,
+                                title: Skylable_Lang.uploadTitle,
+                                buttons :[{
+                                    text: Skylable_Lang.cancelBtn,
+                                    click : function() {
+                                        $(this).dialog('close');
+                                        $(this).dialog('destroy');
+                                    }
+                                }]
+                            });
+
+                            if (xhr.getResponseHeader('Content-Type') === 'application/json') {
+                                var response_text = JSON.parse(xhr.responseText);
+                                dlg.html('<p>'+ response_text.error +'</p>');
+                            } else {
+                                dlg.html(xhr.responseText);
+                            }
+
+                            dlg.dialog('open');
+                        }
+                        
+                    });
                 }
             });
-            if (errors.length > 0) {
-                alert(errors.join("\n"));
-            } else {
-                data.submit();
-            }
         },
 		start : function(e) {
 

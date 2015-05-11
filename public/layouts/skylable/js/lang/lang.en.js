@@ -80,7 +80,8 @@ if (!Skylable_Lang) {
         uploadSuccess: '%s: successfully uploaded',
         uploadError: 'Upload failed. Reason: %s',
         uploadAborted: 'Aborted (maybe you are trying to upload an invalid file type?).',
-        uploadExceedingFileSize: 'Upload failed!\nThe file "%s" is too big (%d bytes)!\nMaximum allowed file size is %d bytes.'
+        uploadExceedingFileSize: 'Upload failed!\nThe file "%s" is too big (%d bytes)!\nMaximum allowed file size is %d bytes.',
+        uploadFileAlreadyExistsOverwrite: 'File "%s" already exists.\nDo you want to overwrite it?'
         
     }
 }

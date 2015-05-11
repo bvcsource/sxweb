@@ -79,6 +79,68 @@ class AjaxController extends My_BaseAction {
         );
     }
 
+    /**
+     * Check if a file exists. It's an AJAX method.
+     *
+     * Parameters:
+     * 'path' - the complete path of the file (volume + path)
+     */
+    public function fileexistsAction() {
+        
+        if (!Zend_Auth::getInstance()->hasIdentity()) {
+            $this->forbidden();
+            return FALSE;
+        }
+        
+        $the_path = $this->getRequest()->getParam('path');
+        $validate_path = new My_ValidatePath();
+        if (!$validate_path->isValid($the_path)) {
+            $this->getResponse()->setHttpResponseCode(400);
+            echo Zend_Json::encode(array(
+                'status' => FALSE,
+                'error' => $this->getTranslator()->translate('Invalid path.'),
+                'url' => ''
+            ));
+        }
+        
+        try {
+            $access_sx = new Skylable_AccessSxNG( My_Utils::getAccessSxNGOpt( Zend_Auth::getInstance()->getIdentity() ) );
+            if ($access_sx->fileExists( $the_path, $file_type )) {
+                $this->getResponse()->setHttpResponseCode(200);
+                echo Zend_Json::encode(array(
+                    'status' => TRUE,
+                    'error' => '',
+                    'url' => ''
+                )); 
+            } else {
+                $this->getResponse()->setHttpResponseCode(200);
+                echo Zend_Json::encode(array(
+                    'status' => FALSE,
+                    'error' => '',
+                    'url' => ''
+                ));
+            }
+        }
+        catch(Skylable_AccessSxException $e) {
+            $this->getLogger()->err(__METHOD__.': exception: '.$e->getMessage());
+            $this->getResponse()->setHttpResponseCode(500);
+            echo Zend_Json::encode(array(
+                'status' => FALSE,
+                'error' => $this->getTranslator()->translate('Internal error.'),
+                'url' => ''
+            ));            
+        }
+        catch(Exception $e) {
+            $this->getLogger()->err(__METHOD__.': exception: '.$e->getMessage());
+            $this->getResponse()->setHttpResponseCode(500);
+            echo Zend_Json::encode(array(
+                'status' => FALSE,
+                'error' => $this->getTranslator()->translate('Internal error.'),
+                'url' => ''
+            ));
+        }
+    }
+
 
     /**
      * Copies a file or a dir

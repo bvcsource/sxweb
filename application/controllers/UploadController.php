@@ -38,17 +38,20 @@
 
 
 /**
- * Uploads files to the cluster.
- *
- * Parameters:
- * 'vol' - string, the destination volume
- * 'url' - string, the optional destination path
- * 'files[]' - array, the uploaded files
- *
- * 
+ * Handle file uploads.
  */
 class UploadController extends My_BaseAction {
 
+    /**
+     * Uploads files to the cluster.
+     *
+     * Parameters:
+     * 'vol' - string, the destination volume
+     * 'url' - string, the optional destination path
+     * 'files[]' - array, the uploaded files
+     *
+     *
+     */
 	public function uploadAction() {
         $this->disableView();
 

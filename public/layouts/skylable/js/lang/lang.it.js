@@ -79,8 +79,9 @@ if (!Skylable_Lang) {
         uploadFailed: "%s: upload fallito, motivo: %s",
         uploadSuccess: '%s: upload riuscito',
         uploadError: 'Upload fallito. Motivo: %s',
-        uploadAborted: 'Aborted (maybe you are trying to upload an invalid file type?).',
-        uploadExceedingFileSize: 'Upload failed!\nThe file "%s" is too big (%d bytes)!\nMaximum allowed file size is %d bytes.'
+        uploadAborted: 'Abortito (forse stai provando a caricare un tipo di file non valido?).',
+        uploadExceedingFileSize: 'Upload fallito!\nIl file "%s" è troppo grande (%d byte)!\nLa dimensione massima consentita è di %d byte.',
+        uploadFileAlreadyExistsOverwrite: 'Il file "%s" esiste già.\nLo vuoi sovrascrivere?'
         
     }
 }
