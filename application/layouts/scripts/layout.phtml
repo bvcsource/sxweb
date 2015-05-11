@@ -42,6 +42,9 @@
     <?php echo $this->headTitle(); ?>
 	<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
     <meta name="apple-itunes-app" content="app-id=943260973">
+    <meta name="google-play-app" content="app-id=com.skylable.sx">
+    <link rel="stylesheet" href="<?php echo $this->ServerUrl(); ?>/css/jquery.smartbanner.css" type="text/css" media="screen">
+    <link rel="apple-touch-icon" href="sxdrive-touch-icon.png">
 	<link href="<?php echo $this->ServerUrl(); ?>/layouts/skylable/css/_jqueryui.css" rel="stylesheet" />
 	<link href="<?php echo $this->ServerUrl(); ?>/layouts/skylable/css/_jqueryuistructure.css" rel="stylesheet" />
 	<link href="<?php echo $this->ServerUrl(); ?>/layouts/skylable/css/main.css" rel="stylesheet" />
@@ -128,5 +131,12 @@ var upload_url = '/upload'+url;
 </script>
 <div id="dialog"></div>
 <input id="fileupload" type="file" name="files[]" multiple directory webkitdirectory mozdirectory>
+<script src="<?php echo $this->ServerUrl(); ?>/js/jquery.smartbanner.js"></script>
+<script type="text/javascript">
+    $.smartbanner({
+        title : "SXDrive",
+        author : "Skylable Ltd"
+    });
+</script>
 </body>
 </html>
