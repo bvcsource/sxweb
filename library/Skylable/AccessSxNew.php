@@ -196,6 +196,33 @@ class Skylable_AccessSxNew {
     }
 
     /**
+     * Update the base dir using the provided user or an absolute path.
+     * 
+     * If the provided base dir is empty, try to use the current user to update
+     * the base directory. 
+     * 
+     * @param null|string $base_dir
+     * @throws Skylable_AccessSxException
+     * @throws Zend_Exception
+     */
+    public function updateBaseDir($base_dir = NULL) {
+        if (empty($base_dir)) {
+            
+            if (!is_object($this->_user)) {
+                throw new Skylable_AccessSxException('Invalid user: not set', self::ERROR_INVALID_USER);
+            }
+
+            if (strlen(trim($this->_user->getLogin())) == 0) {
+                throw new Skylable_AccessSxException('Invalid user: empty login', self::ERROR_INVALID_USER);
+            }
+
+            $this->_base_dir = My_Utils::slashPath(Zend_Registry::get('skylable')->get('sx_local')).sha1( $this->_user->getLogin() );
+        } else {
+            $this->_base_dir = strval($base_dir);
+        }
+    }
+
+    /**
      * Update the internal cluster string using the given login.
      * 
      * @param string $login an user login
@@ -2063,8 +2090,20 @@ class Skylable_AccessSxNew {
         return $ret;
     }
 
-    
-    public function setUser(My_User $user) {
+
+    /**
+     * Set the user, but don't set internal paths.
+     * 
+     * You should update them manually.
+     * 
+     * @param My_User $user
+     * @param boolean $update_base_dir TRUE calls updateBaseDir, FALSE otherwise
+     * @see updateBaseDir
+     */
+    public function setUser(My_User $user, $update_base_dir = FALSE) {
         $this->_user = $user;
+        if ($update_base_dir) {
+            $this->updateBaseDir();
+        }
     }
 }
