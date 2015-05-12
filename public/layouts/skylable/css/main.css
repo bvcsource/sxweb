@@ -181,7 +181,7 @@ p, input {
     font-size: 14px;
     font-weight: 300;
     color: #3c3c3c;
-    -webkit-appearance: none;
+    /* -webkit-appearance: none; */
 }
 
 a {
@@ -395,6 +395,7 @@ span.icon-sort {
 
 p.table-title {
     border-bottom: 1px solid #e5e5e5;
+    clear: both;
 }
 
 #selectable .name .ir {
@@ -898,7 +899,8 @@ a.sidebar-volume-current .icon-volume {
 
 .bulk-actions {
     display: inline-block;
-    margin-top: 20px
+    margin-top: 20px;
+    float: left;
 }
 
 .bulk-actions li {
@@ -929,7 +931,7 @@ a.sidebar-volume-current .icon-volume {
 .default-actions {
     display: inline-block;
     float: right;
-    margin-top: 20px
+    margin-top: 20px;
 }
 
 .add-folder {
@@ -2144,7 +2146,7 @@ a:hover .icon-dl {
 
 .sidebar-margin .sticked {
     left: 30px;
-    margin: 0 0 0 140px;
+    margin: 0 0 0 130px;
 }
 
 @media only screen and (-webkit-min-device-pixel-ratio: 1.5), only screen and (-o-min-device-pixel-ratio: 3/2), only screen and (min--moz-device-pixel-ratio: 1.5), only screen and (min-device-pixel-ratio: 1.5) {
@@ -2422,7 +2424,7 @@ a, input, .icon-dl, button, .sort-name span, .sort-size span, .sort-date span {
     }
 
     .sidebar-margin .sticked {
-        left: -140px;
+        left: -130px;
     }
 
     .account-settings {
