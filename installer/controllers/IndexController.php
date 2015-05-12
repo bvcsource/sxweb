@@ -295,7 +295,7 @@ class IndexController extends Zend_Controller_Action {
             $this->view->php_components[] = array($label, $this->translate('Yes'), ($found ? $this->translate('Found') : sprintf('<span class="label label-danger">%s</span>', $this->translate('Not found')) ) );
         }
         
-        // PHP Uploads conf
+        // PHP Uploads suggested conf
         // name => needed value
         $php_ini_settings = array(
             'file_uploads' => 1,
@@ -308,8 +308,26 @@ class IndexController extends Zend_Controller_Action {
         );
         
         $this->view->php_ini_settings = array();
+        $this->view->php_lower_limit_warn = FALSE;
         foreach($php_ini_settings as $ini_key => $req) {
-            $this->view->php_ini_settings[] = array($ini_key, ini_get($ini_key), $req);
+            $label = ini_get($ini_key);
+            if (in_array($ini_key, array('upload_max_filesize','memory_limit','post_max_size') )) {
+                $real_limit = $this->toBytes( ini_get($ini_key) );
+                $req_limit = $this->toBytes($req);
+                if ($real_limit < $req_limit) {
+                   $label = '<span class="label label-warning">' . $label . '</span>';
+                    $this->view->php_lower_limit_warn = TRUE;
+                } 
+            } elseif (in_array($ini_key, array( 'max_execution_time', 'max_input_time' ) )) {
+                if ( ini_get($ini_key) < $req ) {
+                    $label = '<span class="label label-warning">' . $label . '</span>';
+                    $this->view->php_lower_limit_warn = TRUE;
+                }
+            } else {
+                $label = ini_get($ini_key);
+            }
+            
+            $this->view->php_ini_settings[] = array($ini_key, $label, $req);
         }
         
         $this->view->max_upload_filesize = min( array( $this->toBytes(ini_get('post_max_size')), $this->toBytes(ini_get('memory_limit')), $this->toBytes(ini_get('upload_max_filesize'))  ) );
