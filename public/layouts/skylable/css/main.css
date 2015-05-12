@@ -289,12 +289,14 @@ ul.form-errors li, ul.form-errors ul {
     height: 27px;
 }
 
+/*
 label {
     line-height: 27px;
     height: 27px;
     float: left;
     width: 100%;
 }
+*/
 
 #index_ajax_patch {
     border: none;
@@ -1773,19 +1775,21 @@ a:hover .icon-dl {
 */
 
 .styled-form label {
-    font-size: 12px;
+    /* font-size: 12px; */
     color: #3c3c3c;
     margin-top: 5px;
-    display: inline-block
+    display: block;
+    font-weight: bold;
 }
 
 .styled-form label.inline {
-    font-size: 12px;
+    /* font-size: 12px; */
     color: inherit !important;
     margin: 5px 10px 0 0;
     display: inline;
     width: auto !important;
     float: none !important;
+    font-weight: normal !important;
 }
 
 .styled-button {
@@ -2135,12 +2139,12 @@ a:hover .icon-dl {
 }
 
 .sidebar-margin {
-    margin: 0 -160px 0 160px;
+    margin: 0 0 0 160px;
 }
 
 .sidebar-margin .sticked {
     left: 30px;
-    margin: 0 -140px 0 140px;
+    margin: 0 0 0 140px;
 }
 
 @media only screen and (-webkit-min-device-pixel-ratio: 1.5), only screen and (-o-min-device-pixel-ratio: 3/2), only screen and (min--moz-device-pixel-ratio: 1.5), only screen and (min-device-pixel-ratio: 1.5) {
@@ -2165,10 +2169,14 @@ a, input, .icon-dl, button, .sort-name span, .sort-size span, .sort-date span {
 
 /* media queries */
 
-@media only screen and (max-width: 1100px) {
+@media only screen and (min-width: 768px) {
     .wrap {
         margin-left: 120px;
         margin-right: 40px
+    }
+
+    .sidebar-margin .sticked .wrap {
+        margin-right: 210px;
     }
 }
 
@@ -2320,7 +2328,7 @@ a, input, .icon-dl, button, .sort-name span, .sort-size span, .sort-date span {
     }
 
     .name {
-        width: 98%;
+        width: 90%;
         padding: 6% 1% 1%
     }
 
@@ -2395,13 +2403,18 @@ a, input, .icon-dl, button, .sort-name span, .sort-size span, .sort-date span {
         padding: 5px 7px;
     }
 
+    #selectable span {
+        overflow: visible;
+        white-space: normal;
+    }
+
     .ui-dialog {
         width: 80% !important;
         max-width: 80% !important
     }
 
     .sidebar-margin {
-        margin: 0 -230px 0 0;
+        margin: 0;
     }
 
     .mobile-header.opened .volume-select, .mobile-header.opened .upload {
@@ -2579,27 +2592,12 @@ a, input, .icon-dl, button, .sort-name span, .sort-size span, .sort-date span {
     .register input[type="submit"] {
         margin-top: -10px;
     }
-}
-
-@media only screen and (min-width: 1400px) {
-    .volumes {
-        display: block;
-    }
 
     .sidebar-margin {
-        margin: 0
+        margin: 0;
     }
-
-    .sidebar-margin .sticked {
-        left: 0;
-        margin: 0
-    }
-
-    /*
-    .slimScrollDiv {
-        float: left;
-    }
-    */
+    
+    
 }
 
 #search {

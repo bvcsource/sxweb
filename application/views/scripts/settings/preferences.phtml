@@ -15,7 +15,7 @@
     
     $attr = $this->form->getAttribs();
     $attr['class'] = 'styled-form';
-    echo $this->form('pref_form', $this->form->getAttribs(), FALSE); 
+    echo $this->form('pref_form', $attr, FALSE); 
     ?>
     <p><?php echo $this->formLabel('frm_language', $this->translate('Language')), $this->formSelect('frm_language', $this->form->getValue('frm_language'), NULL, My_BaseAction::getLanguageList()); ?></p>
         <p><label for="frm_file_list_size"><?php echo $this->translate('File list size:'); ?></label><input name="frm_file_list_size" type="text" placeholder="<?php echo $this->translate('File list size'); ?>" value="<?php echo $this->form->getValue('frm_file_list_size'); ?>"></p>
