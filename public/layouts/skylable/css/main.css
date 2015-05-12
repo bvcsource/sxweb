@@ -2644,6 +2644,7 @@ a, input, .icon-dl, button, .sort-name span, .sort-size span, .sort-date span {
 #preview-nav-bar {
     position: fixed;
     z-index: 9999999;
+    background: #212636;
 }
 
 .preview-nav-bar-btn {
