@@ -520,6 +520,8 @@ class AjaxController extends My_BaseAction {
     /**
      * Lets you download a shared file.
      *
+     * Accepts HTTP Basic Auth for user credentials.
+     * 
      * Parameters:
      * 'key' - the sha1 key indicating a file to download
      * 'download' - string (value ignored)
@@ -552,8 +554,31 @@ class AjaxController extends My_BaseAction {
             }
             
             $is_password_protected = strlen($file_data['file_password']) > 0;
+
+            // You are using a download agent like wget or curl, send the basic http auth header if needed
+            if (preg_match('/^(Mozilla|Opera)/', $_SERVER['HTTP_USER_AGENT']) == 0) {
+                if ($is_password_protected && !isset($_SERVER['PHP_AUTH_PW'])) {
+                    $this->getResponse()->clearBody();
+                    $this->getResponse()->setRawHeader('WWW-Authenticate: Basic realm="SXWeb"');
+                    $this->getResponse()->setRawHeader('HTTP/1.0 401 Unauthorized');
+                    return FALSE;
+                }
+            }
+            
             $password_is_valid = FALSE;
+
+            /*
+             * If 'password' and 'download' parameters exists, you are using the
+             * password request form.
+             * */
             $password = $this->getRequest()->getParam('password');
+            if (is_null($this->getRequest()->getParam('download'))) {
+                if (isset($_SERVER['PHP_AUTH_PW'])) {
+                    $this->getLogger()->debug(__METHOD__.' HTTP AUTH password supplied');
+                    $password = $_SERVER['PHP_AUTH_PW'];
+                }
+            }
+            
             if (!is_null($password) && $is_password_protected) {
                 $password_is_valid = (strcmp($file_data['file_password'], 
                         $shared->getPasswordHash( strval($password), array( 'salt' => $file_data['file_password'] ) ) ) == 0);
