@@ -58,7 +58,8 @@ class Menu_IndexController extends My_BaseAction {
         try {
             $access_sx = new Skylable_AccessSxNew( Zend_Auth::getInstance()->getIdentity() );
             $this->view->volumes = $access_sx->listVolumes();
-            $this->view->selected = My_Utils::getRootFromPath( strval($this->getRequest()->getParam('vol', '')) );
+            // $this->view->selected = My_Utils::getRootFromPath( strval($this->getRequest()->getParam('vol', '')) );
+            $this->view->selected = My_Utils::getRootFromPath( $this->getLastVisitedPath() );
         }
         catch(Exception $e) {
             $this->getLogger()->debug(__METHOD__.': exception: '.$e->getMessage() );
