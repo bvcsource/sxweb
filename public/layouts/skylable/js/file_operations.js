@@ -124,7 +124,7 @@ if (!FileOperations) {
                         text: (move ? Skylable_Lang["moveBtn"] : Skylable_Lang["copyBtn"]),
                         click: function() {
 
-                            FileOperations.dest_dir = $(dlg).find('#index_ajax_vols').val() + FileOperations.slashPath( $(dlg).find('#index_ajax_patch').val()) ;
+                            FileOperations.dest_dir = $(dlg).find('#index_ajax_vols').val() + Skylable_Utils.slashPath( $(dlg).find('#index_ajax_patch').val()) ;
                             
                             console.log('From: ' + FileOperations.source_dir);
                             console.log('To: ' + FileOperations.dest_dir);
@@ -227,7 +227,7 @@ if (!FileOperations) {
                     $(progressbar).progressbar("enable", false);
                     $(dialog).html(data);
                     $(dialog).children('#index_ajax_from').html(source_dir);
-                    $(dialog).find('#index_ajax_patch').val( FileOperations.removeRootFromPath( decodeURI(dest_dir) ) );
+                    $(dialog).find('#index_ajax_patch').val( Skylable_Utils.removeRootFromPath( decodeURI(dest_dir) ) );
                     var index_ajax_list = $(dialog).children('#index_ajax_list');
                     if (source_dir === dest_dir) $(index_ajax_list).hide();
                     $(index_ajax_list).children('li').click(function(){
@@ -239,7 +239,7 @@ if (!FileOperations) {
                         e.preventDefault();
                     });
                     var vol_selector = $(dialog).find('#index_ajax_vols');
-                    vol_selector.val(FileOperations.getRootFromPath(dest_dir));
+                    vol_selector.val(Skylable_Utils.getRootFromPath(dest_dir));
                     vol_selector.change(function(){
                         var volume = $(this).val();
                         FileOperations.populateCopyMoveWindow(dialog, source_dir, '/' + volume );
@@ -259,65 +259,6 @@ if (!FileOperations) {
                     }
                 }
             });
-        },
-
-        /**
-         * Remove the first part of a path.
-         * @param path
-         * @returns {string}
-         */
-        removeRootFromPath : function(path) {
-            if (path.length == 0) {
-                return '/';
-            }
-
-            var p = path.indexOf('/', path.indexOf('/') + 1);
-            if (p < 0) {
-                return '/';
-            } else {
-                return path.substring(p);
-            }
-        },
-
-        /**
-         * Returns the root from a path
-         * @param path
-         * @returns {string}
-         */
-        getRootFromPath : function(path) {
-            if (path.length == 0) {
-                return '';
-            }
-
-            var p1 = path.indexOf('/');
-            if (p1 < 0) {
-                return path;
-            } else if (p1 > 0) {
-                return path.substring(0, p1);
-            } else {
-                var p2 = path.indexOf('/', p1 + 1);
-                if (p2 < 0) {
-                    return path.substring(p1 + 1);
-                } else {
-                    return path.substring(p1 + 1, p2);
-                }
-            }
-        },
-
-        /**
-         * Add a slash to the beginnig part of a path
-         * @param string path
-         * @returns string
-         */
-        slashPath : function(path) {
-            if (path.length == 0) {
-                return '/';
-            }
-            var p1 = path.indexOf('/');
-            if (p1 > 0) {
-                return '/' + path;
-            }
-            return path;
         },
 
         /**
@@ -834,9 +775,9 @@ if (!FileOperations) {
 
             // Starts from this index
             if (file_url) {
-                file_url = FileOperations.basename(file_url);
+                file_url = Skylable_Utils.basename(file_url);
                 for(var idx = 0; idx < elements.length; idx++) {
-                    var href = FileOperations.basename( $(elements.get(idx)).attr('href') );
+                    var href = Skylable_Utils.basename( $(elements.get(idx)).attr('href') );
                     if (href === file_url) {
                         FileOperations.preview_index = idx;
                         break;
@@ -1077,26 +1018,6 @@ if (!FileOperations) {
                     .css({ 'max-width' : '100%', 'max-height' : '100%', 'vertical-align' : 'middle' })
                     .appendTo(lb);
             }
-        },
-
-        /**
-         * Returns the last part of a path
-         * @param path
-         * @returns {string}
-         */
-        basename : function(path) {
-            if (path.length == 0) {
-                return '';
-            }
-            p = path.lastIndexOf('/');
-            if (p == path.length - 1) {
-                p--;
-                p = path.lastIndexOf('/', p);
-            }
-            if (p != -1) {
-                return path.substring(++p, path.length);
-            }
-            return path;
         },
 
         /**

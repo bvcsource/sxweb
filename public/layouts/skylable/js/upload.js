@@ -46,17 +46,6 @@
  * and the file_operations.js before this file.
  */
 
-/*
- * Cut long string an adds "..."
- */
-function trs(str, length) {
-	return (str.length > (length - 3) ? str.substring(0, length - 3) + '...' : str);
- }
-
-function nl2br(str) {
-    return str.replace(/(?:\r\n|\r|\n)/g, '<br />');
-}
-
 if (!Skylable_Uploads) {
 	/**
 	 * Holds the parameters for the upload handler
@@ -102,7 +91,7 @@ $(document).ready(function(){
                             }
                         }]
                     });
-                    dlg.html('<p>'+ nl2br(sprintf(Skylable_Lang.uploadExceedingFileSize, file.name, file.size, maxFileSize)) +'</p>');
+                    dlg.html('<p>'+ Skylable_Utils.nl2br(sprintf(Skylable_Lang.uploadExceedingFileSize, file.name, file.size, maxFileSize)) +'</p>');
                     dlg.dialog('open');
                     
                 } else {
@@ -136,7 +125,7 @@ $(document).ready(function(){
                                        }
                                    }]
                                });
-                               dlg.html('<p>'+ nl2br(sprintf(Skylable_Lang.uploadFileAlreadyExistsOverwrite, file.name)) +'</p>');
+                               dlg.html('<p>'+ Skylable_Utils.nl2br(sprintf(Skylable_Lang.uploadFileAlreadyExistsOverwrite, file.name)) +'</p>');
                                dlg.dialog('open');
                            } 
                         },
@@ -224,9 +213,9 @@ $(document).ready(function(){
 					var the_file = data.result.files[idx];
 					if (the_file.error) {
 						Skylable_Uploads.has_errors = true;
-                        reply_box.append('<p class="upload_error">' + sprintf(Skylable_Lang.uploadFailed, trs(the_file.old_name, 55), the_file.error) + '</p>');
+                        reply_box.append('<p class="upload_error">' + sprintf(Skylable_Lang.uploadFailed, Skylable_Utils.trs(the_file.old_name, 55), the_file.error) + '</p>');
 					} else {
-                        reply_box.append('<p class="upload_success">'+ sprintf(Skylable_Lang.uploadSuccess, trs(the_file.old_name, 55)) + '</p>');
+                        reply_box.append('<p class="upload_success">'+ sprintf(Skylable_Lang.uploadSuccess, Skylable_Utils.trs(the_file.old_name, 55)) + '</p>');
 					}
 				}
 			} else {
