@@ -27,12 +27,14 @@
         <label for="confirm"><input type="checkbox" name="frm_remember_me" value="yes" id="confirm" /><?php echo $this->translate('Remember me'); ?></label>
        
         <div class="dialog-box-buttons">
-            <?php if (My_Utils::passwordRecoveryIsAllowed()): ?>
-                <a href="<?php echo $this->url(array( 'controller' => 'index', 'action' => 'resetpassword' ), 'recover', TRUE, TRUE );  ?>"><?php echo $this->translate('Forgot Your Password?'); ?></a>
-            <?php endif; ?>
             <input type="submit" value="<?php echo $this->translate('Sign in'); ?>" />
         </div>
         </form>
+    </div>
+    <div class="dialog-box-utils">
+        <?php if (My_Utils::passwordRecoveryIsAllowed()): ?>
+            <a href="<?php echo $this->url(array( 'controller' => 'index', 'action' => 'resetpassword' ), 'recover', TRUE, TRUE );  ?>"><?php echo $this->translate('Forgot Your Password?'); ?></a>
+        <?php endif; ?>
     </div>
 
     <?php
