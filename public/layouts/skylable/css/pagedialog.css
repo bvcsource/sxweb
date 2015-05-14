@@ -77,7 +77,9 @@
     font-weight: 300;
     color: #3c3c3c;
     font-size: 20px;
-    margin-top: 5px
+    margin-top: 5px;
+    width: 230px;
+    text-align: right;
 }
 
 .dialog-box-body {
@@ -110,6 +112,8 @@
     border: none;
     padding: 3% 5%;
     border-radius: 3px;
+    
+    float: right;
 }
 
 .dialog-box-body input[type=submit]:hover {
@@ -128,7 +132,7 @@
 }
 
 .dialog-box-buttons {
-    padding: 10px;
+    padding: 10px 10px 10px 0;
     float: left;
     width: 100%;
 }
@@ -136,6 +140,12 @@
 .dialog-box-buttons .styled-button {
   float: right;
   padding: 10px;
+}
+
+.dialog-box-buttons a {
+    padding: 3% 0;
+    margin: 5px 10px 0 0;
+    float: left;
 }
 
 @media only screen and (max-width: 480px) {
@@ -160,7 +170,7 @@
         border-radius: 0;
     }
 
-    .dialog-box-body input[type="submit"] {
+    .dialog-box-body input[type=submit] {
         bottom: 0;
         float: right;
         padding: 3% 5%;

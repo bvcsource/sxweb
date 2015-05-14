@@ -14,37 +14,41 @@
             }
         }
     }
+    $this->headLink()->appendStylesheet($this->serverUrl() . '/layouts/skylable/css/pagedialog.css');
 ?>
-<div class="login-box">
-    <div class="login-logo">
-        <span class="icon-logo ir"></span><h1><?php echo $this->translate('Login'); ?></h1>
+<div class="dialog-box">
+    <div class="dialog-box-logo">
+        <span class="dialog-box-logo-icon ir"></span><h1><?php echo $this->translate('Login'); ?></h1>
     </div>
-
-    <div class="login-form">
-    <?php echo $this->form('', $this->form->getAttribs()); ?>
+    <div class="dialog-box-body">
+        <?php echo $this->form('', $this->form->getAttribs()); ?>
         <input type="text" value="<?php echo $this->escape($user_login); ?>" name="frm_login" placeholder="<?php echo $this->translate('Username'); ?>" />
         <input type="password" value="<?php echo $this->escape($user_password); ?>" name="frm_password" placeholder="<?php echo $this->translate('Password'); ?>" />
         <label for="confirm"><input type="checkbox" name="frm_remember_me" value="yes" id="confirm" /><?php echo $this->translate('Remember me'); ?></label>
-        <input type="submit" value="<?php echo $this->translate('Sign in'); ?>" />
-    </form>
+       
+        <div class="dialog-box-buttons">
+            <?php if (My_Utils::passwordRecoveryIsAllowed()): ?>
+                <a href="<?php echo $this->url(array( 'controller' => 'index', 'action' => 'resetpassword' ), 'recover', TRUE, TRUE );  ?>"><?php echo $this->translate('Forgot Your Password?'); ?></a>
+            <?php endif; ?>
+            <input type="submit" value="<?php echo $this->translate('Sign in'); ?>" />
+        </div>
+        </form>
     </div>
 
-    <div class="login-utils">
-        <?php if (My_Utils::passwordRecoveryIsAllowed()): ?>
-        <a href="<?php echo $this->url(array( 'controller' => 'index', 'action' => 'resetpassword' ), 'recover', TRUE, TRUE );  ?>"><?php echo $this->translate('Forgot Your Password?'); ?></a>
-        <?php endif; ?>
-    </div>
-<?php
-    
+    <?php
+
     if ($this->form->hasErrors()):
-?>
-    <div class="failure notification-fix"><span class="inf" ><span class="icon-failure ir"></span></span>
-    <?php echo $this->form->renderErrors(); ?>
-    </div>
-<?php
-        
+        ?>
+        <div class="failure notification-fix"><span class="inf" ><span class="icon-failure ir"></span></span>
+            <?php echo $this->form->renderErrors(); ?>
+        </div>
+    <?php
+
     endif;
 
     echo $this->render('index/messages.phtml');
-?>
+    ?>
 </div>
+
+
+
