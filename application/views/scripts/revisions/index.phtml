@@ -12,6 +12,10 @@
     <p><?php echo $this->error; ?></p>
 <?php else:
 
+    if (isset($this->action_result)) {
+        echo '<p>', $this->action_result, '</p><br>',PHP_EOL;
+    }
+
     echo '<p>',sprintf($this->translate('File: <strong>%s</strong>'), $this->escape($this->path)),'</p>',PHP_EOL;
     
     if (empty($this->revisions)) {
@@ -22,13 +26,24 @@
     echo '<p>',$this->translate('Available revisions (most recent first):'),'</p>',PHP_EOL;
 
         ?>
-        <form action="/revs/<?php echo $this->escape($this->sxUrlEncode($this->path)); ?>" method="post">
+        <form action="/revs/<?php echo $this->escape($this->sxUrlEncode($this->path)); ?>" method="post" id="revisions_form">
             <table class="table-revisions">
+                <tr><th colspan="2"><?php echo $this->translate('Rev.');?></th><th><?php echo $this->translate('Date');?></th><th><?php echo $this->translate('Size');?></th><th><?php echo $this->translate('Actions');?></th></tr>
 <?php
                 $is_first = TRUE;
                 $rev_no = 1;
+                $file_type = My_Utils::getFileType($this->path);
                 foreach($this->revisions as $rev) {
-                    ?><tr><td><?php if ($is_first) { $is_first = FALSE; } else { ?><input type="radio" name="rev_id" value="<?php echo sha1($rev['rev']); ?>"><?php } ?></td><td><a href="/revdl/<?php echo sha1($rev['rev']),'/', $this->escape($this->sxUrlEncode($this->path)); ?>" title="<?php echo $this->translate('Download this revision'); ?>"><?php printf($this->translate('Rev. %d'), $rev_no); ?></a></td><td><?php echo $pretty_print_rev_hash($rev['rev']);  ?></td><td><?php echo $this->fileSizeFormat($rev['size']); ?></td></tr><?php
+                    $rev_id = sha1($rev['rev']);
+                    ?>
+                    
+                    <tr><td><?php if ($is_first) { $is_first = FALSE; } else { ?><input type="radio" name="rev_id" value="<?php echo $rev_id; ?>"><?php } ?></td><td><a href="/revdl/<?php echo sha1($rev['rev']),'/', $this->escape($this->sxUrlEncode($this->path)); ?>" title="<?php echo $this->translate( ($file_type == 'data' ? 'Download this revision' : 'Preview this revision' )) ; ?>" <?php if ($file_type != 'data') { echo 'data-filetype="', $file_type,'" class="revpreview"' ; }?> data-rev-id="<?php echo $rev_id; ?>" data-rev-label="<?php echo  $rev_no, ' - ', $this->escape($pretty_print_rev_hash($rev['rev'])); ?>" ><?php printf($this->translate('Rev. %d'), $rev_no); ?></a></td><td><?php echo $pretty_print_rev_hash($rev['rev']);  ?></td><td><?php echo $this->fileSizeFormat($rev['size']); ?></td>
+                        <?php if ($file_type !='data'): ?>
+                            <td><a href="/revdl/<?php echo sha1($rev['rev']),'/', $this->escape($this->sxUrlEncode($this->path)); ?>" title="<?php echo $this->translate('Download this revision'); ?>"><?php echo $this->translate('Download'); ?></a></td>
+                        <?php else: ?> 
+                            <td></td>
+                        <?php endif;?></tr>
+                    <?php
                     $rev_no++;
                 }
 ?>
@@ -37,6 +52,14 @@
         </form>
 <?php
     }
+    $this->headScript()->appendFile( $this->serverUrl().'/layouts/skylable/js/revisions.js');
+?><script type="application/javascript">
+        $(document).ready(function(){
+            FileRevisions.assignHandlers();
+        });
+    </script>
+    <div id="dialog"></div>
+    <?php
 endif; 
 ?>
 </div>

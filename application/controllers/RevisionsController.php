@@ -83,9 +83,9 @@ class RevisionsController extends My_BaseAction {
                         foreach($revisions as $rev) {
                             if (strcmp(sha1($rev['rev']), $rev_id) == 0) {
                                 if ($access_sx->sxrevCopy($path, $rev['rev'], $path, TRUE)) {
-                                    echo '<p>',$this->getTranslator()->translate('Revision successfully copied.'),'</p>';
+                                    $this->view->action_result = $this->getTranslator()->translate('Revision successfully copied.');
                                 } else {
-                                    echo '<p>',$this->getTranslator()->translate('Failed to copy the revision.'),'</p>';
+                                    $this->view->error = $this->getTranslator()->translate('Failed to copy the revision.');
                                 }
                                 break;
                             }

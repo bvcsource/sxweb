@@ -55,19 +55,19 @@ if (!Skylable_Lang) {
 
         // --------- Share window
         shareTitle : "Condividi file",
-        shareMsg : "Sei sicuro di voler condividere il file",
+        shareMsg : "Sei sicuro di voler condividere il file?",
         shareCopyToClipboard: "Copia nella clipboard",
         shareCopiedToClipboard: "Copiato nella clipboard!",
         shareFile : 'File: ',
 
         // -------- Preview
-        previewErrorTitle : 'Errore nella anteprima!',
+        previewErrorTitle : 'Errore nell\'anteprima!',
         previewLoadFailed : 'Errore nel caricamento del file.<br/>Potresti aver raggiunto il limite di download per minuto, riprova più tardi.',
         previewLoading:'Caricamento in corso...',
         previewCloseBtn : 'Chiudi',
         previewDownloadBtn : 'Download...',
-        previewNextBtn : 'Avanti',
-        previewPrevBtn : 'Indietro',
+        previewNextBtn : 'Successivo',
+        previewPrevBtn : 'Precedente',
 
         // -------- Account settings
         settingsPageSizeChangeSuccess : 'Dimensione pagina aggiornata.',
@@ -81,7 +81,18 @@ if (!Skylable_Lang) {
         uploadError: 'Upload fallito. Motivo: %s',
         uploadAborted: 'Abortito (forse stai provando a caricare un tipo di file non valido?).',
         uploadExceedingFileSize: 'Upload fallito!\nIl file "%s" è troppo grande (%d byte)!\nLa dimensione massima consentita è di %d byte.',
-        uploadFileAlreadyExistsOverwrite: 'Il file "%s" esiste già.\nLo vuoi sovrascrivere?'
+        uploadFileAlreadyExistsOverwrite: 'Il file "%s" esiste già.\nLo vuoi sovrascrivere?',
+
+        // -------- Revisions
+        revisionsErrorTitle : 'Errore nell\'anteprima!',
+        revisionsLoadFailed : 'Errore nel caricamento del file.<br/>Potresti aver raggiunto il limite di download per minuto, riprova più tardi.',
+        revisionsLoading:'Caricamento in corso...',
+        revisionsCloseBtn : 'Chiudi',
+        revisionsDownloadBtn : 'Scarica...',
+        revisionsNextBtn : 'Successivo',
+        revisionsPrevBtn : 'Precedente',
+        revisionsRestoreBtn : 'Ripristina',
+        revisionsNavBarLabel : 'Rev. %s'
         
     }
 }

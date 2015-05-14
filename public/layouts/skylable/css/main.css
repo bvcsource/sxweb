@@ -2658,6 +2658,16 @@ a, input, .icon-dl, button, .sort-name span, .sort-size span, .sort-date span {
     margin: 4px 10px 0 0;
 }
 
+.preview-nav-bar-text {
+    display: inline-block;
+    background: none;
+    color: #fff;
+    border: none;
+    
+    padding: 5px 10px;
+    margin: 4px 10px 0 0;
+}
+
 /*
     Colorbox Core Style:
     The following CSS is consistent between example themes and should not be altered.

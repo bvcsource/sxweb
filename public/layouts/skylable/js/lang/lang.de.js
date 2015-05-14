@@ -82,7 +82,18 @@ if (!Skylable_Lang) {
         uploadError: 'Upload failed. Reason: %s',
         uploadAborted: 'Aborted (maybe you are trying to upload an invalid file type?).',
         uploadExceedingFileSize: 'Upload failed!\nThe file "%s" is too big (%d bytes)!\nMaximum allowed file size is %d bytes.',
-        uploadFileAlreadyExistsOverwrite: 'File "%s" already exists.\nDo you want to overwrite it?'
+        uploadFileAlreadyExistsOverwrite: 'File "%s" already exists.\nDo you want to overwrite it?',
+
+        // -------- Revisions
+        revisionsErrorTitle : 'Preview error!',
+        revisionsLoadFailed : 'Failed to load the file.<br/>It is possible that you reached your download limits, please wait some seconds and retry.',
+        revisionsLoading:'Loading...',
+        revisionsCloseBtn : 'Close',
+        revisionsDownloadBtn : 'Download...',
+        revisionsNextBtn : 'Next File',
+        revisionsPrevBtn : 'Previous File',
+        revisionsRestoreBtn : 'Restore',
+        revisionsNavBarLabel : 'Rev. %s'
         
     }
 }
