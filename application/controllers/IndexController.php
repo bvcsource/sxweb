@@ -91,6 +91,9 @@ class IndexController extends My_BaseAction {
             Zend_Session::forgetMe();
         }
         
+        // Force the login to be lower case
+        $values['frm_login'] = strtolower($values['frm_login']);
+        
         try {
             // If the login is an email, use it
             $the_email = '';
