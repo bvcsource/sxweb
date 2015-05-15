@@ -114,9 +114,17 @@ if (empty($missing_ext)) {
     <h1 class="text-hide text-center"><a href="http://www.skylable.com/sxweb" tabindex="-1"><img src="<?php echo serverUrl(); ?>/img/logo.png">Skylable SXWeb</a></h1>
     <div class="jumbotron">
         <h1>Fatal Error!</h1>
-        <p>Your PHP installation lacks some required extensions.</p>
+        <p>There is a problem with your PHP installation! Your server can&apos;t run SXWeb properly.</p>
     </div>
-    <p>There is a problem with your PHP installation! The following required extensions are missing:</p>
+    <?php 
+    if (!sxweb_php_version_is_ok()) {
+        ?><h2>PHP interpreter is too old!</h2>
+        <p>To run SXWeb you need at least PHP version 5.3.9.</p>
+    <?php
+    }
+    ?>
+    <h2>Missing Extensions</h2>
+    <p>The following required extensions are missing:</p>
 <?php 
 if (!empty($missing_ext)) {
     echo '<ul><li>', implode('</li><li>', $missing_ext),'</li></ul>';

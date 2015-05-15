@@ -67,8 +67,12 @@ function sxweb_get_missing_extensions() {
     return $missing;
 }
 
-// Include the special PHP config if present
-if (@file_exists('./config.inc.php')) {
-    require_once realpath('./config.inc.php');
+/**
+ * Tells if the PHP version is ok to run SXWeb
+ * @return bool
+ */
+function sxweb_php_version_is_ok() {
+    return version_compare(PHP_VERSION, '5.3.9', '>=');
 }
+
 

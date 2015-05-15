@@ -267,33 +267,8 @@ class IndexController extends Zend_Controller_Action {
         $this->view->headTitle($this->translate('Requirements'));
         
         $session = new Zend_Session_Namespace();
-        
-        $this->view->php_components = array();
-        
-        // PHP version
-        $this->view->can_proceed = version_compare(PHP_VERSION, '5.3.9', '>=');
-        $this->view->php_components[] = array('PHP', sprintf($this->translate('At least %s'), '5.3.9'), (version_compare(PHP_VERSION, '5.3.9', '>=') ? $this->translate('Found') : $this->translate('Upgrade needed') ) );
 
-        // PHP extensions
-        $ext = get_loaded_extensions();
-
-        $needed = array(
-            'date' => $this->translate('Date extension'),
-            'PDO' => $this->translate('PDO extension'),
-            'pdo_mysql' => $this->translate('PDO MySql extension'),
-            'openssl' => $this->translate('OpenSSL extension'),
-            'curl' => $this->translate('cUrl extension'),
-            'SPL' => $this->translate('PHP SPL extension library'),
-            'json' => $this->translate('JSON extension'),
-            'session' => $this->translate('Session extension')
-        );
-        foreach($needed as $need_ext => $label) {
-            $found = in_array($need_ext, $ext); 
-            if (!$found) {
-                $this->view->can_proceed = FALSE;
-            }
-            $this->view->php_components[] = array($label, $this->translate('Yes'), ($found ? $this->translate('Found') : sprintf('<span class="label label-danger">%s</span>', $this->translate('Not found')) ) );
-        }
+        $this->view->can_proceed = TRUE;
         
         // PHP Uploads suggested conf
         // name => needed value

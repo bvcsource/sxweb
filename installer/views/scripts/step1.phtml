@@ -41,22 +41,6 @@
 <p><?php echo $this->translate('These are the basic requirements to run Skylable SXWeb.'); ?></p>
 
 <div class="page-header">
-  <h2><?php echo $this->translate('PHP'); ?></h2>
-</div>
-<table class="table">
-    <thead>
-    <tr><th><?php echo $this->translate('Component'); ?></th><th><?php echo $this->translate('Required'); ?></th><th><?php echo $this->translate('Status'); ?></th></tr>
-    </thead>
-    <tbody>
-    <?php
-        foreach($this->php_components as $c) {
-            echo '<tr><td>',$c[0],'</td><td>',$c[1],'</td><td>',$c[2],'</td></tr>',PHP_EOL; 
-        }
-    ?>
-    </tbody>
-</table>
-
-<div class="page-header">
     <h2><?php echo $this->translate('PHP settings for uploads'); ?></h2>
 </div>
 <p><?php echo $this->translate('All these settings can be found into the <code>php.ini</code> configuration file.'); ?></p>
