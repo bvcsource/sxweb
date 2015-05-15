@@ -59,8 +59,31 @@ Make sure that php-fpm is running and listening on 127.0.0.1:9000.
 
 If you are using a different web server, refer to the documentation of the web server or contact us for assistance.
 
-
 Reload the configuration of your web server and then open SXWeb in your browser to start the installer: https://sxweb.foo.com
+
+### REQUIRED PHP EXTENSIONS
+
+SXWeb requires these PHP extensions to be installed:
+
+ - date
+ - Dom
+ - PDO 
+ - PDO_Mysql
+ - Openssl
+ - cUrl
+ - SPL
+ - JSon
+ - session
+ - ctype
+ - hash
+ - iconv
+ - mbstring
+ - PCRE
+ - posix
+ - xml
+ 
+This list could help you resolve extensions requirements: [Zend Framework Requirements](http://framework.zend.com/manual/1.12/en/requirements.introduction.html) 
+
 
 ## SETUP AND UPGRADES
 
