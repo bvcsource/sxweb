@@ -40,6 +40,11 @@
 // Require base defines
 require_once realpath('./defines.inc.php');
 
+$php_sanity_check = sxweb_get_missing_extensions();
+if ($php_sanity_check !== FALSE) {
+    require realpath('./misconfigured.php');
+    exit();
+}
 
 // Define path to application directory
 defined('APPLICATION_PATH')

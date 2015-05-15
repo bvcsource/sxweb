@@ -21,6 +21,52 @@ if (empty($timezone)) {
     @date_default_timezone_set($timezone);
 }
 
+/**
+ * Check it there is some missing PHP extension needed to run SXWeb.
+ *
+ * Return FALSE is nothing is missing, otherwise an array with the names
+ * of the missing extensions.
+ *
+ * @return array|bool
+ */
+function sxweb_get_missing_extensions() {
+
+    $required_extensions = array(
+        'Core',
+        'date',
+        'openssl',
+        'pcre',
+        // 'zlib',
+        // 'bcmath',
+        'ctype',
+        'dom',
+        'hash',
+        'SPL',
+        'iconv',
+        'mbstring',
+        'session',
+        'posix',
+        'standard',
+        'SimpleXML',
+        'sockets',
+        'xml',
+        'xmlreader',
+        'xmlwriter',
+        'PDO',
+        'curl',
+        'gd',
+        'json',
+        'mysqli',
+        'pdo_mysql'
+    );
+
+    $missing = array_diff($required_extensions, get_loaded_extensions());
+    if (empty($missing)) {
+        return FALSE;
+    }
+    return $missing;
+}
+
 // Include the special PHP config if present
 if (@file_exists('./config.inc.php')) {
     require_once realpath('./config.inc.php');
