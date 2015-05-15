@@ -300,7 +300,7 @@ class IndexController extends Zend_Controller_Action {
         $php_ini_settings = array(
             'file_uploads' => 1,
             'upload_max_filesize' => '64M', 
-            'upload_tmp_dir' => '', 
+            'upload_tmp_dir' => $this->translate('user defined'), 
             'memory_limit' => '128M', 
             'post_max_size' => '64M', 
             'max_execution_time' => 600,
@@ -323,8 +323,8 @@ class IndexController extends Zend_Controller_Action {
                     $label = '<span class="label label-warning">' . $label . '</span>';
                     $this->view->php_lower_limit_warn = TRUE;
                 }
-            } else {
-                $label = ini_get($ini_key);
+            } elseif ($ini_key == 'upload_tmp_dir' && empty($label)) {
+               $label = $this->translate('System default temporary directory');
             }
             
             $this->view->php_ini_settings[] = array($ini_key, $label, $req);
