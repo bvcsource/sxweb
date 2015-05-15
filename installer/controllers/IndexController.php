@@ -340,12 +340,12 @@ class IndexController extends Zend_Controller_Action {
         // SX commands
         
         $sx_cmd = array(
-            'sxinit' => array('1.0-127-gfaa1018', '>='),
-            'sxcp' => array('1.0-127-gfaa1018', '>='),
-            'sxrm' => array('1.0-127-gfaa1018', '>='),
-            'sxmv' => array('1.0-127-gfaa1018', '>='),
-            'sxacl' => array('1.0-127-gfaa1018', '>='),
-            'sxrev' => array('1.0-127-gfaa1018', '>=')
+            'sxinit' => array('1.1', '>='),
+            'sxcp' => array('1.1', '>='),
+            'sxrm' => array('1.1', '>='),
+            'sxmv' => array('1.1', '>='),
+            'sxacl' => array('1.1', '>='),
+            'sxrev' => array('1.1', '>=')
         );
         
         $this->view->sx_commands_search_path = $this->getExecPath();

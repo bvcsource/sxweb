@@ -1,7 +1,7 @@
 <?php
 
 // The application version
-if (!defined('SXWEB_VERSION')) define('SXWEB_VERSION', '0.3.97');
+if (!defined('SXWEB_VERSION')) define('SXWEB_VERSION', '0.4.0');
 
 // URL for version check
 // The string SECS_SINCE_LAST_CHECK is replaced with the current timestamp
@@ -10,7 +10,7 @@ if (!defined('SXWEB_VERSION_CHECK_URL')) define('SXWEB_VERSION_CHECK_URL', 'http
 // URL for downloading the upgraded version
 if (!defined('SXWEB_UPGRADE_URL'))  define('SXWEB_UPGRADE_URL', 'http://www.skylable.com/download/sxweb/#upgrade');
 
-// URL for the SXWeb FAQ
+// URL of the SXWeb FAQ
 if (!defined('SXWEB_FAQ_URL'))  define('SXWEB_FAQ_URL', 'http://www.skylable.com/docs/faq/sxweb');
 
 // Try to fix the timezone

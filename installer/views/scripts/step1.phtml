@@ -74,7 +74,7 @@
 </table>
 <p><?php printf($this->translate('With these settings, maximum upload file size is <strong>%s</strong> bytes.'), Zend_Locale_Format::toNumber($this->max_upload_filesize) ); ?></p>
 <?php if ($this->php_lower_limit_warn === TRUE): ?>
-    <p><span class="label label-warning"><?php echo $this->translate('We found that your upload limits are lower than expected, for optimal performance please increase them.'); ?></span></p>
+    <p><span class="label label-warning"><?php echo $this->translate('Your upload limits are lower than expected, for optimal performance please increase them.'); ?></span></p>
 <?php endif; ?>
 <div class="page-header">
     <h2><?php echo $this->translate('SX Commands'); ?></h2>
