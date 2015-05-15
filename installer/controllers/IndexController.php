@@ -867,7 +867,7 @@ class IndexController extends Zend_Controller_Action {
             'filters' => array(
                 'StringTrim'
             ),
-            'required' => TRUE
+            'required' => FALSE
         ));
 
         $form->addElement( 'checkbox', 'frm_cluster_ssl', array(
@@ -911,9 +911,10 @@ class IndexController extends Zend_Controller_Action {
                 $can_proceed = TRUE;
                 if ($values['frm_allow_password_recovery'] == 'y') {
                     if (strlen($values['frm_admin_key']) == 0) {
-                        $form->addErrorMessage($this->translate('You must supply an admin key'));
-                        $form->getElement('frm_admin_key')->addErrorMessage( $this->translate('You must supply an admin key') );
+                        
+                        $form->getElement('frm_admin_key')->setErrors( array($this->translate('You must supply an admin key')) );
                         $this->view->errors = $form->getMessages();
+                        
                         $can_proceed = FALSE;
                     }
                 }
