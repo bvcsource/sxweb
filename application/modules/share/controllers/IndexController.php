@@ -207,7 +207,7 @@ class Share_IndexController extends My_BaseAction {
 
             // Use the user key to access the file on the cluster
             // 1. Check if the volume is encrypted (and the user is valid)
-            $access_sx = new Skylable_AccessSxNG(NULL, array( 'secret_key' => $data['access_key'] ));
+            $access_sx = new Skylable_AccessSxNG( My_Utils::getAccessSxNGOpt(NULL, array( 'secret_key' => $data['access_key'] )) );
             $volume = My_Utils::getRootFromPath($path);
             $the_file = My_Utils::skipPath($path, 2);
             try {
