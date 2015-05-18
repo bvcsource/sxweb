@@ -183,7 +183,7 @@ class Share_IndexController extends My_BaseAction {
          }
          if (array_key_exists('expire_time', $data)) {
             if (is_string($data['expire_time'])) {
-                if (preg_match('^[1-9]\d{0,10}$', $data['expire_time']) == 1) {
+                if (preg_match('/^[1-9]\d{0,10}$/', $data['expire_time']) == 1) {
                     $expire_time = intval( $data['expire_time'] );
                 } else {
                     echo Zend_Json::encode(array(
