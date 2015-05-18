@@ -100,6 +100,7 @@ class Share_IndexController extends My_BaseAction {
      public function shareAction() {
 
          $this->disableView();
+         $this->getResponse()->setHeader('Content-Type', 'application/json');
 
         if (!$this->getRequest()->isPost()) {
             echo Zend_Json::encode(array(
