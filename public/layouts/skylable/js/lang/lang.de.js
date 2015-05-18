@@ -51,8 +51,8 @@ if (!Skylable_Lang) {
         // --------- Delete window
         deleteTitle : "Datei(en) löschen",
         deleteMsg: "Bist Du sicher, dass du die ausgewählte(n) Datei(en) löschen möchtest?",
-
         deleteNoFiles: "Keine Dateien ausgewählt",
+
 
         // --------- Share window
         shareTitle : "Datei teilen",
@@ -77,22 +77,22 @@ if (!Skylable_Lang) {
 
         // -------- Uploads
         uploadTitle: 'Hochladen...',
-        uploadFailed: "%s: upload failed, reason: %s",
-        uploadSuccess: '%s: successfully uploaded',
-        uploadError: 'Upload failed. Reason: %s',
-        uploadAborted: 'Aborted (maybe you are trying to upload an invalid file type?).',
-        uploadExceedingFileSize: 'Upload failed!\nThe file "%s" is too big (%d bytes)!\nMaximum allowed file size is %d bytes.',
-        uploadFileAlreadyExistsOverwrite: 'File "%s" already exists.\nDo you want to overwrite it?',
+        uploadFailed: "%s: Hochladen fehlgeschlagen, Grund: %s",
+        uploadSuccess: '%s: Erfolgreich hochgeladen',
+        uploadError: 'Hochladen fehlgeschlagen. Grund: %s',
+        uploadAborted: 'Abbruch (vielleicht versuchst du einen ungültigen Dateityp hochzuladen?).',
+        uploadExceedingFileSize: 'Hochladen fehlgeschlagen!\nDie Datei "%s" ist zu groß (%d Bytes)!\nMaximal erlaubte Größe ist %d Bytes.',
+        uploadFileAlreadyExistsOverwrite: 'Datei "%s" existiert bereits.\nSoll die Datei überschrieben werden?',
 
         // -------- Revisions
-        revisionsErrorTitle : 'Preview error!',
-        revisionsLoadFailed : 'Failed to load the file.<br/>It is possible that you reached your download limits, please wait some seconds and retry.',
-        revisionsLoading:'Loading...',
-        revisionsCloseBtn : 'Close',
-        revisionsDownloadBtn : 'Download...',
-        revisionsNextBtn : 'Next File',
-        revisionsPrevBtn : 'Previous File',
-        revisionsRestoreBtn : 'Restore',
+        revisionsErrorTitle : 'Vorschaufehler!',
+        revisionsLoadFailed : 'Fehler beim Laden der Datei.<br/>Möglicherweise hast Du Dein Download-Limit erreicht, bitte warte einige Sekunden und versuche es dann erneut.',
+        revisionsLoading:'Läd...',
+        revisionsCloseBtn : 'Schließen',
+        revisionsDownloadBtn : 'Herunterladen...',
+        revisionsNextBtn : 'Nächste Datei',
+        revisionsPrevBtn : 'Vorherige Datei',
+        revisionsRestoreBtn : 'Wiederherstellen',
         revisionsNavBarLabel : 'Rev. %s'
         
     }
