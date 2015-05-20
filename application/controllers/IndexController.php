@@ -416,12 +416,16 @@ class IndexController extends My_BaseAction {
                                         $show_unlock_form = FALSE;
                                     } else {
                                         $logger->debug(__METHOD__.' unlocking volume errors: '.print_r($access_sx->getLastErrorLog(), TRUE));
-                                        $form->addError($this->getTranslator()->translate("Volume unlock failed. Wrong password?"));
+                                        $form->addError($this->getTranslator()->translate("Volume unlock failed."));
                                     }    
+                                }
+                                catch(Skylable_InvalidPasswordException $e) {
+                                    $logger->debug(__METHOD__.' unlocking volume errors: '.print_r($access_sx->getLastErrorLog(), TRUE));
+                                    $form->addError($this->getTranslator()->translate("Volume unlock failed. Wrong password!"));
                                 }
                                 catch(Exception $e){
                                     $logger->debug(__METHOD__.' unlocking volume errors: '.print_r($access_sx->getLastErrorLog(), TRUE));
-                                    $form->addError($this->getTranslator()->translate("Volume unlock failed. Wrong password?"));
+                                    $form->addError($this->getTranslator()->translate("Volume unlock failed."));
                                 }
                             } else {
                                 $form->addError($this->getTranslator()->translate("Incorrect password."));

@@ -1332,10 +1332,34 @@ class Skylable_AccessSxNew {
         }
         catch(Exception $e) {
             @unlink($tmp_file);
+            
+            /*
+             * Corner case: we are trying to write to a read only volume
+             * the password can be ok, but we get a permission denied error.
+             * Nonetheless the volume could be unlocked.
+             * */
+            if ($e instanceof Skylable_AccessSxException) {
+                if (!($e instanceof Skylable_InvalidPasswordException)) {
+                    $this->getLogger()->debug(__METHOD__ . ': read only volume corner case.');
+                    foreach($this->_last_error_log['errors'] as $err) {
+                        // Failed to upload file content hashes: Permission denied: not enough privileges
+                        if (stripos($err, 'failed to upload') !== FALSE && 
+                            stripos($err, 'not enough privileges') !== FALSE) {
+                            if ($this->volumeIsUnlocked($volume)) {
+                                $this->getLogger()->debug(__METHOD__ . ': read only volume corner case: volume unlocked.');
+                                return TRUE;
+                            }
+                        }
+                    }
+                    $this->getLogger()->debug(__METHOD__ . ': read only volume corner case: ignored.');
+                }
+            }
             throw $e;
         }
         return FALSE;
     }
+    
+    
 
     /**
      * Creates a directory into the specified path.
@@ -1648,6 +1672,19 @@ class Skylable_AccessSxNew {
      */
     protected function checkForErrors($log, $throw_exception = TRUE) {
         if (is_array($log)) {
+            // Messages are useful only to check if the provided password is wrong
+            if (array_key_exists('messages', $log)) {
+                if (is_array($log['messages'])) {
+                    if ($throw_exception) {
+                        // Check to see if the password is wrong
+                        foreach($log['messages'] as $msg) {
+                            if (stripos($msg, 'invalid password') !== FALSE) {
+                                throw new Skylable_InvalidPasswordException(implode('\n', $log['messages']));
+                            }
+                        }
+                    }
+                }
+            }
             if (array_key_exists('errors', $log)) {
                 if (is_array($log['errors'])) {
                     if (count($log['errors']) > 0) {
@@ -1655,7 +1692,7 @@ class Skylable_AccessSxNew {
                             // Check to see if the credentials are invalid
                             // this can throw a wrong exception
                             foreach($log['errors'] as $err) {
-                                if (strpos(strtolower($err), 'invalid credentials') !== FALSE) {
+                                if (stripos($err, 'invalid credentials') !== FALSE) {
                                     throw new Skylable_InvalidCredentialsException(implode('\n', $log['errors']));
                                 }
                             }
