@@ -473,14 +473,11 @@ class Skylable_AccessSxNew {
             $cluster_ip = FALSE;
         }
         if ($cluster_ip !== FALSE) {
-            /*
-            if (is_array($cluster_ip)) {
-                $cluster_ip = '-l '.implode(',', $cluster_ip);
+            if (!empty($cluster_ip)) {
+                $cluster_ip = '-l '.My_utils::escapeshellarg($cluster_ip);    
             } else {
-                $cluster_ip = '-l '.My_utils::escapeshellarg($cluster_ip);
+                $this->getLogger()->debug(__METHOD__.': Cluster IP is empty.');
             }
-            */
-            $cluster_ip = '-l '.My_utils::escapeshellarg($cluster_ip);
         }
         
         $sxinit_cmd = 'sxinit -b '.
