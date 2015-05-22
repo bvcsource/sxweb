@@ -58,12 +58,12 @@ and GPL (http://www.opensource.org/licenses/gpl-license.php) licenses.
 sprintf.js
 ----------
 Copyright (c) 2007-2013, Alexandru Marasteanu <hello@alexei.ro> (http://alexei.ro/).
-BSD-3 Clause licensed, see the sprintjs-LICENSE file.
+BSD-3 Clause licensed, see the COPYING.sprintfjs file.
 
 jQuery Smart Banner
 -------------------
 Copyright (c) Arnold Daniels <arnold@jasny.net> (http://jasny.github.io/jquery.smartbanner/)
-For details see the smartbanner-LICENSE file.
+For details see the COPYING.smartbanner file.
 
 MIT licensed components
 -----------------------
