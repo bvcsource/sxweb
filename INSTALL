@@ -20,6 +20,7 @@ If you are using Apache, adapt this example:
                 RewriteRule ^.*$ - [NC,L]
                 RewriteRule ^.*$ index.php [NC,L]
             </IfModule>
+        </Directory>
         SSLEngine on
         SSLCertificateFile    /etc/ssl/certs/wildcard.skylable.com.pem
         SSLCertificateKeyFile /etc/ssl/private/wildcard.skylable.com.key
