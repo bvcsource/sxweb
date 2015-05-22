@@ -130,7 +130,10 @@ if (!empty($missing_ext)) {
     echo '<ul><li>', implode('</li><li>', $missing_ext),'</li></ul>';
 } 
     ?>
-    <p>You need to install them if you want to use SXWeb.</p>
+    <p>You must install them in order to use SXWeb.</p>
+    <p>On Debian: <code>apt-get install php5-gd php5-curl php5-mysql</code></p>
+    <p>On RedHat/CentOS: <code>yum -y install php-gd php-mysql php-pdo php-xml php-mbstring</code></p>
+    <p>Remember to restart your PHP service after the installation.</p>
     <hr>
     <p class="copyright text-center">Copyright &copy; 2012-2015 Skylable Ltd. All Rights Reserved. Version: <?php echo SXWEB_VERSION; ?></p>
 </div>
