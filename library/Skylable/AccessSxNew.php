@@ -232,7 +232,7 @@ class Skylable_AccessSxNew {
     protected function updateClusterString($login) {
         $cluster = Zend_Registry::get('skylable')->get('cluster', FALSE);
         if (empty($cluster)) {
-            $this->getLogger()->debug(__METHOD__.': Invalid cluster: '.print_r($cluster, TRUE));
+            $this->getLogger()->err(__METHOD__.': Invalid cluster: '.print_r($cluster, TRUE));
             return FALSE;
         }
         $this->_cluster_string = 'sx://' . (empty($login) ? '' : strval($login) . '@') . parse_url($cluster, PHP_URL_HOST);
@@ -325,12 +325,12 @@ class Skylable_AccessSxNew {
     public function isInitialized() {
         $path = $this->getBaseDir();
         if (!@is_dir($path)) {
-            $this->getLogger()->debug(__METHOD__.': path is not a directory: '.$path);
+            $this->getLogger()->err(__METHOD__.': path is not a directory: '.$path);
             return FALSE;
         }
         $path .= '/'.substr(Zend_Registry::get('skylable')->get('cluster'), 5);
         if (!@is_dir($path)) {
-            $this->getLogger()->debug(__METHOD__.': path is not a directory: '.$path);
+            $this->getLogger()->err(__METHOD__.': path is not a directory: '.$path);
             return FALSE;
         }
 
@@ -362,7 +362,7 @@ class Skylable_AccessSxNew {
             if ($authkey !== FALSE) {
                 return trim($authkey);
             } else {
-                $this->getLogger()->debug(__METHOD__ . ': Failed to fetch user key from: ' . $path);
+                $this->getLogger()->err(__METHOD__ . ': Failed to fetch user key from: ' . $path);
             }
         } else {
             $this->getLogger()->debug(__METHOD__ . ': User is not initialized!');
@@ -403,7 +403,7 @@ class Skylable_AccessSxNew {
     public function sxinit($destination_path, $params, $force_reinit = FALSE) {
         $this->_last_error_log = '';
         if (empty($destination_path) || !is_string($destination_path)) {
-            $this->getLogger()->debug(__METHOD__.': Invalid destination path: '.print_r($destination_path, TRUE));
+            $this->getLogger()->err(__METHOD__.': Invalid destination path: '.print_r($destination_path, TRUE));
             return FALSE;
         }
         
@@ -413,7 +413,7 @@ class Skylable_AccessSxNew {
             if (is_string($params['user_auth_key']) && !empty($params['user_auth_key'])) {
                 $has_auth_key = TRUE;
             } else {
-                $this->getLogger()->debug(__METHOD__.': Invalid user key (not a string or empty): '.print_r($params['user_auth_key'], TRUE));
+                $this->getLogger()->err(__METHOD__.': Invalid user key (not a string or empty): '.print_r($params['user_auth_key'], TRUE));
                 return FALSE;
             }
         }
@@ -424,7 +424,7 @@ class Skylable_AccessSxNew {
             if (is_string($params['password']) && (strlen($params['password']) > 0) ) {
                 $has_password = TRUE;
             } else {
-                $this->getLogger()->debug(__METHOD__.': Invalid password (not a string or empty)');
+                $this->getLogger()->err(__METHOD__.': Invalid password (not a string or empty)');
                 return FALSE;
             }
         }
@@ -432,7 +432,7 @@ class Skylable_AccessSxNew {
         if (!$has_auth_key) {
             // We need a login
             if (!isset($params['login'])) {
-                $this->getLogger()->debug(__METHOD__.': You must supply the user login.');
+                $this->getLogger()->err(__METHOD__.': You must supply the user login.');
                 return FALSE;
             }
         }
@@ -440,12 +440,12 @@ class Skylable_AccessSxNew {
 
         $cluster = Zend_Registry::get('skylable')->get('cluster', FALSE);
         if (empty($cluster)) {
-            $this->getLogger()->debug(__METHOD__.': Invalid cluster: '.print_r($cluster, TRUE));
+            $this->getLogger()->err(__METHOD__.': Invalid cluster: '.print_r($cluster, TRUE));
             return FALSE;
         }
         
         $cluster_ssl = Zend_Registry::get('skylable')->get('cluster_ssl', TRUE);
-        $this->getLogger()->debug(__METHOD__.': Cluster SSL: '.var_export($cluster_ssl, TRUE));
+        $this->getLogger()->notice(__METHOD__.': Cluster SSL: '.var_export($cluster_ssl, TRUE));
         if (empty($cluster_ssl)) {
             $cluster_ssl = FALSE; 
         } else {
@@ -458,12 +458,12 @@ class Skylable_AccessSxNew {
         }
         if ($cluster_port !== FALSE) {
             if (!is_numeric($cluster_port)) {
-                $this->getLogger()->debug(__METHOD__.': Invalid cluster port: '.print_r($cluster_port, TRUE));
+                $this->getLogger()->err(__METHOD__.': Invalid cluster port: '.print_r($cluster_port, TRUE));
                 return FALSE;
             }
 
             if ($cluster_port < 1 || $cluster_port > 65535) {
-                $this->getLogger()->debug(__METHOD__.': Invalid cluster port (out of range): '.print_r($cluster_port, TRUE));
+                $this->getLogger()->err(__METHOD__.': Invalid cluster port (out of range): '.print_r($cluster_port, TRUE));
                 return FALSE;
             }
         }
@@ -476,7 +476,7 @@ class Skylable_AccessSxNew {
             if (!empty($cluster_ip)) {
                 $cluster_ip = '-l '.My_utils::escapeshellarg($cluster_ip);    
             } else {
-                $this->getLogger()->debug(__METHOD__.': Cluster IP is empty.');
+                $this->getLogger()->notice(__METHOD__.': Cluster IP is empty.');
             }
         }
         
@@ -489,14 +489,14 @@ class Skylable_AccessSxNew {
         
         $tmp_file = @tempnam( $this->getBaseDir(), 'sxinit_' );
         if ($tmp_file === FALSE) {
-            $this->getLogger()->debug(__METHOD__.': Failed to create temporary files into: ' . $this->getBaseDir());
+            $this->getLogger()->err(__METHOD__.': Failed to create temporary files into: ' . $this->getBaseDir());
             return FALSE;
         }
 
         $auth_data_ok = @file_put_contents($tmp_file, ($has_auth_key ? $params['user_auth_key'].PHP_EOL : $params['password'].PHP_EOL) );
         
         if ($auth_data_ok === FALSE) {
-            $this->getLogger()->debug(__METHOD__.': Failed to write auth data to file: ' . $tmp_file);
+            $this->getLogger()->err(__METHOD__.': Failed to write auth data to file: ' . $tmp_file);
             @unlink($tmp_file);
             return FALSE;
         }
@@ -527,7 +527,7 @@ class Skylable_AccessSxNew {
             if ($exitcode == 0) {
                 return TRUE;
             } else {
-                $this->getLogger()->debug(__METHOD__.': sxinit failed: '.$this->_last_error_log);
+                $this->getLogger()->err(__METHOD__.': sxinit failed: '.$this->_last_error_log);
                 return FALSE;
             }    
         }
@@ -659,7 +659,7 @@ class Skylable_AccessSxNew {
         $this->_last_error_log = '';
 
         if (strlen($filepath) == 0 || !is_string($filepath)) {
-            $this->getLogger()->debug(__METHOD__.': Invalid file path'. var_export($filepath, TRUE) );
+            $this->getLogger()->err(__METHOD__.': Invalid file path'. var_export($filepath, TRUE) );
             return FALSE;
         }
 
@@ -675,8 +675,8 @@ class Skylable_AccessSxNew {
         if ($exitcode == 0) {
             if (count($output) == 0) {
                 // File not found!
-                $this->getLogger()->debug(__METHOD__.': File '. $filepath .' not found.');
-                $this->_last_error_log = array('File '. $filepath .' not found.');
+                $this->getLogger()->notice(__METHOD__.': File '. $filepath .' not found.');
+                $this->_last_error_log = 'File '. $filepath .' not found.';
                 return FALSE;
             } else {
                 return reset($output);
@@ -722,6 +722,7 @@ class Skylable_AccessSxNew {
     public function sxls($path, $sort_order = self::SORT_NONE, $recursive = FALSE, $file_types = self::LIST_ALL) {
         $this->_last_error_log = '';
         if (!$this->isInitialized() || !is_string($path)) {
+            $this->getLogger()->err(__METHOD__.': not initialized or path is not a string.');
             return FALSE;
         }
 
@@ -1066,7 +1067,13 @@ class Skylable_AccessSxNew {
 
             @fclose($pipes[1]);
             $exit_code = proc_close($process);
-            $this->getLogger()->debug(__METHOD__.': command return value is:' . print_r($exit_code, TRUE));
+            if ($exit_code != 0) {
+                $this->getLogger()->err(__METHOD__.': non zero return value for command: '.strval($command));
+                $this->getLogger()->err(__METHOD__.': command return value is:' . print_r($exit_code, TRUE));
+            } else {
+                $this->getLogger()->debug(__METHOD__.': command return value is:' . print_r($exit_code, TRUE));    
+            }
+            
 
             // Analyses the process error log
             if (is_callable($error_callback)) {
@@ -1081,6 +1088,10 @@ class Skylable_AccessSxNew {
 
             @fclose($process_log_fd);
 
+            if ($exit_code != 0) {
+                $this->getLogger()->err(__METHOD__.': command execution log:' . print_r($ret_val, TRUE));
+            }
+            
             return $ret_val;
 
         } else {
@@ -1118,7 +1129,7 @@ class Skylable_AccessSxNew {
         */
 
         if ($file_data['type'] !== 'FILE') {
-            $this->getLogger()->debug(__METHOD__ . ': File: ' . $file_data['path'] . ' isn\'t a regular file.');
+            $this->getLogger()->err(__METHOD__ . ': File: ' . $file_data['path'] . ' isn\'t a regular file.');
             return FALSE;
         }
 
@@ -1241,7 +1252,7 @@ class Skylable_AccessSxNew {
         }
 
         if (!$this->isInitialized()) {
-            self::getLogger()->debug(__METHOD__ . ': user not initialized. ');
+            self::getLogger()->err(__METHOD__ . ': user not initialized. ');
             return FALSE;
         }
         
@@ -1250,7 +1261,7 @@ class Skylable_AccessSxNew {
         
         // If the volume path doesn't exists, can't proceed
         if (!@is_dir($path)) {
-            self::getLogger()->debug(__METHOD__ . ': Path don\'t exists: '.$path);
+            self::getLogger()->err(__METHOD__ . ': Path don\'t exists: '.$path);
             return FALSE;
         }
         
