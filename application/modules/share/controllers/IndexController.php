@@ -301,10 +301,18 @@ class Share_IndexController extends My_BaseAction {
             $shared_model = new My_Shared();
             $file_key = '';
             if ($shared_model->fileExists($path, $data['access_key'], $file_key)) {
-                echo Zend_Json::encode(array(
-                    'status' => TRUE,
-                    'publink' => $this->getPublink($file_key, $path)
-                ));
+                $ok_up = $shared_model->updateFile($file_key, $password, $expire_time);
+                if ($ok_up) {
+                    echo Zend_Json::encode(array(
+                        'status' => TRUE,
+                        'publink' => $this->getPublink($file_key, $path)
+                    ));    
+                } else {
+                    echo Zend_Json::encode(array(
+                        'status' => FALSE,
+                        'error' => 'Failed to share file'
+                    ));
+                }
             } else {
                 $file_key = $shared_model->add($path, $data['access_key'], $expire_time, $password );
                 if ($file_key === FALSE) {
