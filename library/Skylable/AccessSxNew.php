@@ -1089,6 +1089,8 @@ class Skylable_AccessSxNew {
             @fclose($process_log_fd);
 
             if ($exit_code != 0) {
+                $this->getLogger()->err(__METHOD__.': command STDOUT:' . print_r($output, TRUE));
+                $this->getLogger()->err(__METHOD__.': command STDERR:' . print_r($error_log, TRUE));
                 $this->getLogger()->err(__METHOD__.': command execution log:' . print_r($ret_val, TRUE));
             }
             
