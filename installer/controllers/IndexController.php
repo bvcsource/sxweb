@@ -744,7 +744,7 @@ class IndexController extends Zend_Controller_Action {
                     if (is_null($db_conn->getConnection())) {
                         $this->view->error = $this->translate('Connection failed.');
                     } else {
-                        $this->view->message = $this->translate('<strong>Important!</strong> If you are upgrading, before continuing to prevent data loss, please <em>backup your database</em>.');
+                        $this->view->message = $this->translate('<strong>Important!</strong> If you are upgrading, before continuing, to prevent data loss, please <em>backup your database</em>.');
                         
                         $session->steps_registry['step2'] = TRUE;
                     }
