@@ -651,6 +651,7 @@ if (!FileOperations) {
                     click: function(e) {
                         var send_data = 'path='+encodeURIComponent( path ) + '&create=y';
                         send_data += '&share_password=' + $('input[name=share_password]').val();
+                        send_data += '&share_password_confirm=' + $('input[name=share_password_confirm]').val();
                         send_data += '&share_expire_time=' + $('input[name=share_expire_time]').val();
                         
                         $.ajax({

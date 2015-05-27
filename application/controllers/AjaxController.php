@@ -440,6 +440,20 @@ class AjaxController extends My_BaseAction {
         }
 
         if (is_null($this->getRequest()->getParam('create'))) {
+            // Check if the file is already shared
+            try {
+                $my_shared = new My_Shared();
+                $shared_file_key = '';
+                if ($my_shared->fileExists($path, Zend_Auth::getInstance()->getIdentity()->getSecretKey(), $shared_file_key)) {
+                    $this->view->file_already_shared = TRUE;
+                }
+            }
+            catch(Exception $e) {
+                $this->getLogger()->debug(__METHOD__.': exception: '.$e->getMessage());
+                $this->sendErrorResponse('<p>',$this->getTranslator()->translate('Internal error. Can\'t proceed.'),'</p>', 500);
+                return FALSE;
+            }
+            
             // First step: show the dialog
             $this->_helper->viewRenderer->setNoRender(FALSE);
             $this->view->share_path = $path;
@@ -460,7 +474,13 @@ class AjaxController extends My_BaseAction {
             }
             
             $password_check = new My_ValidateSharedFilePassword();
-            if (!$password_check->isValid($password)) {
+            if ($password_check->isValid($password)) {
+                $confirm_password = $this->getRequest()->getParam('share_password_confirm');
+
+                if (strcmp($password, strval($confirm_password)) != 0) {
+                   $errors[] = $this->getTranslator()->translate('Passwords mismatch'); 
+                }
+            } else {
                 $errors = array_merge($errors, $password_check->getMessages());
             }
             
@@ -475,7 +495,7 @@ class AjaxController extends My_BaseAction {
                 $this->view->errors = $errors;
                 $this->view->share_path = $path;
                 $this->view->share_file = basename($path);
-                $this->view->share_expire_time = $expire_time;
+                $this->view->share_expire_time = (empty($expire_time) ? $expire_time : $expire_time / 3600); // Convert from seconds to hours 
                 $this->view->share_password = '';
                 $this->getResponse()->setHttpResponseCode(400);
                 $this->render('share-dialog');
