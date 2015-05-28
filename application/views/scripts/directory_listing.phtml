@@ -134,8 +134,12 @@ if(isset($this->list)) {
             <?php
             }
         }
+        
+        if (count($this->list) == 0) {
+            ?><li class="ui-widget-content"><span class="name"><?php echo $this->translate('No files found.'); ?></span></li><?php
+        }
     } else {
-        ?><li class="ui-widget-content"><?php echo $this->translate('No files found.'); ?></li><?php
+        ?><li class="ui-widget-content"><span class="name"><?php echo $this->translate('No files found.'); ?></span></li><?php
     }
 }
 ?>
