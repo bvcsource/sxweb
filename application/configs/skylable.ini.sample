@@ -20,9 +20,6 @@ url = "https://sxweb.example.com"
 ; Main directory 
 local = APPLICATION_PATH "/../"
 
-; Directory used for uploads
-upload_dir = APPLICATION_PATH "/../data/files"
-
 ; SX data dir: local directory where SX commands data will be stored
 sx_local = APPLICATION_PATH "/../data/sx" 
 

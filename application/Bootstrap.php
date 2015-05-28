@@ -133,22 +133,23 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap {
             throw new Zend_Exception('Internal error: please check the \'max_upload_filesize\' skylable.ini setting, it\'s too high. Maximum allowed upload file size is (in bytes): '.strval($max_upload_filesize));
         } elseif ($cfg_max_upload_filesize < ($max_upload_filesize / 4)) {
             $logger->warn( 'Internal error: please check the \'max_upload_filesize\' skylable.ini setting, it\'s too low. Maximum allowed upload file size is (in bytes): '.strval($max_upload_filesize) ); 
-            // throw new Zend_Exception('Internal error: please check the \'max_upload_filesize\' skylable.ini setting, it\'s too low. Maximum allowed upload file size is (in bytes): '.strval($max_upload_filesize));
         }
+        
         
         // Checks the upload dir
-        $upload_dir = $cfg->get('upload_dir');
-        if (strlen(trim($upload_dir)) == 0) {
-            throw new Zend_Exception('Internal error: upload dir not defined!');
+        $upload_dir = ini_get('upload_tmp_dir');
+        if (strlen($upload_dir) == 0) {
+            $upload_dir = sys_get_temp_dir();
         }
+        $logger->info( 'Upload dir is: '.$upload_dir );
         
+        /*
         if (!@file_exists($upload_dir)) {
             if (!@mkdir($upload_dir, 0775)) {
                 throw new Zend_Exception('Internal error: failed to create upload dir. Path is: '.$upload_dir);
             }
         }
-        
-        $upload_dir = realpath($upload_dir);
+        */
         
         if (!@is_writeable($upload_dir) || !@is_dir($upload_dir)) {
             throw new Zend_Exception('Internal error: upload dir is not writable or is not a directory. Path is: '.$upload_dir);
@@ -157,11 +158,11 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap {
         // We have to check for free disk space
         $disk_free_space = @disk_free_space(realpath($upload_dir));
         if ($disk_free_space !== FALSE) {
-            $upload_size = Zend_Registry::get('skylable')->get('max_upload_filesize', 0);
-            if ($disk_free_space < $upload_size) {
-                throw new Zend_Exception('Internal error: not enough free disk space into upload dir: ' . $upload_dir .'. Required at least: '.strval($upload_size).' free: '.strval($disk_free_space));
+            if ($disk_free_space < $max_upload_filesize) {
+                throw new Zend_Exception('Internal error: not enough free disk space into upload dir: ' . $upload_dir .'. Required at least: '.strval($max_upload_filesize).' free: '.strval($disk_free_space));
             }
         }
+        
         
         // Checks the SX data dir
         $sx_dir = $cfg->get('sx_local');

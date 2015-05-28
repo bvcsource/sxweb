@@ -282,16 +282,24 @@ class UploadHandler {
      * Save the file on the SX cluster
      * 
      * HTTP request parameters:
-     * 'file_directory' - if present
+     * 'file_directory' - if present, the relative path to add to the SX cluster destination path
      * 
-     * @param $file
+     * Delete the source file on success.
+     * 
+     * @param stdClass $file the file object
+     * @param string $source_file if non empty is the path of the file to be uploaded.
      */
-    protected function store_on_sx_cluster($file) {
+    protected function store_on_sx_cluster($file, $source_file = '') {
         try {
             $logger = Zend_Controller_Front::getInstance()->getParam('bootstrap')->getResource('log');
             $access_sx = new Skylable_AccessSxNew( Zend_Auth::getInstance()->getIdentity() );
 
-            $the_name = $this->options['upload_dir'].$file->name;
+            if (strlen($source_file) > 0) {
+                $the_name = $source_file;
+            } else {
+                $the_name = $this->options['upload_dir'].$file->name;    
+            }
+            
             if(!isset($file->error)) {
                 $destination = My_Utils::slashPath($this->options['sxurl']);
                 if (isset($_POST['file_directory'])) {
@@ -1137,54 +1145,21 @@ class UploadHandler {
     protected function handle_file_upload($uploaded_file, $name, $size, $type, $error,
             $index = null, $content_range = null) {
         $file = new \stdClass();
-        $file->name = $this->get_file_name($uploaded_file, $name, $size, $type, $error,
-            $index, $content_range);
+        $file->name = $name;
         $file->size = $this->fix_integer_overflow((int)$size);
         $file->type = $type;
         $file->old_name = $name;
         if ($this->validate($uploaded_file, $file, $error, $index)) {
             $this->handle_form_data($file, $index);
-            $upload_dir = $this->get_upload_path();
-            if (!is_dir($upload_dir)) {
-                mkdir($upload_dir, $this->options['mkdir_mode'], true);
-            }
-            $file_path = $this->get_upload_path($file->name);
-            $append_file = $content_range && is_file($file_path) &&
-                $file->size > $this->get_file_size($file_path);
             if ($uploaded_file && is_uploaded_file($uploaded_file)) {
-                // multipart/formdata uploads (POST method uploads)
-                if ($append_file) {
-                    file_put_contents(
-                        $file_path,
-                        fopen($uploaded_file, 'r'),
-                        FILE_APPEND
-                    );
-                } else {
-                    move_uploaded_file($uploaded_file, $file_path);
-                }
-            } else {
-                // Non-multipart uploads (PUT method support)
-                file_put_contents(
-                    $file_path,
-                    fopen('php://input', 'r'),
-                    $append_file ? FILE_APPEND : 0
-                );
-            }
-            $file_size = $this->get_file_size($file_path, $append_file);
-            if ($file_size === $file->size) {
-                $file->url = $this->get_download_url($file->name);
-                if ($this->is_valid_image_file($file_path)) {
-                    $this->handle_image_file($file_path, $file);
-                }
-            } else {
-                $file->size = $file_size;
-                if (!$content_range && $this->options['discard_aborted_uploads']) {
-                    unlink($file_path);
-                    $file->error = $this->get_error_message('abort');
-                }
-            }
+                $this->store_on_sx_cluster($file, $uploaded_file);
+            } 
+            
             $this->set_additional_file_properties($file);
-            $this->store_on_sx_cluster($file);
+            
+            if (@file_exists($uploaded_file)) {
+                @unlink($uploaded_file);
+            }
         }
         return $file;
     }
