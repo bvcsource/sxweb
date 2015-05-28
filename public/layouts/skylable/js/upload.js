@@ -96,10 +96,17 @@ $(document).ready(function(){
                     
                 } else {
                     // Check if the file exists, and asks what to do
+                    var the_file = '';
+                    if(typeof file.relativePath !== 'undefined') {
+                        the_file = file.relativePath + file.name;
+                    } else {
+                        the_file = file.name;
+                    }
+                    var file_path = current_path + the_file;
                     $.ajax({
                         async: false,
                         url: "/fileexists",
-                        data: 'path=' + encodeURIComponent(current_path + file.name),
+                        data: 'path=' + encodeURIComponent(file_path),
                         dataType: "json",
                         success : function(qdata, status, xhr) {
                            if (qdata.status == false) {
@@ -125,7 +132,7 @@ $(document).ready(function(){
                                        }
                                    }]
                                });
-                               dlg.html('<p>'+ Skylable_Utils.nl2br(sprintf(Skylable_Lang.uploadFileAlreadyExistsOverwrite, file.name)) +'</p>');
+                               dlg.html('<p>'+ Skylable_Utils.nl2br(sprintf(Skylable_Lang.uploadFileAlreadyExistsOverwrite, the_file)) +'</p>');
                                dlg.dialog('open');
                            } 
                         },
@@ -159,6 +166,18 @@ $(document).ready(function(){
                     });
                 }
             });
+        },
+        submit : function (e, data) {
+            // If uploading a directory, tries to preserve directory structure
+            if ( ! data.formData ) {
+                var fileDirectory = '';
+                if(typeof data.files[0].relativePath !== 'undefined') {
+                    fileDirectory = data.files[0].relativePath;
+                }
+                data.formData = {
+                    file_directory: fileDirectory
+                };
+            }
         },
 		start : function(e) {
 

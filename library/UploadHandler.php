@@ -280,6 +280,10 @@ class UploadHandler {
 
     /**
      * Save the file on the SX cluster
+     * 
+     * HTTP request parameters:
+     * 'file_directory' - if present
+     * 
      * @param $file
      */
     protected function store_on_sx_cluster($file) {
@@ -289,7 +293,17 @@ class UploadHandler {
 
             $the_name = $this->options['upload_dir'].$file->name;
             if(!isset($file->error)) {
-                if (!$access_sx->put($the_name, My_Utils::slashPath($this->options['sxurl']).$file->old_name)) {
+                $destination = My_Utils::slashPath($this->options['sxurl']);
+                if (isset($_POST['file_directory'])) {
+                    if (is_string($_POST['file_directory'])) {
+                        if (strlen($_POST['file_directory']) > 0) {
+                            $destination = My_Utils::joinDirectories(array($destination, $_POST['file_directory'] ));
+                        }
+                    }
+                }
+                $logger->debug(__METHOD__.': Destination is: '.$destination);
+                
+                if (!$access_sx->put($the_name, $destination.$file->old_name)) {
                     $file->error = 'Cluster access error, upload failed.';
                     $logger->err(__METHOD__.': upload failed');
                 }
