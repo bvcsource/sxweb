@@ -714,6 +714,7 @@ if (!FileOperations) {
                                     
                                     clip.on('error', function(event){
                                         $( the_copy_to_clip_button).button("disable");
+                                        $( the_copy_to_clip_button).hide();
                                         ZeroClipboard.destroy();
                                     });
 
