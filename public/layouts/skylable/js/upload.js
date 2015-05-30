@@ -69,7 +69,7 @@ $(document).ready(function(){
 		$('#fileupload').click();
 	});
 
-	$('#fileupload').fileupload({
+    $('#fileupload').fileupload({
 		url: upload_url,
 		dataType: 'json',
         sequentialUpload: true,
@@ -77,7 +77,7 @@ $(document).ready(function(){
         add : function(e, data) {
             $.each(data.files, function (index, file) {
                 if (file.size > maxFileSize) {
-                    var dlg = $('<div id="upload_too_big"></div>').appendTo('body');
+                    var dlg = $('<div></div>').hide().appendTo('body');
                     dlg.dialog({
                         autoOpen: false,
                         modal : true,
@@ -112,7 +112,7 @@ $(document).ready(function(){
                            if (qdata.status == false) {
                                data.submit();
                            } else {
-                               var dlg = $('<div id="upload_ask_confirm"></div>').appendTo('body');
+                               var dlg = $('<div></div>').hide().appendTo('body');
                                dlg.dialog({
                                    autoOpen: false,
                                    modal : true,
@@ -134,11 +134,11 @@ $(document).ready(function(){
                                });
                                dlg.html('<p>'+ Skylable_Utils.nl2br(sprintf(Skylable_Lang.uploadFileAlreadyExistsOverwrite, the_file)) +'</p>');
                                dlg.dialog('open');
+                               
                            } 
                         },
                         error : function(xhr, status) {
-                            
-                            var dlg = $('<div id="upload_add_error"></div>').appendTo('body');
+                            var dlg = $('<div></div>').hide().appendTo('body');
                             dlg.dialog({
                                 autoOpen: false,
                                 modal : true,
@@ -190,9 +190,9 @@ $(document).ready(function(){
 				title: Skylable_Lang.uploadTitle,
 				beforeClose: function(ev, ui) {
 					// Avoids closing while AJAX calls
-					if (Skylable_Uploads.is_working) {
-						return false;
-					}
+                    if (Skylable_Uploads.is_working) {
+                        return false;
+                    }
 				}
 			});
 
