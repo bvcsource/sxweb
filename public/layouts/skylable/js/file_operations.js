@@ -151,6 +151,7 @@ if (!FileOperations) {
                                 method : 'POST',
                                 beforeSend : function(xhr, options) {
                                     FileOperations.is_working = true;
+                                    $('#action_btn').button('disable');
                                 },
                                 success: function(data, status, xhr) {
                                     $('#action_btn').hide();
