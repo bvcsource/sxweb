@@ -1196,7 +1196,8 @@ class Skylable_AccessSxNew {
                     header("Pragma: no-cache");
                     header("Content-Disposition: ".$disposition."; filename=\"".rawurlencode(basename($file_data['path'])).'"');
                     header("Content-Type: ".My_Utils::getFileMIME($file_data['path']));
-                    header("Content-Length: ".strval( $file_data['size'] ));
+                    // This fixes problems with zcomp volumes
+                    // header("Content-Length: ".strval( $file_data['size'] ));
                     header('Content-Transfer-Encoding: binary');
                     ob_end_clean();
                     Zend_Session::writeClose();
@@ -2059,7 +2060,8 @@ class Skylable_AccessSxNew {
                     header("Pragma: no-cache");
                     header("Content-Disposition: ".$disposition."; filename=\"".rawurlencode(basename($file_data['path'])).'"');
                     header("Content-Type: ".My_Utils::getFileMIME($file_data['path']));
-                    header("Content-Length: ".strval( $file_data['size'] ));
+                    // This fixes problems with zcomp volumes 
+                    // header("Content-Length: ".strval( $file_data['size'] ));
                     header('Content-Transfer-Encoding: binary');
                     ob_end_clean();
                     Zend_Session::writeClose();
