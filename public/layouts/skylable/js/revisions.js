@@ -276,7 +276,7 @@ if (!FileRevisions) {
 
                 $.ajax({
                     url : file_url,
-                    async: false,
+                    
                     cache : false,
                     success: function(data, status, xhr) {
                         $.getScript('/google-code-prettify/run_prettify.js');

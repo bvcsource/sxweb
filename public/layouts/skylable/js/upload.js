@@ -104,7 +104,7 @@ $(document).ready(function(){
                     }
                     var file_path = current_path + the_file;
                     $.ajax({
-                        async: false,
+                        // async: false,
                         url: "/fileexists",
                         data: 'path=' + encodeURIComponent(file_path),
                         dataType: "json",
@@ -263,14 +263,14 @@ $(document).ready(function(){
 
 		},
 		stop: function(e, data) {
+			
+            FileOperations.updateFileList(function(s){
+                Skylable_Uploads.is_working = false;
 
-			FileOperations.updateFileList();
-
-			Skylable_Uploads.is_working = false;
-
-			if (!Skylable_Uploads.has_errors) {
-				Skylable_Uploads.dlg.dialog('close');
-			}
+                if (!Skylable_Uploads.has_errors) {
+                    Skylable_Uploads.dlg.dialog('close');
+                }    
+            });
 		}
 	});
 });

@@ -147,7 +147,6 @@ if (!FileOperations) {
 
                             $.ajax({
                                 url : (move ? FileOperations.urls.move_files : FileOperations.urls.copy_files ),
-                                async: false,
                                 data: 'dest='+encodeURIComponent( FileOperations.dest_dir )+f,
                                 method : 'POST',
                                 beforeSend : function(xhr, options) {
@@ -164,9 +163,12 @@ if (!FileOperations) {
                                         $('#action_btn').hide();
                                         dlg.html(xhr.responseText);
                                     }
+                                },
+                                complete : function(xhr, status) {
+                                    FileOperations.is_working = false;        
                                 }
                             });
-                            FileOperations.is_working = false;
+                            
                         }
                     },
                     {
@@ -190,7 +192,7 @@ if (!FileOperations) {
         },
 
         /**
-         * Populate a jQuery UI window with file selector.
+         * Populate a jQuery UI window with a file selector.
          *
          * @param dialog jQuery UI dialog
          * @param source_dir the source must be the plain path
@@ -217,7 +219,6 @@ if (!FileOperations) {
             $.ajax({
                 url:FileOperations.urls.window + dest_dir,
                 method : "GET",
-                async: false,
                 beforeSend: function(xhr, options) {
                     $(progressbar).progressbar("option", "value", 50);
                     return true;
@@ -262,7 +263,7 @@ if (!FileOperations) {
         },
 
         /**
-         * Creates a new directory.
+         * Create a new directory.
          *
          * @param event
          * @returns {boolean}
@@ -304,7 +305,6 @@ if (!FileOperations) {
                                     method: "POST",
                                     url : FileOperations.urls.create_dir,
                                     data: "name="+ encodeURIComponent(dir_name)+"&path="+encodeURIComponent(current_path),
-                                    async: false,
                                     beforeSend : function(xhr, options) {
                                         FileOperations.is_working = true;
                                     },
@@ -316,9 +316,10 @@ if (!FileOperations) {
                                             $(event.target).show();
                                         } else {
                                             // Update the view
-                                            FileOperations.updateFileList();
-                                            $(progressbar).progressbar("option", "value", 100);
-                                            dlg.dialog("close");
+                                            FileOperations.updateFileList(function(s){
+                                                $(progressbar).progressbar("option", "value", 100);
+                                                dlg.dialog("close");
+                                            });
                                         }
                                     },
                                     error : function (xhr, status) {
@@ -327,9 +328,12 @@ if (!FileOperations) {
                                             $('#create_dir_action_btn').hide();
                                             dlg.html(xhr.responseText);
                                         }
+                                    },
+                                    complete : function(xhr, status) {
+                                        FileOperations.is_working = false;        
                                     }
                                 });
-                                FileOperations.is_working = false;
+                                
                             } else {
                                 $(event.target).show();
                             }
@@ -350,11 +354,17 @@ if (!FileOperations) {
         },
 
         /**
-         * Updates the file list
+         * Updates the file list.
+         * 
+         * Callback signature is:
+         * 
+         * callback(status)
+         * 
+         * where status is a boolean: true successfully updated, false otherwise
          *
          * @returns {boolean} true on success, false on failure
          */
-        updateFileList : function() {
+        updateFileList : function(callback) {
             var _this = this;
             var _status = false;
             $.ajax({
@@ -362,7 +372,6 @@ if (!FileOperations) {
                 url : _this.urls.file_list,
                 data : "path=" + encodeURIComponent(current_path),
                 dataType : 'html',
-                async: false,
                 success : function(data,status,xhr){
                     $('#main-file-list').html(data);
                     _status = true;
@@ -370,6 +379,11 @@ if (!FileOperations) {
                 },
                 error: function(xhr, status) {
 
+                },
+                complete : function(xhr, status) {
+                    if (typeof  callback === 'function') {
+                        callback(_status);
+                    }
                 }
             });
             return _status;
@@ -405,27 +419,26 @@ if (!FileOperations) {
                                         url : FileOperations.urls.rename_files,
                                         method: 'POST',
                                         data : 'source='+path+'&new_name='+the_new_name,
-                                        async : false,
                                         beforeSend : function(xhr, options) {
                                             $(progressbar).progressbar('option', 'value', 50);
                                             FileOperations.is_working = true;
                                         },
                                         success : function(data, status, xhr) {
                                             $(progressbar).progressbar('option', 'value', 100);
-                                            if (FileOperations.updateFileList()) {
-                                                FileOperations.is_working = false;
-                                               dlg.dialog('close');
-                                            } else {
-
-                                            }
+                                            FileOperations.updateFileList(function(s){
+                                                dlg.dialog('close');
+                                            });
                                         },
                                         error : function(xhr, status) {
                                             if (!FileOperations.expiredUser(dlg, xhr)) {
                                                 dlg.html(xhr.responseText);
                                             }
+                                        },
+                                        complete : function(xhr, status) {
+                                            FileOperations.is_working = false;        
                                         }
                                     });
-                                    FileOperations.is_working = false;
+                                    
                                 }
                             }
                         },
@@ -496,24 +509,28 @@ if (!FileOperations) {
                                     url : FileOperations.urls.delete_files,
                                     data : FileOperations.files.join('&'),
                                     method : 'POST',
-                                    async : false,
                                     beforeSend : function(xhr, options) {
                                         FileOperations.is_working = true;
                                     },
                                     success : function(data, status, xhr) {
                                         $(progressbar).progressbar('option', 'value', 75);
-                                        if (FileOperations.updateFileList()) {
-                                            $(progressbar).progressbar('option', 'value', 100);
-                                        }
-                                        dlg.html(xhr.responseText);
+                                        FileOperations.updateFileList(function(s){
+                                            if (s) {
+                                                $(progressbar).progressbar('option', 'value', 100);    
+                                            }
+                                            dlg.html(xhr.responseText);    
+                                        });
                                     },
                                     error : function(xhr, status) {
                                         if (!FileOperations.expiredUser(dlg, xhr)) {
                                             dlg.html(xhr.responseText);
                                         }
+                                    },
+                                    complete : function(xhr, status) {
+                                        FileOperations.is_working = false;        
                                     }
                                 });
-                                FileOperations.is_working = false;
+                                
                             }
                         },
                         {
@@ -658,7 +675,6 @@ if (!FileOperations) {
                                 type:"POST",
                                 url:FileOperations.urls.share_file,
                                 data: send_data,
-                                async: false,
                                 beforeSend : function(xhr, options) {
                                     FileOperations.is_working = true;
                                 },
@@ -731,9 +747,12 @@ if (!FileOperations) {
                                         }]);
                                         */
                                     }
+                                },
+                                complete : function(xhr, status) {
+                                    FileOperations.is_working = false;
                                 }
                         });
-                        FileOperations.is_working = false;
+                        
                     }
                 },
                     {
@@ -748,7 +767,6 @@ if (!FileOperations) {
                 type:"POST",
                 url:FileOperations.urls.share_file,
                 data:'path='+encodeURIComponent( path ),
-                async: false,
                 beforeSend : function(xhr, options) {
                     FileOperations.is_working = true;
                 },
@@ -767,13 +785,13 @@ if (!FileOperations) {
                             }
                         }]);
                     }
+                },
+                complete : function(xhr, status) {
+                    FileOperations.is_working = false;
+                    dlg.dialog('open');
                 }
             });
-            FileOperations.is_working = false;
-            
-            dlg.dialog('open');
-            // dlg.html( Skylable_Lang['shareFile'] + " <span>"+FileOperations.basename(path)+"</span><br />"+Skylable_Lang['shareMsg'] );
-            
+           
         },
 
         /**
@@ -982,7 +1000,6 @@ if (!FileOperations) {
 
                 $.ajax({
                     url : file_url,
-                    async: false,
                     cache : false,
                     success: function(data, status, xhr) {
                         // $('#preview-overlay').css('background-image','none');
