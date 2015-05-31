@@ -305,7 +305,9 @@ class UploadHandler {
                 if (isset($_POST['file_directory'])) {
                     if (is_string($_POST['file_directory'])) {
                         if (strlen($_POST['file_directory']) > 0) {
-                            $destination = My_Utils::joinDirectories(array($destination, $_POST['file_directory'] ));
+                            $destination = My_Utils::joinDirectories(
+                                array($destination, str_replace('\\', '/', $_POST['file_directory']) )
+                            );
                         }
                     }
                 }
