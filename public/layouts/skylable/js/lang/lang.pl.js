@@ -82,6 +82,9 @@ if (!Skylable_Lang) {
         uploadAborted: 'Aborted (maybe you are trying to upload an invalid file type?).',
         uploadExceedingFileSize: 'Upload failed!\nThe file "%s" is too big (%d bytes)!\nMaximum allowed file size is %d bytes.',
         uploadFileAlreadyExistsOverwrite: 'File "%s" already exists.\nDo you want to overwrite it?',
+        uploadCanceled : 'Upload canceled',
+        uploadDirError : 'Unable to upload %s as it is a directory or has 0 bytes',
+        uploadBrowserWindowCloseConfirm : 'This will cancel all current uploads. Are you sure?',
 
         // -------- Revisions
         revisionsErrorTitle : 'Preview error!',

@@ -55,11 +55,44 @@ if (!Skylable_Uploads) {
 		is_working : false,
 		dlg : null,
 		has_errors : false,
+        upload_queue: [],
 		reset : function(){
 			this.is_working = false;
 			this.dlg = null;
 			this.has_errors = false;
-		}
+            this.upload_queue = [];
+		},
+
+        /**
+         * Tells if there are uploads in progress.
+         * @returns {boolean}
+         */
+        isUploading : function() {
+            var count = 0;
+
+            jQuery.each(this.upload_queue, function(i, data) {
+                if (data.state() === 'pending') {
+                    count++;
+                }
+            });
+            return count > 0;
+        },
+
+        /**
+         * Cancel all active uploads and clean up the upload queue.
+         */
+        cancelUploads : function() {
+            try {
+                for (var i=0; i < Skylable_Uploads.upload_queue.length; i++) {
+                    Skylable_Uploads.upload_queue[i].abort();
+                    delete Skylable_Uploads.upload_queue[i].jqXHR;
+                }
+            } catch(err) {
+
+            }
+
+            Skylable_Uploads.upload_queue = [];
+        }
 	};
 }
 
@@ -69,104 +102,157 @@ $(document).ready(function(){
 		$('#fileupload').click();
 	});
 
+    // If there are uploads you can't leave the page
+    $(window).on('beforeunload', function(e) {
+        if (Skylable_Uploads.isUploading()) {
+            return Skylable_Lang.uploadBrowserWindowCloseConfirm;
+        }
+    });
+
     $('#fileupload').fileupload({
 		url: upload_url,
 		dataType: 'json',
+        autoUpload: false,
         sequentialUpload: true,
+        singleFileUploads : true,
         
-        add : function(e, data) {
-            $.each(data.files, function (index, file) {
-                if (file.size > maxFileSize) {
-                    var dlg = $('<div></div>').hide().appendTo('body');
-                    dlg.dialog({
-                        autoOpen: false,
-                        modal : true,
-                        resizable: true,
-                        title: Skylable_Lang.uploadTitle,
-                        buttons :[{
-                            text: Skylable_Lang.cancelBtn,
-                            click : function() {
-                                $(this).dialog('close');
-                                $(this).dialog('destroy');
-                            }
-                        }]
-                    });
-                    dlg.html('<p>'+ Skylable_Utils.nl2br(sprintf(Skylable_Lang.uploadExceedingFileSize, file.name, file.size, maxFileSize)) +'</p>');
-                    dlg.dialog('open');
-                    
-                } else {
-                    // Check if the file exists, and asks what to do
-                    var the_file = '';
-                    if(typeof file.relativePath !== 'undefined') {
-                        the_file = file.relativePath + file.name;
-                    } else {
-                        the_file = file.name;
+        add : function (e, data) {
+
+            /**
+             * We get an upload file list, but only one file at a time
+             * so we build an upload queue.
+             */
+            
+            /**
+             * The first file into the file list is special, we attach
+             * the upload queue to it.
+            * */
+            if ( ! data.originalFiles.sx_upload_queue) {
+                data.originalFiles.sx_upload_queue = {
+                    uploads : [],
+                    upload_count : data.originalFiles.length, // the number of files to process
+                    uploads_accepted : 0 // counts the file processed
+                }
+            }
+            var sx_upload_queue = data.originalFiles.sx_upload_queue;
+            var file = data.files[0];
+
+            // Taken from owncloud source code.
+            // in case folder drag and drop is not supported file will point to a directory
+            // http://stackoverflow.com/a/20448357
+            if ( ! file.type && file.size%4096 === 0 && file.size <= 102400) {
+                try {
+                    var reader = new FileReader();
+                    reader.readAsBinaryString(file);
+                } catch (NS_ERROR_FILE_ACCESS_DENIED) {
+                    //file is a directory
+                    data.textStatus = 'dirorzero';
+                    data.errorThrown = sprintf( Skylable_Lang.uploadDirError, file.name);
+                }
+            }
+            
+            // The file is too big
+            if (file.size > maxFileSize) {
+                data.textStatus = 'sizeexceedlimit';
+                data.errorThrown = Skylable_Utils.nl2br(sprintf(Skylable_Lang.uploadExceedingFileSize, file.name, file.size, maxFileSize));
+            } else {
+                
+                function startUploading() {
+                    // we finished to process the uploads?
+                    if ((sx_upload_queue.uploads_accepted >= sx_upload_queue.upload_count) && !data.errorThrown) {
+                        // remove the temporary queue
+                        delete data.originalFiles.sx_upload_queue;
+                        Skylable_Uploads.upload_queue = sx_upload_queue.uploads;
+                        
+                        for(var i = 0; i < Skylable_Uploads.upload_queue.length; i++) {
+                            Skylable_Uploads.upload_queue[i].submit();    
+                        }
+
+                        // Skylable_Uploads.upload_queue = [];
                     }
-                    var file_path = current_path + the_file;
-                    $.ajax({
-                        // async: false,
-                        url: "/fileexists",
-                        data: 'path=' + encodeURIComponent(file_path),
-                        dataType: "json",
-                        success : function(qdata, status, xhr) {
-                           if (qdata.status == false) {
-                               data.submit();
-                           } else {
-                               var dlg = $('<div></div>').hide().appendTo('body');
-                               dlg.dialog({
-                                   autoOpen: false,
-                                   modal : true,
-                                   resizable: true,
-                                   title: Skylable_Lang.uploadTitle,
-                                   buttons :[{
-                                       text: Skylable_Lang.yesBtn,
-                                       click : function() {
-                                           $(this).dialog('close');
-                                           data.submit();
-                                       }
-                                   },{
-                                       text: Skylable_Lang.noBtn,
-                                       click : function() {
-                                           $(this).dialog('close');
-                                           $(this).dialog('destroy');
-                                       }
-                                   }]
-                               });
-                               dlg.html('<p>'+ Skylable_Utils.nl2br(sprintf(Skylable_Lang.uploadFileAlreadyExistsOverwrite, the_file)) +'</p>');
-                               dlg.dialog('open');
-                               
-                           } 
-                        },
-                        error : function(xhr, status) {
-                            var dlg = $('<div></div>').hide().appendTo('body');
+                }
+                
+                // Check if the file exists, and asks what to do
+                var the_file = '';
+                if(typeof file.relativePath !== 'undefined') {
+                    the_file = file.relativePath + file.name;
+                } else {
+                    the_file = file.name;
+                }
+                var file_path = current_path + the_file;
+                
+                $.ajax({
+                    url: "/fileexists",
+                    data: 'path=' + encodeURIComponent(file_path),
+                    dataType: "json",
+                    async : true,
+                    success : function(qdata, status, xhr) {
+                        if (qdata.status == false) {
+                            // Ok, add the file to the upload queue
+                            sx_upload_queue.uploads.push(data);
+                            sx_upload_queue.uploads_accepted++;
+                        } else {
+                            // File exists, should we overwrite it?
+                            var dlg = $('<div><p>'+ 
+                            Skylable_Utils.nl2br(sprintf(Skylable_Lang.uploadFileAlreadyExistsOverwrite, the_file)) +
+                            '</p></div>').hide().appendTo('body');
                             dlg.dialog({
                                 autoOpen: false,
                                 modal : true,
                                 resizable: true,
                                 title: Skylable_Lang.uploadTitle,
                                 buttons :[{
-                                    text: Skylable_Lang.cancelBtn,
+                                    text: Skylable_Lang.yesBtn,
                                     click : function() {
                                         $(this).dialog('close');
                                         $(this).dialog('destroy');
+                                        sx_upload_queue.uploads.push(data);
+                                        sx_upload_queue.uploads_accepted++;
+                                        startUploading();
+                                    }
+                                },{
+                                    text: Skylable_Lang.noBtn,
+                                    click : function() {
+                                        $(this).dialog('close');
+                                        $(this).dialog('destroy');
+                                        sx_upload_queue.uploads_accepted++;
+                                        startUploading();
                                     }
                                 }]
                             });
-
-                            if (xhr.getResponseHeader('Content-Type') === 'application/json') {
-                                var response_text = JSON.parse(xhr.responseText);
-                                dlg.html('<p>'+ response_text.error +'</p>');
-                            } else {
-                                dlg.html(xhr.responseText);
-                            }
-
+                            
                             dlg.dialog('open');
                         }
+                    },
+                    error : function(xhr, status) {
                         
-                    });
-                }
-            });
+                        data.textStatus = 'fileexistsfail';
+
+                        if (xhr.getResponseHeader('Content-Type') === 'application/json') {
+                            var response_text = JSON.parse(xhr.responseText);
+                            data.errorThrown = response_text.error;
+                        } else {
+                            data.errorThrown = xhr.responseText;
+                        }
+                    },
+                    complete : function(xhr, status) {
+                        startUploading();
+                    }
+
+                });
+            } 
+
+            // Stops on errors
+            var _this = $(this);
+            if (data.errorThrown) {
+                var fu = _this.data('blueimp-fileupload') || _this.data('fileupload');
+                fu._trigger('fail', e, data);
+                return false; 
+            }
+            
+            return true;
         },
+
         submit : function (e, data) {
             // If uploading a directory, tries to preserve directory structure
             if ( ! data.formData ) {
@@ -189,10 +275,15 @@ $(document).ready(function(){
 				resizable: true,
 				title: Skylable_Lang.uploadTitle,
 				beforeClose: function(ev, ui) {
-					// Avoids closing while AJAX calls
+                    Skylable_Uploads.cancelUploads();
+                    return true;
+                    
+                    /*
+					// Avoids closing while running AJAX calls
                     if (Skylable_Uploads.is_working) {
                         return false;
                     }
+                    */
 				}
 			});
 
@@ -243,23 +334,35 @@ $(document).ready(function(){
 			}
 		},
 		fail: function(e, data) {
-			var reply_box = $('#dialog #files');
-			var err_msg = data.errorThrown;
+            console.log('FAIL HANDLER');
 
-			if (data.jqXHR.status == 500) {
-				if (data.jqXHR.responseJSON.files) {
-					err_msg = data.jqXHR.responseJSON.files[0].error;
-				} else if (data.jqXHR.responseJSON.error) { // Internal error
-					err_msg = data.jqXHR.responseJSON.error;
-				}
-			}
+            if (typeof data.textStatus !== 'undefined' && data.textStatus !== 'success' ) {
 
-			Skylable_Uploads.has_errors = true;
-            if (err_msg.length == 0) {
-                err_msg = Skylable_Lang.uploadAborted;
+                var reply_box = $('#dialog #files');
+                var err_msg = data.errorThrown;
+                
+                if (data.textStatus === 'abort') {
+                    err_msg = Skylable_Lang.uploadCanceled;
+                } else {
+                    if (data.jqXHR) {
+                        if (data.jqXHR.status == 500) {
+                            if (data.jqXHR.responseJSON.files) {
+                                err_msg = data.jqXHR.responseJSON.files[0].error;
+                            } else if (data.jqXHR.responseJSON.error) { // Internal error
+                                err_msg = data.jqXHR.responseJSON.error;
+                            }
+                        }
+                    }
+                }
+                
+                Skylable_Uploads.has_errors = true;
+                if (err_msg.length == 0) {
+                    err_msg = Skylable_Lang.uploadAborted;
+                }
+
+                console.log('Error: ' + err_msg);
+                reply_box.append('<p class="upload_error">' + sprintf(Skylable_Lang.uploadError , err_msg ) + '</p>');    
             }
-
-            reply_box.append('<p class="upload_error">' + sprintf(Skylable_Lang.uploadError , err_msg ) + '</p>');
 
 		},
 		stop: function(e, data) {
@@ -271,6 +374,9 @@ $(document).ready(function(){
                     Skylable_Uploads.dlg.dialog('close');
                 }    
             });
-		}
+		},
+        always : function (e, data) {
+            Skylable_Uploads.upload_queue = [];
+        }
 	});
 });

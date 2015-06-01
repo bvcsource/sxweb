@@ -83,6 +83,9 @@ if (!Skylable_Lang) {
         uploadAborted: 'Abbruch (vielleicht versuchst du einen ungültigen Dateityp hochzuladen?).',
         uploadExceedingFileSize: 'Hochladen fehlgeschlagen!\nDie Datei "%s" ist zu groß (%d Bytes)!\nMaximal erlaubte Größe ist %d Bytes.',
         uploadFileAlreadyExistsOverwrite: 'Datei "%s" existiert bereits.\nSoll die Datei überschrieben werden?',
+        uploadCanceled : 'Upload canceled',
+        uploadDirError : 'Unable to upload %s as it is a directory or has 0 bytes',
+        uploadBrowserWindowCloseConfirm : 'This will cancel all current uploads. Are you sure?',
 
         // -------- Revisions
         revisionsErrorTitle : 'Vorschaufehler!',
