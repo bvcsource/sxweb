@@ -53,7 +53,7 @@ if(Zend_Auth::getInstance()->hasIdentity() || !empty($vlist)): ?>
 <a id="sidebar-trigger" class="ir<?php echo ($this->show_sidebar ? ' pressed' : '') ?>"><?php $this->translate('Menu'); ?></a>
 <div class="sidebar<?php echo ($this->show_sidebar ? ' pressed sidebar-opened' : '') ?>" id="sidebar">
 	<div class="logo">
-		<a href="http://www.skylable.com"><span class="icon-logo ir"></span></a>
+		<a href="http://www.skylable.com" onclick="window.open(this.href); return false;"><span class="icon-logo ir"></span></a>
 	</div>
 
 	<?php echo $vlist; ?>
