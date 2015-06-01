@@ -223,9 +223,8 @@ class SettingsController extends My_BaseAction {
          *
          * sx://$clustername;token=$authkey,volume=$volname
          */
-        $str = Zend_Registry::get('skylable')->get('cluster').
-            ";token=".Zend_Auth::getInstance()->getIdentity()->getSecretKey().
-            ",volume=".My_Utils::getRootFromPath($this->getLastVisitedPath()).PHP_EOL;
+        $access_sx = new Skylable_AccessSxNew( Zend_Auth::getInstance()->getIdentity() );
+        $str = $access_sx->getUserLink();
 
         $this->getResponse()->setRawHeader("Cache-Control: no-cache, must-revalidate");
         $this->getResponse()->setRawHeader("Pragma: no-cache");
