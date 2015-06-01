@@ -13,6 +13,12 @@ if (!defined('SXWEB_UPGRADE_URL'))  define('SXWEB_UPGRADE_URL', 'http://www.skyl
 // URL of the SXWeb FAQ
 if (!defined('SXWEB_FAQ_URL'))  define('SXWEB_FAQ_URL', 'http://www.skylable.com/docs/faq/sxweb');
 
+// SEO keywords for SXWeb
+if (!defined('SXWEB_SEO_KEYWORDS'))  define('SXWEB_SEO_KEYWORDS', 'sxweb, file sync and share, self hosted, sxdrive web');
+
+// SXWeb SEO description: this will be automatically translated
+if (!defined('SXWEB_SEO_DESCRIPTION'))  define('SXWEB_SEO_DESCRIPTION', 'SXWeb is a browser-based solution to access the data stored in your SX cluster through a user-friendly web interface.');
+
 // Try to fix the timezone
 $timezone = @date_default_timezone_get();
 if (empty($timezone)) {

@@ -18,7 +18,7 @@
 ?>
 <div class="dialog-box">
     <div class="dialog-box-logo">
-        <a href="http://www.skylable.com"><span class="dialog-box-logo-icon ir"></a></span><h1><?php echo $this->translate('Login'); ?></h1>
+        <a href="http://www.skylable.com" onclick="window.open(this.href); return false;"><span class="dialog-box-logo-icon ir"></span></a><h1><?php echo $this->translate('Login'); ?></h1>
     </div>
     <div class="dialog-box-body">
         <?php echo $this->form('', $this->form->getAttribs()); ?>

@@ -303,7 +303,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap {
         $this->bootstrap('View');
         $view = $this->getResource('View');
         
-        $view->headTitle('SXWeb - File sync and share');
+        $view->headTitle($view->translate('SXWeb - File sync and share'));
         $view->headTitle()->setSeparator(' / ');
     }
     
