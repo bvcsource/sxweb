@@ -41,7 +41,7 @@ if (is_numeric($cluster_port)) {
 </div>
 <p><?php echo $this->translate('Secret Key:'); ?> <input name="secret_key" type="text" placeholder="<?php echo $this->translate('Secret Key'); ?>" size="70" value="<?php echo $this->escape( Zend_Auth::getInstance()->getIdentity()->getSecretKey() ); ?>"></p>
 <p>
-    <a class="styled-button" href="<?php echo $this->url( array('controller' => 'settings', 'action' => 'cluster-config'), 'default', TRUE ); ?>" ><?php echo $this->translate('Download SX Drive Cluster Config');?></a></p>
+    <a class="styled-button" href="<?php echo $this->url( array('controller' => 'settings', 'action' => 'cluster-config'), 'default', TRUE ); ?>" ><?php echo $this->translate('Download SXDrive Cluster Config');?></a></p>
     <hr>
     <h2><?php echo $this->translate('SXDrive downloads'); ?></h2>
     <p><?php echo $this->translate('You can download SXDrive here:'); ?></p>
