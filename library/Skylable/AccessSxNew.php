@@ -1745,6 +1745,37 @@ class Skylable_AccessSxNew {
      * @throws Zend_Exception
      */
     public function getUserLink() {
+        $info = $this->clusterInfo();
+        if ($info !== FALSE) {
+            return $info['configuration_link'];            
+        }
+        return $info;
+    }
+
+    /**
+     * Get cluster info, as of command 'sxinit -I'.
+     * 
+     * On success returns an associative array, with these keys:
+     * 
+     * array(
+     *  'cluster_name' => '',
+     *  'cluster_uuid' => '',
+     * 'nodes' => '',
+     * 'port' => '',
+     * 'use_ssl' => '',
+     * 'ca_file' => '',
+     * 'current_profile' => '',
+     * 'configuration_directory' => '',
+     * 'libsx_version' => '',
+     * 'configuration_link' => '' 
+     * )
+     * 
+     * Keys are parsed from the command output, put to lower case, with spaces converted to '_'.
+     * 
+     * @return bool|array
+     * @throws Exception
+     */
+    public function clusterInfo() {
         $this->_last_error_log = '';
         if (!$this->isInitialized()) {
             return FALSE;
@@ -1753,13 +1784,40 @@ class Skylable_AccessSxNew {
         $ret = $this->executeShellCommand('sxinit -I '.
             '-c '.My_utils::escapeshellarg($this->_base_dir).' '.
             My_utils::escapeshellarg( $this->_cluster_string ),
-            '', $out, $exit_code, $this->_last_error_log, NULL, array($this, 'parseErrors'));
+            '', $out, $exit_code, $this->_last_error_log, array($this, 'parseClusterInfo'), array($this, 'parseErrors'));
         if ($exit_code == 0) {
-            preg_match("/Configuration link: (.*)$/", $out, $matches);
-            $this->getLogger()->debug(__METHOD__.': getUserLink()');
-            return trim($matches[1]);
-        }
+            $this->getLogger()->debug(__METHOD__.': returned data: '.var_export($out, TRUE));
+            return $out;
+        } 
+        $this->checkForErrors($this->_last_error_log);
         return FALSE;
+    }
+
+    /**
+     * Parse the 'sxinit -I' command output
+     * 
+     * @param $fd
+     * @param $data
+     * @return array
+     */
+    protected function parseClusterInfo($fd, &$data) {
+        $retval = array(
+            'status' => TRUE,
+            'error' => ''
+        );
+        $data = array();
+
+        while( ($data_line = fgets($fd)) !== FALSE ) {
+            if (preg_match('/^([^:]+):\s+(.*)/', $data_line, $matches) == 1) {
+                $data[strtolower(str_replace(' ', '_', $matches[1]))] = trim($matches[2]); 
+            }
+        }
+        if (!feof($fd)) { // fgets exited
+            $retval['status'] = FALSE;
+            $retval['error'] = new Exception('Unexpected end of the file', ERROR_UNEXPECTED_END_OF_FILE);
+            $this->getLogger()->debug(__METHOD__.' - Unexpected end of the file');
+        }
+        return $retval;
     }
 
     /**

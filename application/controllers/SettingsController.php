@@ -211,7 +211,7 @@ class SettingsController extends My_BaseAction {
     }
 
     /**
-     * Serve the SX Drive config file.
+     * Serve the SXDrive config file.
      *
      * The file is named: sxconfig.sx
      * @throws Zend_Exception
@@ -223,8 +223,16 @@ class SettingsController extends My_BaseAction {
          *
          * sx://$clustername;token=$authkey,volume=$volname
          */
-        $access_sx = new Skylable_AccessSxNew( Zend_Auth::getInstance()->getIdentity() );
-        $str = $access_sx->getUserLink();
+        try {
+            $access_sx = new Skylable_AccessSxNew( Zend_Auth::getInstance()->getIdentity() );
+
+            $str = $access_sx->getUserLink();    
+        }
+        catch (Exception $e) {
+            $this->getLogger()->err(__METHOD__.': exception: '.$e->getMessage());
+            $str = '';
+        }
+        
 
         $this->getResponse()->setRawHeader("Cache-Control: no-cache, must-revalidate");
         $this->getResponse()->setRawHeader("Pragma: no-cache");
