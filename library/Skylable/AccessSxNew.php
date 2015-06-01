@@ -1742,6 +1742,30 @@ class Skylable_AccessSxNew {
     }
 
     /**
+     * Provides the activation link for SXDrive
+     * @return bool|string FALSE on error, a string with the activation link
+     * @throws Exception
+     * @throws Zend_Exception
+     */
+    public function getUserLink() {
+        $this->_last_error_log = '';
+        if (!$this->isInitialized()) {
+            return FALSE;
+        }
+
+        $ret = $this->executeShellCommand('sxinit -I '.
+            '-c '.My_utils::escapeshellarg($this->_base_dir).' '.
+            My_utils::escapeshellarg( $this->_cluster_string ),
+            '', $out, $exit_code, $this->_last_error_log, NULL, array($this, 'parseErrors'));
+        if ($exit_code == 0) {
+            preg_match("/Configuration link: (.*)$/", $out, $matches);
+            $this->getLogger()->debug(__METHOD__.': getUserLink()');
+            return trim($matches[1]);
+        }
+        return FALSE;
+    }
+
+    /**
      * Tells the user role on the SX cluster.
      *
      * @return bool|string FALSE on error, a string with the user role
