@@ -99,7 +99,7 @@
 "QR Code for iOS:","QR Code per iOS:"
 "Secret Key:","Chiave segreta:"
 "Secret Key","Chiave segreta"
-"Download SX Drive Cluster Config","Scarica il file di configurazione per SXDrive"
+"Download SXDrive Cluster Config","Scarica il file di configurazione per SXDrive"
 "(You can download SXDrive for Desktop here:","(Puoi scaricare SXDrive per Desktop qui:"
 "Size: %s of %s used","Dimensione: %s di %s in uso"
 "Usage: %s of %s","Utilizzo: %s di %s"
@@ -199,3 +199,4 @@
 "Rev.","Rev."
 "Passwords mismatch","Le password non corrispondono"
 "The file is already shared: the password and the expire time will be updated.","Il file è già condiviso: la password e il tempo di vita verranno aggiornati."
+
