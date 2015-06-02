@@ -42,7 +42,7 @@ If you are using nginx and php-fpm, create a new server { } section following th
         server_tokens off;
         root /var/www/sxweb/public;
         index       index.html index.htm index.php;
-        client_max_body_size    128M;
+        client_max_body_size    2048M;
         location / {
             try_files $uri $uri/ /index.php$is_args$args;
 

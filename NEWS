@@ -1,0 +1,17 @@
+0.4.1 (First Beta, minor update)
+----------------
+
+Changes in this release include:
+
+  * Added support for uploading directories recursively (Chrome only)
+  * Improved upload handler to use less disk space
+  * Fix for accessing encrypted read-only volumes.
+  * Fix for passing parameters to the share objects API
+  * Minor improvements to the installer
+  * Improved translations for German, Italian and Polish languages
+
+0.4.0 (First Beta)
+----------------
+
+Initial public release of Skylable SXWeb.
+
