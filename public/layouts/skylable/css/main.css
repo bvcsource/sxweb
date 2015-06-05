@@ -753,9 +753,13 @@ p.table-title {
     width: 230px;
 }
 
-.sidebar.sidebar-opened a span:nth-of-type(2), .sidebar-opened a span:nth-of-type(3), .sidebar-opened p span:nth-of-type(2), .sidebar-opened p span:nth-of-type(3), .sidebar-opened ul li a .vol-size {
-    display: inline-block;
+.sidebar.sidebar-opened a span:nth-of-type(2), .sidebar-opened p span:nth-of-type(2), .sidebar-opened p span:nth-of-type(3), .sidebar-opened ul li a .vol-size {
+    display: inline;
     text-overflow: ellipsis;
+}
+
+.sidebar-opened a span:nth-of-type(3) {
+    display: inline-block;
 }
 
 .sidebar .notifications {
