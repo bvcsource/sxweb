@@ -131,13 +131,12 @@ $this->headLink(array(
 <div class="welcome-window">
     <div class="welcome-window-wrapper">
         <a class="welcome-window-quit" href="#"><img src="<?php echo $this->ServerUrl(); ?>/layouts/skylable/images/quit.png"></a>
-
-        <h1><?php echo $this->translate('Welcome to SXWeb!');?></h1>
-
-        <p><?php printf($this->translate('This web interface safely stores your data in the <b>Skylable S<sup>X</sup></b> cluster running at %s.'), $this->escape(Zend_Registry::get('skylable')->get('cluster'))); ?><br><br>
-
+        
+            <h1><?php echo $this->translate('Welcome to SXWeb!');?></h1>
+        <div id="welcome-window-text">
+            <p><?php printf($this->translate('This web interface safely stores your data in the <b>Skylable S<sup>X</sup></b> cluster running at %s.'), $this->escape(Zend_Registry::get('skylable')->get('cluster'))); ?><br><br>
             <?php echo $this->translate('You can access your data anywhere, anytime using this web interface or one of the following applications:'); ?></p>
-
+        </div>
         <a style="margin-right:15px;" href="http://www.skylable.com/download/sxdrive/" onclick="window.open(this.href); return false;"><img src="<?php echo $this->ServerUrl(); ?>/layouts/skylable/images/desktop_app.png"></a>
         <a style="margin-right:15px;" href="http://www.skylable.com/download/sxdrive/android" onclick="window.open(this.href); return false;"><img src="<?php echo $this->ServerUrl(); ?>/layouts/skylable/images/google_play.png"></a>
         <a style="margin-right:15px;" href="http://www.skylable.com/download/sxdrive/ios" onclick="window.open(this.href); return false;"><img src="<?php echo $this->ServerUrl(); ?>/layouts/skylable/images/appstore-button.png"></a><br/><br/>
@@ -200,6 +199,10 @@ $this->headLink(array(
             };
 
             $(document).keydown(keyevent);
+            
+            $('#welcome-window-text').slimScroll({
+                height: '160px'
+            });
         }
     });
 </script>
