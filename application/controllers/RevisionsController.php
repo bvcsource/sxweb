@@ -93,6 +93,16 @@ class RevisionsController extends My_BaseAction {
 
                     }
                 }
+                catch(Skylable_RevisionException $e) {
+                    $this->getLogger()->err(__METHOD__.': exception: '.$e->getMessage());
+
+                    if ($e->getCode() == Skylable_RevisionException::REVISIONS_NOT_FOUND || $e->getCode() == Skylable_RevisionException::REVISIONS_VOLUME_NOT_FOUND ) {
+                        $this->view->error = $this->getTranslator()->translate('Path not found or revisions not supported.');
+                    } else {
+                        $this->view->error = $this->getTranslator()->translate('Internal error.');
+                    }
+
+                }
                 catch(Exception $e) {
                     $this->getLogger()->err(__METHOD__.': exception: '.$e->getMessage());
 
@@ -118,6 +128,16 @@ class RevisionsController extends My_BaseAction {
                 
                 $this->view->revisions = $revisions;
             }
+        }
+        catch(Skylable_RevisionException $e) {
+            $this->getLogger()->err(__METHOD__.': exception: '.$e->getMessage());
+
+            if ($e->getCode() == Skylable_RevisionException::REVISIONS_NOT_FOUND || $e->getCode() == Skylable_RevisionException::REVISIONS_VOLUME_NOT_FOUND ) {
+                $this->view->error = $this->getTranslator()->translate('Path not found or revisions not supported.');    
+            } else {
+                $this->view->error = $this->getTranslator()->translate('Internal error.');    
+            }
+
         }
         catch(Exception $e) {
             $this->getLogger()->err(__METHOD__.': exception: '.$e->getMessage());

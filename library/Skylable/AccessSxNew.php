@@ -1680,6 +1680,9 @@ class Skylable_AccessSxNew {
      * @param bool $throw_exception TRUE on errors throw an exception, FALSE return the value
      * @return bool TRUE if there are errors, FALSE otherwise
      * @throws Skylable_AccessSxException
+     * @throws Skylable_InvalidPasswordException
+     * @throws Skylable_RevisionException
+     * @throws Skylable_InvalidCredentialsException
      */
     protected function checkForErrors($log, $throw_exception = TRUE) {
         if (is_array($log)) {
@@ -1705,6 +1708,15 @@ class Skylable_AccessSxNew {
                             foreach($log['errors'] as $err) {
                                 if (stripos($err, 'invalid credentials') !== FALSE) {
                                     throw new Skylable_InvalidCredentialsException(implode('\n', $log['errors']));
+                                } elseif(stripos($err, 'failed to retrieve file revisions') !== FALSE) {
+                                    if (stripos($err, 'Failed to list file revisions') !== FALSE) {
+                                        $code = Skylable_RevisionException::REVISIONS_NOT_FOUND;
+                                    } elseif (stripos($err, 'Failed to locate volume') !== FALSE) {
+                                        $code = Skylable_RevisionException::REVISIONS_VOLUME_NOT_FOUND;
+                                    } else {
+                                        $code = Skylable_RevisionException::REVISIONS_ERROR;
+                                    }
+                                    throw new Skylable_RevisionException(implode('\n', $log['errors']), $code);
                                 }
                             }
                             throw new Skylable_AccessSxException(implode('\n', $log['errors']));
