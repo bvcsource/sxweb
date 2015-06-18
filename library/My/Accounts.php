@@ -387,7 +387,7 @@ class My_Accounts extends Zend_Db_Table_Abstract  {
                             'email' => $email,
                             'counter' => new Zend_Db_Expr( 'counter + 1' )
                         ), array(
-                            'login' => $login
+                            'login = ?' => $login
                         ));
                     }
                 } else {
