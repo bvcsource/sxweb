@@ -169,7 +169,7 @@ class Share_IndexController extends My_BaseAction {
                 } else {
                     echo Zend_Json::encode(array(
                         'status' => FALSE,
-                        'error' => 'Invalid password (must be at least 6 char long)'
+                        'error' => 'Invalid password (must be at least 6 chars long)'
                     ));
                     return FALSE;
                 }
@@ -301,6 +301,14 @@ class Share_IndexController extends My_BaseAction {
             $shared_model = new My_Shared();
             $file_key = '';
             if ($shared_model->fileExists($path, $data['access_key'], $file_key)) {
+                /*
+                 * fix for bug #1379:
+                 * if the file exists, and the password is not set into the request
+                 * then remove the password from the already shared file
+                 * */
+                if (is_null($password)) {
+                    $password = '';
+                }
                 $ok_up = $shared_model->updateFile($file_key, $password, $expire_time);
                 if ($ok_up) {
                     echo Zend_Json::encode(array(
