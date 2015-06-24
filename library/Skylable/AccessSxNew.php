@@ -470,10 +470,14 @@ class Skylable_AccessSxNew {
         
         $cluster_ip = Zend_Registry::get('skylable')->get('cluster_ip', FALSE);
         if ($cluster_ip !== FALSE) {
-            if (strlen($cluster_ip) > 0) {
-                $cluster_ip = '-l '.My_utils::escapeshellarg($cluster_ip);    
+            if (is_string($cluster_ip)) {
+                if (strlen($cluster_ip) > 0) {
+                    $cluster_ip = '-l '.My_utils::escapeshellarg($cluster_ip);
+                } else {
+                    $this->getLogger()->notice(__METHOD__.': Cluster IP is empty.');
+                }
             } else {
-                $this->getLogger()->notice(__METHOD__.': Cluster IP is empty.');
+                $this->getLogger()->notice(__METHOD__.': Cluster IP is not a string.');
             }
         }
         
