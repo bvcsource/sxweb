@@ -200,6 +200,8 @@ class SettingsController extends My_BaseAction {
             }
         }
         catch(Exception $e) {
+            $this->getLogger()->err(__METHOD__.': exception: ' .$e->getMessage());
+            
             $form->addError('Internal error: update failed.');
             if (isset($tempdir)) {
                 if (@is_dir($tempdir)) {
