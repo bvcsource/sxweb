@@ -158,27 +158,16 @@ class SettingsController extends My_BaseAction {
             return $this->render('account');
         }
         
-        if (!My_Utils::passwordRecoveryIsAllowed()) {
-            return FALSE;
-        }
-        
         try {
             $values = $form->getValues();
 
-            // Create a fake admin user into a temp dir
-            $tempdir = My_Utils::mktempdir( Zend_Registry::get('skylable')->get('sx_local') ,'Skylable_');
-            if ($tempdir === FALSE) {
-                throw new Exception('Failed to create temporary directory');
-            }
-
-            $fake_admin = new My_User(NULL, 'admin', '', Zend_Registry::get('skylable')->get('admin_key'));
-            $access_sx = new Skylable_AccessSxNew($fake_admin, $tempdir, array( 'user_auth_key' => Zend_Registry::get('skylable')->get('admin_key') ) );
             $this->getLogger()->debug(__METHOD__ . ': Old user key: '.var_export( Zend_Auth::getInstance()->getIdentity()->getSecretKey(), TRUE ));
+            
+            $access_sx = new Skylable_AccessSxNew( Zend_Auth::getInstance()->getIdentity() );
             $new_user_key = $access_sx->sxaclUserNewKey($values['frm_new_password'], Zend_Auth::getInstance()->getIdentity()->getLogin());
 
             $this->getLogger()->debug(__METHOD__ . ': New user key: '.var_export( $new_user_key, TRUE ));
-            
-            My_Utils::deleteDir($tempdir);
+
             if ($new_user_key === FALSE) {
                 $form->addError('Update failed: the current password isn\'t valid.');
             } else {
@@ -203,11 +192,7 @@ class SettingsController extends My_BaseAction {
             $this->getLogger()->err(__METHOD__.': exception: ' .$e->getMessage());
             
             $form->addError('Internal error: update failed.');
-            if (isset($tempdir)) {
-                if (@is_dir($tempdir)) {
-                    My_Utils::deleteDir($tempdir);
-                }
-            }
+            
         }
 
     }
