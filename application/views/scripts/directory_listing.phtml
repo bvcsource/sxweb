@@ -7,6 +7,9 @@
  * url - the current path
  * list - the file list
  * paginator - the paginator
+ * 
+ * volumes - the volume list
+ * vol - the current volume
  */
 
 if(!empty($this->url)) {
@@ -23,10 +26,22 @@ if(!empty($this->url)) {
         </li>
 <?php
     endif;
+
+    $volume_is_encrypted = $this->volumeIsEncrypted( My_Utils::getRootFromPath( $this->url ) );
+    $has_revisions_support = $this->hasRevisionsSupport(My_Utils::getRootFromPath($this->url) );
+} else {
+    $volume_is_encrypted = FALSE;
+    $has_revisions_support = FALSE;
 }
+
+
 
 if(isset($this->list)) {
     if (is_array($this->list) || ($this->list instanceof Iterator) ) {
+        $can_write_to_volume = $this->canWriteToVolume();
+        $has_read_access = $this->hasReadAccess();
+        
+        
         foreach ($this->list as $file) {
             $file_name = basename($file['path']);
 
@@ -43,11 +58,11 @@ if(isset($this->list)) {
                     <span class="size"></span>
 		        <span class="date">
 			        <span>--</span>
-                    <?php if ($this->canWriteToVolume()): ?>
+                    <?php if ($can_write_to_volume): ?>
                         <input name="file_element" type="checkbox" value="<?php echo $this->escape($file['path']); ?>"/>
                     <?php endif; ?>
 		        </span>
-                    <?php if ($this->canWriteToVolume()): ?>
+                    <?php if ($can_write_to_volume): ?>
                         <a class="ir actions-trigger"></a>
                         <ul class="actions">
                             <li><a href="javascript:void(0)"
@@ -75,7 +90,7 @@ if(isset($this->list)) {
                 <span class="name">
                     <input type="hidden" name="file_basename" value="<?php echo $this->escape($file_name); ?>"/>
                     <span class="ir <?php echo $this->mimeTypeIcon($file['path']); ?>"></span>
-                    <?php if ($this->hasReadAccess()): 
+                    <?php if ($has_read_access): 
                         
                         $file_type = My_Utils::getFileType($file['path']);
                         if ($file_type != 'data') {
@@ -93,36 +108,35 @@ if(isset($this->list)) {
                 </span>
                     <span class="size"><?php echo $this->fileSizeFormat($file['size']); ?></span>
 		        <span class="date"><span><?php echo $file['date']; ?></span>
-                    <?php if ($this->canWriteToVolume()): ?>
+                    <?php if ($can_write_to_volume): ?>
                         <input name="file_element" type="checkbox" value="<?php echo $this->escape($file['path']); ?>"/>
                     <?php endif; ?>
 		        </span>
                     <a class="ir actions-trigger"></a>
                     <ul class="actions">
                         <?php
-                        if ($this->hasReadAccess()) {
+                        if ($has_read_access) {
                             $file_type = My_Utils::getFileType($file['path']);
-                            if ($file_type != 'data') {
-                                /*
-                                echo '<li><a href="/open', $this->escape($this->sxUrlEncode($file['path'])), '" class="elmpreview" data-fileurl="/open', $this->escape($this->sxUrlEncode($file['path'])), '" data-filetype="', $file_type, '">', $this->translate('Preview'), '</a></li>', PHP_EOL; 
-                                */
-                            }
+                            
                             ?>
                             <li><a href="/open<?php echo $this->escape($this->sxUrlEncode($file['path'])); ?>"><?php echo $this->translate('Download'); ?></a></li>
+                            <?php if (!$volume_is_encrypted): ?>
                             <li><a href="javascript:void(0)"
                                    class="elmshare"><?php echo $this->translate('Create Link'); ?></a></li>
-                        <?php
+                    <?php
+                            endif;
+                    
                         }
                         ?>
 
-                        <?php if ($this->canWriteToVolume()): ?>
+                        <?php if ($can_write_to_volume): ?>
                             <li><a href="javascript:void(0)"
                                    class="elmrename"><?php echo $this->translate('Rename'); ?></a></li>
                             <li><a href="javascript:void(0)" class="elmcopy"><?php echo $this->translate('Copy'); ?></a>
                             </li>
                             <li><a href="javascript:void(0)" class="elmmove"><?php echo $this->translate('Move'); ?></a>
                             </li>
-                            <?php if ($this->hasRevisionsSupport(My_Utils::getRootFromPath($this->url))): ?>
+                            <?php if ($has_revisions_support): ?>
                                 <li><a href="/revs<?php echo $this->escape($this->sxUrlEncode($file['path'])); ?>"><?php echo $this->translate('Revisions'); ?></a></li>
                             <?php endif; ?>
                             <li><a href="javascript:void(0)"
@@ -150,4 +164,3 @@ if (isset($this->paginator)) {
         echo $this->paginationControl($this->paginator, 'Sliding', 'directory_listing_paginator.phtml', array('path' => $this->url));
     }
 }
-?>

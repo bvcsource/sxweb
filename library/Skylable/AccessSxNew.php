@@ -625,7 +625,11 @@ class Skylable_AccessSxNew {
         if ($ignore_cache) {
             return $this->sxls('', $sort_order, FALSE, self::LIST_VOLUMES);
         } else {
-            if (self::$volume_list_cache['user'] == $this->_user->getId() &&
+            $user_id = $this->_user->getId();
+            if (is_null($user_id)) {
+                $user_id = 'null';
+            }
+            if (self::$volume_list_cache['user'] === $user_id &&
                 intval(self::$volume_list_cache['timestamp']) <= (time() + self::EXPIRE_CACHE) ) {
                 $this->getLogger()->debug(__METHOD__.': using cached data.');
                 return self::$volume_list_cache['data'];
@@ -634,7 +638,7 @@ class Skylable_AccessSxNew {
                 $data = $this->sxls('', $sort_order, FALSE, self::LIST_VOLUMES);
                 if ($data !== FALSE) {
 
-                    self::$volume_list_cache['user'] = $this->_user->getId();
+                    self::$volume_list_cache['user'] = $user_id;
                     self::$volume_list_cache['timestamp'] = time();
                     self::$volume_list_cache['data'] = $data;
                 } else {
@@ -1303,6 +1307,25 @@ class Skylable_AccessSxNew {
                 if (strncasecmp($vol['path'], $volume, strlen($volume)) == 0) {
                     return ($vol['filter'] == 'aes256');
                 }
+            }
+        }
+        
+        return FALSE;
+    }
+
+    /**
+     * Tells if a volume supports encryption.
+     * 
+     * The $volume_info parameter is one of the associative arrays returned 
+     * by {@link Skylable_AccessSxNew::listVolumes}.
+     * 
+     * @param array $volume_info
+     * @return bool
+     */
+    public function volumeIsEncrypted2($volume_info) {
+        if (is_array($volume_info)) {
+            if (array_key_exists('filter', $volume_info) ) {
+                return (strcmp($volume_info['filter'], 'aes256') == 0);
             }
         }
         return FALSE;

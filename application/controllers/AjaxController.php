@@ -427,6 +427,16 @@ class AjaxController extends My_BaseAction {
                 $this->sendErrorResponse('<p>'.$this->getTranslator()->translate('File not found or invalid.').'</p>');
                 return FALSE;
             }
+
+            /*
+             * Sharing from encrypted volumes is not possible.
+             */
+            $access_sx2 = new Skylable_AccessSxNew( Zend_Auth::getInstance()->getIdentity() );
+            $this->view->volumes = $access_sx2->listVolumes();
+            if ($this->view->volumeIsEncrypted( My_Utils::getRootFromPath( $path ) )) {
+                $this->sendErrorResponse('<p>'.$this->getTranslator()->translate('File not found or invalid.').'</p>');
+                return FALSE;
+            }
         }
         catch (Skylable_InvalidCredentialsException $e) {
             $this->getLogger()->err(__METHOD__.': exception: ' .$e->getMessage());

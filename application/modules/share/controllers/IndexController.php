@@ -206,94 +206,70 @@ class Share_IndexController extends My_BaseAction {
 
         try {
 
-            // Use the user key to access the file on the cluster
-            // 1. Check if the volume is encrypted (and the user is valid)
-            $access_sx = new Skylable_AccessSxNG( My_Utils::getAccessSxNGOpt(NULL, array( 'secret_key' => $data['access_key'] )) );
-            $volume = My_Utils::getRootFromPath($path);
+            // If the file is empty, you are trying to share a volume
             $the_file = My_Utils::skipPath($path, 2);
-            try {
-                $volumes = $access_sx->volumeList();
-                if ($volumes === FALSE) {
-                    echo Zend_Json::encode(array(
-                        'status' => FALSE,
-                        'error' => 'Initialization failed'
-                    ));
-                    return FALSE;
-                } else {
-                    $volume_found = FALSE;
-                    foreach($volumes as $vol => $vol_data) {
-                        if (strcmp($vol, $volume) == 0) {
-                            $volume_found = TRUE;
-                            break;
-                        }
-                    }
-                    if (!$volume_found) {
-                        echo Zend_Json::encode(array(
-                            'status' => FALSE,
-                            'error' => 'Invalid path'
-                        ));
-                        return FALSE;
-                    }
-                }
-            }
-            catch(Skylable_AccessSxException $e) {
+            $this->getLogger()->debug(__METHOD__.': file to share: '.print_r($the_file, TRUE));
+
+            if (strlen($the_file) == 0) {
                 echo Zend_Json::encode(array(
                     'status' => FALSE,
-                    'error' => $e->getMessage()
+                    'error' => 'Invalid path: you can\'t share a volume!'
                 ));
                 return FALSE;
             }
-
-            // 2. Check if the file exists
-            try {
-
-                $file_list = $access_sx->ls($volume, $the_file );
-                if ($file_list === FALSE) {
-                    echo Zend_Json::encode(array(
-                        'status' => FALSE,
-                        'error' => 'Invalid path'
-                    ));
-                    return FALSE;
-                } else {
-                    if (count($file_list['fileList']) == 0) {
-                        echo Zend_Json::encode(array(
-                            'status' => FALSE,
-                            'error' => 'File not found'
-                        ));
-                        return FALSE;
-                    } else {
-                        $file_found = FALSE;
-                        foreach($file_list['fileList'] as $f_name => $f_data) {
-                            if (strcmp($f_name, $the_file) == 0) {
-                                if (empty($f_data)) {
-                                    // The file is a directory
-                                    echo Zend_Json::encode(array(
-                                        'status' => FALSE,
-                                        'error' => 'Invalid path: you can\'t share a directory!'
-                                    ));
-                                    return FALSE;
-                                }
-                                $file_found = TRUE;
-                                break;
-                            }
-                        }
-                        if (!$file_found) {
-                            echo Zend_Json::encode(array(
-                                'status' => FALSE,
-                                'error' => 'File not found'
-                            ));
-                            return FALSE;
-                        }
-                    }
-                }
+            
+            
+            // Create a fake user to do the various checks
+            $this->getLogger()->debug(__METHOD__.': creating a temporary identity.');
+            $the_user = new My_User(NULL, '', '', $data['access_key']);
+            $the_dir = My_Utils::mktempdir( Zend_Registry::get('skylable')->get('sx_local'), 'Skylable_' );
+            if ($the_dir === FALSE) {
+                $this->getLogger()->err(__METHOD__.': Failed to create the user dir into: '. Zend_Registry::get('skylable')->get('sx_local'));
+                throw new Exception('Internal error: failed to create temporary files' );
+            } else {
+                $base_dir = $the_dir;
+                $this->getLogger()->debug(__METHOD__.': temporary user dir is: '.$the_dir);
             }
-            catch(Skylable_AccessSxException $e) {
+
+            $access_sx = new Skylable_AccessSxNew( $the_user, $base_dir, array( 'user_auth_key' => $data['access_key'] ));
+
+            // Check if the volume is encrypted
+            if ($access_sx->volumeIsEncrypted( My_Utils::getRootFromPath($path) )) {
                 echo Zend_Json::encode(array(
                     'status' => FALSE,
-                    'error' => $e->getMessage()
+                    'error' => 'Sharing from encrypted volumes is not allowed'
                 ));
+                $this->cleanupUserData($base_dir);
                 return FALSE;
             }
+            
+            // Removing slashes ensures that we can check a directory
+            // getFileInfo uses sxls, removing slashes from path make sxls lists
+            // only the parent directory ("/foo" lists "foo", "/foo/" lists "foo" contents) 
+            $file_info = $access_sx->getFileInfo( My_Utils::removeSlashes( $path ) );
+            if ($file_info === FALSE) {
+                echo Zend_Json::encode(array(
+                    'status' => FALSE,
+                    'error' => 'File not found'
+                ));
+                $this->cleanupUserData($base_dir);
+                return FALSE;
+            } else {
+                // Check if the file is a directory
+                if (strcasecmp($file_info['type'], 'file') != 0) {
+                    echo Zend_Json::encode(array(
+                        'status' => FALSE,
+                        'error' => 'Invalid path: you can\'t share a directory!'
+                    ));
+                    $this->cleanupUserData($base_dir);
+                    return FALSE;
+                }
+                
+            }
+
+            // Access to the SX cluster is not needed anymore, clean up
+            $this->cleanupUserData($base_dir);
+
 
             // If we are here, everything about the file is fine, save into the DB
 
@@ -342,8 +318,21 @@ class Share_IndexController extends My_BaseAction {
                 'error' => 'Internal error'
             ));
             $this->getInvokeArg('bootstrap')->getResource('log')->debug(__METHOD__.': '.$e->getMessage().$e->getTraceAsString());
+            if (isset($base_dir)) {
+                $this->cleanupUserData($base_dir);
+            }
         }
 
+    }
+
+    /**
+     * Remove the temporary directory
+     * @param string $base_dir the path to remove
+     */
+    private function cleanupUserData($base_dir) {
+        if (@is_dir($base_dir)) {
+            My_Utils::deleteDir($base_dir);
+        }
     }
 
     /**
