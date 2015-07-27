@@ -11,7 +11,7 @@ if (!Skylable_Lang) {
         closeBtn: "Schließen",
 
         // Generic "work in progress" message
-        working: "Läd...",
+        working: "Läd&#8230;",
 
         noFilesSelected : "Kann nicht fortfahren: keine Datei ausgewählt.",
 
@@ -50,13 +50,13 @@ if (!Skylable_Lang) {
 
         // --------- Delete window
         deleteTitle : "Datei(en) löschen",
-        deleteMsg: "Bist Du sicher, dass du die ausgewählte(n) Datei(en) löschen möchtest?",
+        deleteMsg: "Bist Du sicher, dass Du die ausgewählte(n) Datei(en) löschen möchtest?",
         deleteNoFiles: "Keine Dateien ausgewählt",
 
 
         // --------- Share window
         shareTitle : "Datei teilen",
-        shareMsg : "Bist du sicher, dass du die Datei teilen möchtest?",
+        shareMsg : "Bist Du sicher, dass Du die Datei teilen möchtest?",
         shareCopyToClipboard: "In Zwischenablage kopieren",
         shareCopiedToClipboard: "In Zwischenablage kopiert!",
         shareFile : 'Datei: ',
@@ -64,9 +64,9 @@ if (!Skylable_Lang) {
         // -------- Preview
         previewErrorTitle : 'Vorschaufehler!',
         previewLoadFailed : 'Fehler beim Laden der Datei.<br/>Möglicherweise hast Du Dein Download-Limit erreicht, bitte warte einige Sekunden und versuche es dann erneut.',
-        previewLoading:'Läd...',
+        previewLoading:'Läd&#8230;',
         previewCloseBtn : 'Schließen',
-        previewDownloadBtn : 'Herunterladen...',
+        previewDownloadBtn : 'Herunterladen&#8230;',
         previewNextBtn : 'Nächste Datei',
         previewPrevBtn : 'Vorherige Datei',
 
@@ -76,23 +76,23 @@ if (!Skylable_Lang) {
         settingsPageSizeInvalid : 'Ungültige Seitengröße.',
 
         // -------- Uploads
-        uploadTitle: 'Hochladen...',
+        uploadTitle: 'Hochladen&#8230;',
         uploadFailed: "%s: Hochladen fehlgeschlagen, Grund: %s",
         uploadSuccess: '%s: Erfolgreich hochgeladen',
         uploadError: 'Hochladen fehlgeschlagen. Grund: %s',
-        uploadAborted: 'Abbruch (vielleicht versuchst du einen ungültigen Dateityp hochzuladen?).',
+        uploadAborted: 'Abbruch (vielleicht versuchst Du einen ungültigen Dateityp hochzuladen?).',
         uploadExceedingFileSize: 'Hochladen fehlgeschlagen!\nDie Datei "%s" ist zu groß (%d Bytes)!\nMaximal erlaubte Größe ist %d Bytes.',
         uploadFileAlreadyExistsOverwrite: 'Datei "%s" existiert bereits.\nSoll die Datei überschrieben werden?',
-        uploadCanceled : 'Upload canceled',
-        uploadDirError : 'Unable to upload %s as it is a directory or has 0 bytes',
-        uploadBrowserWindowCloseConfirm : 'This will cancel all current uploads. Are you sure?',
+        uploadCanceled : 'Hochladen abgebrochen',
+        uploadDirError : '%s kann nicht hochgeladen werden, da es ein Verzeichnis oder 0 bytes groß ist',
+        uploadBrowserWindowCloseConfirm : 'Dies wird alle Uploads abbrechen. Bist Du sicher?',
 
         // -------- Revisions
         revisionsErrorTitle : 'Vorschaufehler!',
         revisionsLoadFailed : 'Fehler beim Laden der Datei.<br/>Möglicherweise hast Du Dein Download-Limit erreicht, bitte warte einige Sekunden und versuche es dann erneut.',
-        revisionsLoading:'Läd...',
+        revisionsLoading:'Läd&#8230;',
         revisionsCloseBtn : 'Schließen',
-        revisionsDownloadBtn : 'Herunterladen...',
+        revisionsDownloadBtn : 'Herunterladen&#8230;',
         revisionsNextBtn : 'Nächste Datei',
         revisionsPrevBtn : 'Vorherige Datei',
         revisionsRestoreBtn : 'Wiederherstellen',
