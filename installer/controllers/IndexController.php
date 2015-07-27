@@ -329,11 +329,13 @@ class IndexController extends Zend_Controller_Action {
         }
             
         $this->view->sx_commands = array();
+        $this->view->no_sx_cli_clients = FALSE;
         foreach($sx_cmd as $cmd => $cmd_ver) {
             $str = exec($cmd.' -V', $output, $ret_val);
             if (empty($output)) {
                 $this->view->can_proceed = FALSE;
                 $this->view->sx_commands[] = array( $cmd, '', sprintf('<span class="label label-danger">%s</span>', $this->translate('Not found')) );
+                $this->view->no_sx_cli_clients = TRUE;
             } else {
                 if (preg_match('/^' . $cmd . '\s+(.+)/', $output[0], $matches) == 1) {
                     if (version_compare($matches[1], $cmd_ver[0], $cmd_ver[1]) == FALSE) {

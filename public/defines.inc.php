@@ -19,6 +19,9 @@ if (!defined('SXWEB_SEO_KEYWORDS'))  define('SXWEB_SEO_KEYWORDS', 'sxweb, file s
 // SXWeb SEO description: this will be automatically translated
 if (!defined('SXWEB_SEO_DESCRIPTION'))  define('SXWEB_SEO_DESCRIPTION', 'SXWeb is a browser-based solution to access the data stored in your SX cluster through a user-friendly web interface.');
 
+// URL for the SX CLI clients
+if (!defined('SXWEB_SX_CLI_CLIENTS_URL')) define('SXWEB_SX_CLI_CLIENTS_URL', 'http://www.skylable.com/download/sx/');
+
 // Try to fix the timezone
 $timezone = @date_default_timezone_get();
 if (empty($timezone)) {

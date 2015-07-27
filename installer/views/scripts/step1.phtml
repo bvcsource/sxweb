@@ -64,6 +64,15 @@
     <h2><?php echo $this->translate('SX Commands'); ?></h2>
     </div>
 <p><?php echo $this->translate('You must have installed all the Skylable SX commands to run SXWeb.'); ?></p>
+<?php 
+    if (isset($this->no_sx_cli_clients)) {
+        if ($this->no_sx_cli_clients === TRUE) {
+            printf('<p>%s <a href="%s" onclick="window.open(this.href); return false;">%s</a></p>'.PHP_EOL,
+                $this->translate('Install the package for your distribution from '), 
+                SXWEB_SX_CLI_CLIENTS_URL, SXWEB_SX_CLI_CLIENTS_URL);
+        }
+    }
+?>
 <p><?php printf($this->translate('Commands are searched into these paths: <code>%s</code>'), $this->sx_commands_search_path); ?></p>
 <table class="table">
     <thead>
