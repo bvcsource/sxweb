@@ -96,9 +96,14 @@ The web installer will help you to generate the main configuration file, which w
  
 ## DATABASE
 
-To run SXWeb you need a MySQL database and a MySQL account. The web installer will create the DB schema for you.
+To run SXWeb you need a MySQL database and a MySQL account. If you have root access to the MySQL database, run these commands:
 
-If you want to perform this operation manually, you can find the database schemas into the `sql/` directory. This directory also contains the files to update the database schema when upgrading to a newer version of SXWeb. Normally you don't need to use these files, they will be automatically applied for you.
+    mysql> CREATE DATABASE sxweb;
+    mysql> GRANT ALL ON sxweb.* TO sxweb@'%' IDENTIFIED BY 'mypass';
+
+Replace 'mypass' with a strong password. When running the web installer, you will be prompted to enter this password and the DB schema will be automatically created.
+
+Database schemas are stored in the `sql/` directory. This directory also contains the files to update the database schema when upgrading to a newer version of SXWeb. Normally you don't need to use these files, they will be automatically applied for you by the web installer.
 
 ## DIRECTORIES AND PERMISSIONS
 
@@ -114,10 +119,10 @@ Assuming that you installed SXWeb under /var/www/sxweb, you can use these comman
     # find /var/www/sxweb -type f -exec chmod 644 {} \;
     # chown -R root:root /var/www/sxweb
     # find /var/www/sxweb/data -type d -exec chmod 700 {} \;
+    # mkdir -p /var/www/sxweb/data
     # chown -R $WEBSERVER_USER /var/www/sxweb/data
-    # touch /var/www/sxweb/application/configs/skylable.ini
-    # chmod 640 /var/www/sxweb/application/configs/skylable.ini
-    # chown $WEBSERVER_USER /var/www/sxweb/application/configs/skylable.ini
+    # chmod 750 /var/www/sxweb/application/configs/
+    # chown $WEBSERVER_USER /var/www/sxweb/application/configs/
 
 ## APPLICATION
 
