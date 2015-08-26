@@ -199,4 +199,7 @@
 "Rev.","Rev."
 "Passwords mismatch","Le password non corrispondono"
 "The file is already shared: the password and the expire time will be updated.","Il file è già condiviso: la password e il tempo di vita verranno aggiornati."
-
+"Passwords mismatch.","Le password non corrispondono."
+"Setting volume password failed.","Impostazione della password del volume fallita."
+"Setting volume password failed: wrong password!","Impostazione della password del volume fallita: password non corretta!"
+"Invalid volume password.","Password del volume non valida."

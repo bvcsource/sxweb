@@ -396,12 +396,64 @@ class IndexController extends My_BaseAction {
             
             // Verifies if the volume is encrypted: if so
             // shows the password request and handle it
-            try {
+            try {   
                 $logger->debug('Volume from URL is: '.$volume);
                 if ($access_sx->volumeIsEncrypted($volume)) {
-                    $logger->debug('IndexController:index: volume is encrypted.');
+                    $logger->debug(__METHOD__.': volume is encrypted.');
+                    
+                    if ($access_sx->volumeNeedsPassword($volume)) {
+                        $logger->debug(__METHOD__.': volume is encrypted and password is not set.');
+
+                        $form = new Zend_Form();
+
+                        $volume_password = $this->getRequest()->getParam('frm_vol_set_password');
+                        $volume_cpassword = $this->getRequest()->getParam('frm_vol_set_cpassword');
+
+                        $show_password_form = TRUE;
+                        if ($this->getRequest()->isPost() && !is_null($volume_password)) {
+                            $validate_vol_password = new My_ValidateVolumePassword();
+                            if ($validate_vol_password->isValid($volume_password)) {
+                                if (strcmp($volume_cpassword, $volume_password) != 0) {
+                                    $form->addError($this->getTranslator()->translate("Passwords mismatch."));
+                                } else {
+                                    // Tries to set the volume password
+                                    try {
+                                        if ($access_sx->volumeSetPassword($volume, $volume_password) ) {
+                                            $show_password_form = FALSE;
+                                        } else {
+                                            $logger->debug(__METHOD__.': set volume password errors: '.print_r($access_sx->getLastErrorLog(), TRUE));
+                                            $form->addError($this->getTranslator()->translate("Setting volume password failed."));
+                                        }
+                                    }
+                                    catch(Skylable_InvalidPasswordException $e) {
+                                        $logger->debug(__METHOD__.': volume password set errors: '.print_r($access_sx->getLastErrorLog(), TRUE));
+                                        $form->addError($this->getTranslator()->translate("Setting volume password failed: wrong password!"));
+                                    }
+                                    catch(Exception $e){
+                                        $logger->debug(__METHOD__.': volume password set errors: '.print_r($access_sx->getLastErrorLog(),TRUE));
+                                        $form->addError($this->getTranslator()->translate("Setting volume password failed."));
+                                    }
+                                    
+                                }
+                            } else {
+                                $form->addError($this->getTranslator()->translate("Invalid volume password."));
+                            }
+                        }
+                        
+                        if ($show_password_form) {
+                            $form->addDecorators(array('FormErrors', 'Form'));
+                            $form->setAction( $this->getRequest()->getRequestUri() )->setMethod('post');
+                            $this->view->form = $form;
+                            $this->_helper->layout->setLayout('clean');
+                            $this->render('set-volume-password');
+
+                            return;    
+                        }
+                    }
+                    
+                    
                     if (!$access_sx->volumeIsUnlocked( $volume )) {
-                        $logger->debug('IndexController:index: volume is locked.');
+                        $logger->debug(__METHOD__.': volume is locked.');
 
                         // Check if the unlock form is submitted
                         $show_unlock_form = TRUE;

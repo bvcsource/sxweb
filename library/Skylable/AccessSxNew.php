@@ -1022,7 +1022,7 @@ class Skylable_AccessSxNew {
 
         $pipes = array();
 
-        $process_log_fd = fopen('php://temp','r+');
+        $process_log_fd = @fopen('php://temp','r+');
         if ($process_log_fd === FALSE) {
             throw new Exception("Failed to create error log", self::ERROR_CANT_CREATE_ERROR_LOG);
         }
@@ -1050,7 +1050,7 @@ class Skylable_AccessSxNew {
             );
 
             if (strlen($input) > 0) {
-                $status = fwrite($pipes[0], $input);
+                $status = @fwrite($pipes[0], $input);
                 $this->getLogger()->debug(__METHOD__.': injecting input: '.($status === FALSE ? 'failed' : 'successful, wrote '.strval($status).' bytes' ));
                 if ($status === FALSE) {
                     $ret_val['stdin_process']['status'] = FALSE;
@@ -1084,7 +1084,7 @@ class Skylable_AccessSxNew {
             if (is_callable($error_callback)) {
                 $ret_val['stderr_process'] = call_user_func_array($error_callback, (empty($error_callback_params) ? array($process_log_fd, &$error_log) : array_merge( array($process_log_fd, &$error_log), $error_callback_params ) ) );
             } else {
-                fseek($process_log_fd, 0, SEEK_SET);
+                @fseek($process_log_fd, 0, SEEK_SET);
                 if (($error_log = stream_get_contents($process_log_fd)) === FALSE) {
                     $ret_val['stderr_process']['status'] = FALSE;
                     $ret_val['stderr_process']['error'] = self::ERROR_STREAM_READING_ERROR;
@@ -1242,6 +1242,156 @@ class Skylable_AccessSxNew {
      */
     protected function getLogger() {
         return Zend_Controller_Front::getInstance()->getParam('bootstrap')->getResource('log');
+    }
+
+    /**
+     * Tells if an encrypted volume need a password.
+     * 
+     * This applies to all volumes created with aes256=nogenkey filter option.
+     * 
+     * NOTE: don't check if the volume is encrypted.
+     * 
+     * @param $volume the volume name
+     * @return boolean
+     * @throws Exception
+     */
+    public function volumeNeedsPassword($volume) {
+        
+        if (empty($volume) || !is_string($volume)) {
+            $this->getLogger()->debug(__METHOD__.': invalid volume');
+            throw new Skylable_AccessSxException(__METHOD__.': invalid volume string.');
+        }
+        $volume = My_Utils::getRootFromPath( trim($volume) );
+        if (strlen($volume) == 0) {
+            $this->getLogger()->debug(__METHOD__.': volume is empty');
+            throw new Skylable_AccessSxException(__METHOD__.': volume is empty.');
+        }
+
+        if (!$this->isInitialized()) {
+            $this->getLogger()->debug(__METHOD__.': not initialized');
+            throw new Skylable_AccessSxException(__METHOD__.': not initialized.');
+        }
+
+        $tmp_file = @tempnam($this->_base_dir, 'sxtmp_');
+        if ($tmp_file === FALSE) {
+            throw new Exception(__METHOD__.': Failed to create temporary file.');
+        }
+        
+        // Execute the sxcp command trying to put a file into the volume and check the results
+        $this->_last_error_log = '';
+
+        $this->_last_executed_command = 'sxcp -q '.
+            '-c '.My_utils::escapeshellarg($this->_base_dir).' '.
+            My_utils::escapeshellarg( $tmp_file ).' '.
+            My_utils::escapeshellarg( $this->_cluster_string.'/'.My_Utils::removeSlashes( $volume.'/'.self::NEWDIR_FILENAME, TRUE ) );
+
+        // stdin, stdout, stderr pipes
+        $pipes = array();
+
+        $process_log_fd = @fopen('php://temp','r+');
+        if ($process_log_fd === FALSE) {
+            throw new Exception("Failed to create error log", self::ERROR_CANT_CREATE_ERROR_LOG);
+        }
+
+        $this->getLogger()->debug(__METHOD__.': executing: '.strval($this->_last_executed_command));
+
+        $process = proc_open($this->_last_executed_command,
+            array(
+                0 => array('pipe', 'r'),
+                1 => array('pipe', 'w'),
+                2 => $process_log_fd
+            ), $pipes);
+
+        if (is_resource($process)) {
+            @fclose($pipes[0]);
+            $output = @stream_get_contents($pipes[1]);
+            @fclose($pipes[1]);
+
+            $exit_code = proc_close($process);
+
+            @fseek($process_log_fd, 0, SEEK_SET);
+            $error_log = @stream_get_contents($process_log_fd);
+            @fclose($process_log_fd);
+
+            @unlink($tmp_file);
+
+            $this->getLogger()->debug(__METHOD__.': output: '.print_r($output, TRUE));
+            $this->getLogger()->debug(__METHOD__.': error log: '.print_r($error_log, TRUE));
+
+            if (stripos($error_log, 'set the volume password now') !== FALSE) {
+                return TRUE;
+            }
+        } else {
+            @unlink($tmp_file);
+            throw new Exception('Failed to initialize the process.', self::ERROR_CANT_INITIALIZE_PROCESS);
+        }
+        
+        return FALSE;
+    }
+
+    /**
+     * Sets the volume password of an encrypted volume created 
+     * with aes256=nogenkey filter option.
+     * 
+     * @param $volume the volume name
+     * @param $password the plain password
+     * @return bool TRUE on success, FALSE on failure
+     * @throws Exception
+     * @throws Skylable_AccessSxException
+     * @throws Skylable_InvalidPasswordException
+     */
+    public function volumeSetPassword($volume, $password) {
+        if (empty($volume) || !is_string($password) || !is_string($volume)) {
+            return FALSE;
+        }
+        $volume = My_Utils::getRootFromPath( trim($volume) );
+        if (strlen($volume) == 0) {
+            return FALSE;
+        }
+
+        if (!$this->isInitialized()) {
+            return FALSE;
+        }
+
+        $tmp_file = @tempnam($this->_base_dir, 'sxtmp_');
+        try {
+            if ($tmp_file !== FALSE) {
+                $ret = $this->put($tmp_file, $volume.'/'.self::NEWDIR_FILENAME, FALSE, $password.PHP_EOL.$password.PHP_EOL);
+                @unlink($tmp_file);
+                if ($ret === TRUE) {
+                    return TRUE;
+                }
+            }
+        }
+        catch(Exception $e) {
+            @unlink($tmp_file);
+
+            /**
+             * FIXME: test this corner case
+             * 
+             * Corner case: we are trying to write to a read only volume
+             * the password can be ok, but we get a permission denied error.
+             * Nonetheless the volume could be unlocked.
+             * */
+            if ($e instanceof Skylable_AccessSxException) {
+                if (!($e instanceof Skylable_InvalidPasswordException)) {
+                    $this->getLogger()->debug(__METHOD__ . ': read only volume corner case.');
+                    foreach($this->_last_error_log['errors'] as $err) {
+                        // Failed to upload file content hashes: Permission denied: not enough privileges
+                        if (stripos($err, 'failed to upload') !== FALSE &&
+                            stripos($err, 'not enough privileges') !== FALSE) {
+                            if ($this->volumeIsUnlocked($volume)) {
+                                $this->getLogger()->debug(__METHOD__ . ': read only volume corner case: volume unlocked.');
+                                return TRUE;
+                            }
+                        }
+                    }
+                    $this->getLogger()->debug(__METHOD__ . ': read only volume corner case: ignored.');
+                }
+            }
+            throw $e;
+        }
+        return FALSE;
     }
 
     /**

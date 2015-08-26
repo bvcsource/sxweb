@@ -199,3 +199,7 @@
 "Rev.","Rev."
 "Passwords mismatch","Passwords mismatch"
 "The file is already shared: the password and the expire time will be updated.","The file is already shared: the password and the expire time will be updated."
+"Passwords mismatch.","Passwords mismatch."
+"Setting volume password failed.","Setting volume password failed."
+"Setting volume password failed: wrong password!","Setting volume password failed: wrong password!"
+"Invalid volume password.","Invalid volume password."
