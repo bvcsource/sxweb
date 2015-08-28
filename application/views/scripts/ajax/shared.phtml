@@ -1,5 +1,6 @@
 <?php
 
+    // The file is password protected?
     if (isset($this->ask_password)) {
         $ask_password = TRUE;
     } else {
@@ -11,48 +12,238 @@
         echo '<p>',$this->error_msg,'</p>';
 
     else:
-?>
-<script type="text/javascript" >
-var SharedDownloader = function() {
-    var iter = document.getElementById("iter");
-    _this = this;
-    this.download = function() {
-        clearInterval(_this.interval);
-        iter.innerHTML = "<?php echo $this->translate('Downloading...'); ?>";
-        document.getElementById("shared_download_form").submit();
-    };
-    this.update = function() {
-        if (_this.counter > 0) {
-            iter.innerHTML = "<?php echo $this->translate('Download will start in');?> " + _this.counter;
-            _this.counter--;
-        } else {
-            _this.download();
-        }
-    };
-    this.counter = 5;
-    this.interval = setInterval(this.update, 1000);
-    var button = document.getElementById("download_button");
-    button.onclick = function() {
-        clearInterval(_this.interval);
-        return true;
-    };
-};
-<?php if (!$ask_password): ?>
-    $(document).ready(SharedDownloader);
-<?php endif; ?>
-</script>
-<?php
+
+        $this->headLink()->appendStylesheet($this->ServerUrl() . '/layouts/skylable/css/download_preview.css');
+        
     if ($ask_password) {
-        printf( $this->translate('Please enter the password to download the file: <b>%s</b>'), $this->escape($this->file) );
+        $this->headLink()->appendStylesheet($this->serverUrl() . '/layouts/skylable/css/pagedialog.css');
+        ?>
+        <script>
+            function startPreview() {
+                var field = document.getElementById('raw');
+                field.value = '1';
+                return true;
+            }
+        </script>
+        <div class="dialog-box">
+            <div class="dialog-box-logo">
+                <a href="http://www.skylable.com" onclick="window.open(this.href); return false;"><span class="dialog-box-logo-icon ir"></span></a><h1><?php echo $this->translate('SXWeb'); ?></h1>
+            </div>
+            <div class="dialog-box-body">
+                <form action="" method="post" id="download_form">
+                    <input type="hidden" name="download" value="true" >
+                    <input type="hidden" name="raw" id="raw" value="0">
+                    <p><?php printf( $this->translate('Please enter the password to download the file: <b>%s</b>'), $this->escape($this->file) ); ?></p>
+                <input type="password" value="" name="password" placeholder="<?php echo $this->translate('Password'); ?>" />
+
+                <div class="dialog-box-buttons">
+                    <input type="submit" id="download_start" value="<?php echo $this->translate('Download now!'); ?>" />
+                    
+                    <?php if (in_array($this->file_type, array('image', 'text', 'source', 'pdf'))): ?>
+                        <input type="submit" id="preview_start" value="<?php echo $this->translate('Preview...'); ?>" onclick="return startPreview();" />
+                    <?php endif; ?>
+                    
+                </div>
+                </form>
+            </div>
+        </div>
+       
+    <?php
     } else {
-        printf( $this->translate('Start downloading file: <b>%s</b> ?'), $this->escape($this->file) );
-    } ?><br />
-<span id="iter" ></span>
-<form action="" method="post" id="shared_download_form">
-	<input type="hidden" name="download" value="true" >
-    <?php if ($ask_password): ?>
-        <input type="password" name="password" value=""  />
-    <?php endif; ?>
-	<input type="submit" value="<?php echo $this->translate('Download now!'); ?>" id="download_button" class="button btwid" />
-</form>
+        // For unknown files show a dialog box with a countdown, otherwise a preview window. 
+        
+        if ($this->file_type !== 'data' ) {
+            echo '<div id="dl_preview_header"><span id="dl_sxweb_logo"><a href="http://www.skylable.com" onclick="window.open(this.href); return false;"><img src="',$this->ServerUrl(),'/img/logo_small.png" width="42" height="28" /></a></span><span class="dl_valigned">';
+            printf( $this->translate('File: <b>%s</b>'), $this->escape($this->file) );
+            echo '</span> <span class="dl_floatright"><a href="',$this->ServerUrl(), $this->download_url,'?download=1" class="styled-button">',$this->translate('Download the file'),'</a></span></div>';    
+        }
+        
+        switch($this->file_type) {
+            case 'image':
+                echo '<div id="dl_preview_lightbox">', '<img class="dl_image_preview" src="', $this->ServerUrl(), $this->download_url, '?download=1&amp;raw=1"/>', '</div>', PHP_EOL;
+                ?>
+                <script>
+                    $(document).ready(function(){
+                        var ph = $('#dl_preview_header');
+                        
+                        var lb = $('#dl_preview_lightbox');
+                        $(lb).css({
+                            'top' : 20  + $(ph).height(),
+                            'width' : $(window).width() - 40,
+                            'height': $(window).height() - 80,
+                            'background' : 'transparent',
+                            'overflow' : 'hidden'
+                        }).css({
+                            'left': (($(window).width() - $(lb).width()) / 2)
+                        });
+
+                        $(window).resize(function(event){
+                            $(lb).css({
+                                'top' : 20 + $(ph).height(),
+                                'width' : $(window).width() - 40,
+                                'height': $(window).height() - 80
+                            }).css({
+                                'left': (($(window).width() - $(lb).width()) / 2)
+                            })
+                        });
+                    });
+                    
+                </script>
+                <?php
+                break;
+            case 'pdf':
+                echo '<div id="dl_preview_lightbox"></div>',PHP_EOL;
+                ?>
+                <script>
+                    $(document).ready(function(){
+                        var ph = $('#dl_preview_header');
+
+                        var lb = $('#dl_preview_lightbox');
+                        $(lb).css({
+                            'top' : 20  + $(ph).height(),
+                            'width' : $(window).width() - 40,
+                            'height': $(window).height() - 80,
+                            'background' : 'transparent',
+                            'overflow' : 'hidden'
+                        }).css({
+                            'left': (($(window).width() - $(lb).width()) / 2)
+                        });
+
+                        $('<iframe id="preview-pdf"></iframe>')
+                            .attr('src', '/pdfjs/web/viewer.html?file='+encodeURIComponent('<?php echo $this->ServerUrl(), $this->download_url, '?download=1&amp;raw=1'; ?>') + '&_c=' + Math.random())
+                            .css('width', '100%')
+                            .appendTo(lb);
+
+                        $('#preview-pdf').css('height', '100%' );
+
+                        $(window).resize(function(event){
+                            $(lb).css({
+                                'top' : 20 + $(ph).height(),
+                                'width' : $(window).width() - 40,
+                                'height': $(window).height() - 80
+                            }).css({
+                                'left': (($(window).width() - $(lb).width()) / 2)
+                            })
+                        });
+                    });
+
+                </script>
+                <?php
+                
+                break;
+            
+            case 'source':
+            case 'text':
+                ?>
+                <div id="dl_preview_lightbox"></div>
+                <script>
+                    $(document).ready(function(){
+                        $.ajax({
+                            url : '<?php echo $this->ServerUrl(), $this->download_url, '?download=1&amp;raw=1'; ?>',
+                            cache : false,
+                            success: function(data, status, xhr) {
+                                var ph = $('#dl_preview_header');
+                                
+                                var lb = $('#dl_preview_lightbox');
+                                $(lb).css({
+                                    'top' : 20  + $(ph).height(),
+                                    'width' : $(window).width() - 40,
+                                    'height': $(window).height() - 80,
+                                    'background' : 'transparent',
+                                    'overflow' : 'hidden'
+                                }).css({
+                                    'left': (($(window).width() - $(lb).width()) / 2)
+                                });
+
+                                $.getScript('<?php echo $this->ServerUrl(); ?>/google-code-prettify/run_prettify.js');
+
+                                $('<pre class="prettyprint" id="preview-source"></pre>')
+                                    .css('width','100%')
+                                    .css('background', '#fff')
+                                    .appendTo(lb);
+
+                                $('#preview-source').html( data.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') );
+
+                                $(lb).css({
+                                    'background': '#fff',
+                                    'overflow' : 'auto',
+                                    'text-align' : 'left',
+                                    'vertical-align' : 'top'
+                                });
+
+                                $(window).resize(function(event){
+                                    $(lb).css({
+                                        'top' : 20 + $(ph).height(),
+                                        'width' : $(window).width() - 40,
+                                        'height': $(window).height() - 80
+                                    }).css({
+                                        'left': (($(window).width() - $(lb).width()) / 2)
+                                    })
+                                });     
+                            },
+                            error : function (xhr, status) {
+                                window.alert('<?php echo $this->translate('An error occurred, failed to retrieve the file.'); ?>');
+                            }
+                        });            
+                    });
+            
+                </script>
+            <?php
+                break;
+            default:
+            
+                $this->headLink()->appendStylesheet($this->serverUrl() . '/layouts/skylable/css/pagedialog.css');
+                ?>
+            <script type="text/javascript" >
+                    var SharedDownloader = function() {
+                        var iter = document.getElementById("iter");
+                        _this = this;
+                        this.download = function() {
+                            clearInterval(_this.interval);
+                            iter.innerHTML = "<?php echo $this->translate('Downloading...'); ?>";
+                            document.getElementById("download_form").submit();
+                        };
+                        this.update = function() {
+                            if (_this.counter > 0) {
+                                iter.innerHTML = "<?php echo $this->translate('Download will start in');?> " + _this.counter;
+                                _this.counter--;
+                            } else {
+                                _this.download();
+                            }
+                        };
+                        this.counter = 5;
+                        this.interval = setInterval(this.update, 1000);
+                        var button = document.getElementById("download_start");
+                        button.onclick = function() {
+                            clearInterval(_this.interval);
+                            return true;
+                        };
+                    };
+                    
+                    $(document).ready(SharedDownloader);
+                    
+                </script>
+
+        <div class="dialog-box">
+            <div class="dialog-box-logo">
+                <a href="http://www.skylable.com" onclick="window.open(this.href); return false;"><span class="dialog-box-logo-icon ir"></span></a><h1><?php echo $this->translate('SXWeb'); ?></h1>
+            </div>
+            <div class="dialog-box-body">
+                <p><?php printf( $this->translate('Start downloading file: <b>%s</b>?'), $this->escape($this->file) ); ?></p>
+                <p id="iter"></p>
+                <form action="" method="post" id="download_form">
+                    <input type="hidden" name="download" value="true" >
+                    <input type="hidden" name="raw" id="raw" value="0">
+          
+                <div class="dialog-box-buttons">
+                    <input type="submit" id="download_start" value="<?php echo $this->translate('Download now!'); ?>" />
+                </div>
+                </form>
+            </div>
+
+        </div> 
+            <?php
+        }
+        
+    } ?>
 <?php endif; ?>
