@@ -1036,12 +1036,6 @@ if (!FileOperations) {
                     }
                 });
             } else {
-                $('<span id="preview-img-container"></span>')
-                    .css({
-                        'display' :'inline-block',
-                        'height' : '100%',
-                        'vertical-align' : 'middle'
-                    }).appendTo(lb);
                 $('<img />')
                     .on('error', function(ev){
                         var dlg = FileOperations.getDialog(Skylable_Lang['previewErrorTitle']);
@@ -1063,7 +1057,7 @@ if (!FileOperations) {
                         $(pnb).fadeIn();
                     })
                     .click(FileOperations.removePreview)
-                    .attr('src', file_url + '?' + Math.random())
+                    .attr('src', file_url + '?_c=' + Math.random())
                     .css({ 'max-width' : '100%', 'max-height' : '100%', 'vertical-align' : 'middle' })
                     .appendTo(lb);
             }
