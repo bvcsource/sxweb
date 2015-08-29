@@ -18,7 +18,7 @@
     if ($ask_password) {
         $this->headLink()->appendStylesheet($this->serverUrl() . '/layouts/skylable/css/pagedialog.css');
         ?>
-        <script>
+        <script type="application/javascript">
             function startPreview() {
                 var field = document.getElementById('raw');
                 field.value = '1';
@@ -62,7 +62,7 @@
             case 'image':
                 echo '<div id="dl_preview_lightbox">', '<img class="dl_image_preview" src="', $this->ServerUrl(), $this->download_url, '?download=1&amp;raw=1"/>', '</div>', PHP_EOL;
                 ?>
-                <script>
+                <script type="application/javascript">
                     $(document).ready(function(){
                         var ph = $('#dl_preview_header');
                         
@@ -94,7 +94,7 @@
             case 'pdf':
                 echo '<div id="dl_preview_lightbox"></div>',PHP_EOL;
                 ?>
-                <script>
+                <script type="application/javascript">
                     $(document).ready(function(){
                         var ph = $('#dl_preview_header');
 
@@ -136,7 +136,7 @@
             case 'text':
                 ?>
                 <div id="dl_preview_lightbox"></div>
-                <script>
+                <script type="application/javascript">
                     $(document).ready(function(){
                         $.ajax({
                             url : '<?php echo $this->ServerUrl(), $this->download_url, '?download=1&amp;raw=1'; ?>',
@@ -194,7 +194,7 @@
             
                 $this->headLink()->appendStylesheet($this->serverUrl() . '/layouts/skylable/css/pagedialog.css');
                 ?>
-            <script type="text/javascript" >
+            <script type="application/javascript">
                     var SharedDownloader = function() {
                         var iter = document.getElementById("iter");
                         _this = this;
@@ -235,7 +235,7 @@
                     <input type="hidden" name="download" value="true" >
                     <input type="hidden" name="raw" id="raw" value="0">
           
-                <div class="dialog-box-buttons">
+                <div class="dialog-box-buttons">    
                     <input type="submit" id="download_start" value="<?php echo $this->translate('Download now!'); ?>" />
                 </div>
                 </form>
