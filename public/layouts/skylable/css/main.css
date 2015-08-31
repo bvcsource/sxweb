@@ -2616,6 +2616,7 @@ a, input, .icon-dl, button, .sort-name span, .sort-size span, .sort-date span {
     width: 95%;
     float: left;
     background-color: white;
+    word-break: break-all;
 }
 
 /*
