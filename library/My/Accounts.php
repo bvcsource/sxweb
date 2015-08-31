@@ -315,7 +315,26 @@ class My_Accounts extends Zend_Db_Table_Abstract  {
         $db = $this->getAdapter();
         $db->beginTransaction();
         try {
-            $this->update(array( 'preferences' => Zend_Json::encode( $user->getPreferences()->toArray() ) ), array( 'id = ?' => $user->getId()) );
+            
+            /*
+             * Fixes bug #1474
+             * In demo mode, don't save some settings.
+             * */
+            if (My_BaseAction::isDemoMode()) {
+                $prefs = $user->getPreferences()->toArray();
+                $keys_to_delete = array(My_User::PREF_LANGUAGE, My_User::PREF_PAGE_SIZE, My_User::PREF_LAST_VISITED_PATH);
+                foreach($keys_to_delete as $k) {
+                    if (array_key_exists($k, $prefs)) {
+                        unset($prefs[$k]);
+                    }
+                }
+                
+                $this->update(array( 'preferences' => Zend_Json::encode( $prefs ) ), array( 'id = ?' => $user->getId()) );         
+            } else {
+                $this->update(array( 'preferences' => Zend_Json::encode( $user->getPreferences()->toArray() ) ), array( 'id = ?' => $user->getId()) );    
+            }
+            
+            
             $db->commit();
             return TRUE;
         }

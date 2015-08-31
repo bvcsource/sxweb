@@ -277,7 +277,7 @@ class My_BaseAction extends Zend_Controller_Action {
      * 
      * @return bool
      */
-    public function isDemoMode() {
+    public static function isDemoMode() {
         if (defined('SXWEB_DEMO_MODE')) {
             return (bool)SXWEB_DEMO_MODE;
         }
