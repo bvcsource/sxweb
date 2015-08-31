@@ -38,7 +38,8 @@
 <div class="page-header">
     <h1><?php echo $this->translate('SX Cluster configuration'); ?></h1>
 </div>
-<p><?php echo $this->translate('Setup your SX cluster connection.'); ?></p>
+<p><?php echo $this->translate('Here you can configure your SX cluster connection. Please carefully check the connection parameters!'); ?></p>
+<p><?php echo $this->translate('If you provide an <strong>admin key</strong> the installer will try to connect to the SX cluster to check the user credentials, so don&apos;t forget to start the SX server <em>before continuing</em>.'); ?></p>
 <?php
 if (isset($this->errors)): ?>
 

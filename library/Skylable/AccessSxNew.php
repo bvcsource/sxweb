@@ -39,16 +39,25 @@
 
 /**
  * Interacts with the Skylable services.
- *
- * Before using this class you should configure the services editing
- * the file: application/configs/skylable.ini
- * This file is then read at bootstrap and stored into the Zend_Registry under
- * the key 'skylable', as a Zend_Config instance.
+ * 
+ * By default the class tries to use the SX Cluster configuration stored 
+ * into the global registry (Zend_Registry) 'skylable' key. This is a Zend_Config object that
+ * is read at bootstrap from the file 'application/configs/skylable.ini'.
  *
  * <code>
  * $skylable_config = Zend_Registry::get('skylable');
  * </code>
  *
+ * You can pass a custom config that is used instead.
+ * 
+ * Mandatory config keys:
+ * 'cluster' - the cluster URL
+ * 'sx_local' - the directory where to store data if $base_dir is not provided
+ * 
+ * Non mandatory keys:
+ * 'cluster_ssl' - boolean - true use SSL to connect, false otherwise (default)
+ * 'cluster_port' - integer - port to connect to, leave empty or not defined to use the default one
+ * 'cluster_ip' - string - the IP address of the SX Cluster, for non-DNS clusters. Leave empty to access via DNS (default).
  */
 class Skylable_AccessSxNew {
 
@@ -134,7 +143,19 @@ class Skylable_AccessSxNew {
          * 
          * @var Zend_Config
          */
-        $_params;
+        $_params,
+
+        /**
+         * The logger, cached
+         * @var Zend_Log
+         */
+        $_logger,
+
+        /**
+         * The SX cluster configuration
+         * @var Zend_Config
+         */
+        $_config;
 
     /**
      * Initialize using a user: this will create all necessary dirs and configs.
@@ -143,6 +164,7 @@ class Skylable_AccessSxNew {
      * 'password' - string - the plain user password
      * 'initialize' - boolean - FALSE don't initialize, TRUE (default) do initializations
      * 'user_auth_key' - string - the user secret key to use instead of password or identity
+     * 'logger' - Zend_Log - use this logger instead of the default one
      *
      * @param My_User $user
      * @param string $base_dir directory of operations, if NULL generate one using the user
@@ -151,9 +173,32 @@ class Skylable_AccessSxNew {
      * @throws Exception
      * @see initialize
      */
-    public function  __construct(My_User $user, $base_dir = NULL, $params = array()) {
+    public function  __construct(My_User $user, $base_dir = NULL, $params = array(), $config = null) {
         $this->_user = $user;
         $this->_params = new Zend_Config($params);
+        
+        // Check for the logger
+        if (isset($this->_params->logger)) {
+            if ($this->_params->logger instanceof Zend_Log) {
+                $this->_logger = $this->_params->logger;
+            }
+        }
+        
+        // Check for the global config
+        if (is_array($config)) {
+            $this->_config = new Zend_Config($config);
+        } else if($config instanceof Zend_Config) {
+            $this->_config = new Zend_Config(array(), TRUE);
+            $this->_config->merge($config);
+            $this->_config->setReadOnly();
+        } else {
+            if (Zend_Registry::isRegistered('skylable')) {
+                $this->_config = Zend_Registry::get('skylable');
+            } else {
+                throw new Skylable_AccessSxException('You must supply SX Cluster configuration');
+            }
+        }
+        
         
         // Check user validity
         $user_is_valid = FALSE;
@@ -181,7 +226,7 @@ class Skylable_AccessSxNew {
                 throw new Skylable_AccessSxException('Invalid user: empty login', self::ERROR_INVALID_USER);
             }
             
-            $this->_base_dir = My_Utils::slashPath(Zend_Registry::get('skylable')->get('sx_local')).sha1( $this->_user->getLogin() );
+            $this->_base_dir = My_Utils::slashPath($this->_config->get('sx_local')).sha1( $this->_user->getLogin() );
         } else {
             $this->_base_dir = strval($base_dir);
         }
@@ -190,7 +235,7 @@ class Skylable_AccessSxNew {
         
         if ($this->_params->get('initialize', TRUE) === TRUE) {
             if (!$this->initialize()) {
-                throw new Skylable_AccessSxException('Failed to initialize user', self::ERROR_INITIALIZATION_FAILURE);
+                throw new Skylable_AccessSxException('Failed to initialize user.', self::ERROR_INITIALIZATION_FAILURE);
             }    
         }
     }
@@ -216,7 +261,7 @@ class Skylable_AccessSxNew {
                 throw new Skylable_AccessSxException('Invalid user: empty login', self::ERROR_INVALID_USER);
             }
 
-            $this->_base_dir = My_Utils::slashPath(Zend_Registry::get('skylable')->get('sx_local')).sha1( $this->_user->getLogin() );
+            $this->_base_dir = My_Utils::slashPath($this->_config->get('sx_local')).sha1( $this->_user->getLogin() );
         } else {
             $this->_base_dir = strval($base_dir);
         }
@@ -230,7 +275,7 @@ class Skylable_AccessSxNew {
      * @throws Zend_Exception
      */
     protected function updateClusterString($login) {
-        $cluster = Zend_Registry::get('skylable')->get('cluster', FALSE);
+        $cluster = $this->_config->get('cluster', FALSE);
         if (empty($cluster)) {
             $this->getLogger()->err(__METHOD__.': Invalid cluster: '.print_r($cluster, TRUE));
             return FALSE;
@@ -328,7 +373,7 @@ class Skylable_AccessSxNew {
             $this->getLogger()->err(__METHOD__.': path is not a directory: '.$path);
             return FALSE;
         }
-        $path .= '/'.substr(Zend_Registry::get('skylable')->get('cluster'), 5);
+        $path .= '/'.substr($this->_config->get('cluster'), 5);
         if (!@is_dir($path)) {
             $this->getLogger()->err(__METHOD__.': path is not a directory: '.$path);
             return FALSE;
@@ -355,7 +400,7 @@ class Skylable_AccessSxNew {
      */
     public function getLocalUserSecretKey() {
         $path = $this->getBaseDir() .
-            '/'.substr(Zend_Registry::get('skylable')->get('cluster'), 5) .
+            '/'.substr($this->_config->get('cluster'), 5) .
             '/auth/'. (strlen($this->_user->getLogin()) > 0 ? $this->_user->getLogin() : 'default');
         if (@file_exists($path)) {
             $authkey = @file_get_contents($path);
@@ -438,13 +483,13 @@ class Skylable_AccessSxNew {
         }
         
 
-        $cluster = Zend_Registry::get('skylable')->get('cluster', FALSE);
+        $cluster = $this->_config->get('cluster', FALSE);
         if (empty($cluster)) {
             $this->getLogger()->err(__METHOD__.': Invalid cluster: '.print_r($cluster, TRUE));
             return FALSE;
         }
         
-        $cluster_ssl = Zend_Registry::get('skylable')->get('cluster_ssl', TRUE);
+        $cluster_ssl = $this->_config->get('cluster_ssl', TRUE);
         $this->getLogger()->notice(__METHOD__.': Cluster SSL: '.var_export($cluster_ssl, TRUE));
         if (empty($cluster_ssl)) {
             $cluster_ssl = FALSE; 
@@ -452,7 +497,7 @@ class Skylable_AccessSxNew {
             $cluster_ssl = (bool)$cluster_ssl;
         }
         
-        $cluster_port = Zend_Registry::get('skylable')->get('cluster_port', FALSE);
+        $cluster_port = $this->_config->get('cluster_port', FALSE);
         if (empty($cluster_port)) {
             $cluster_port = FALSE;
         }
@@ -468,7 +513,7 @@ class Skylable_AccessSxNew {
             }
         }
         
-        $cluster_ip = Zend_Registry::get('skylable')->get('cluster_ip', FALSE);
+        $cluster_ip = $this->_config->get('cluster_ip', FALSE);
         if ($cluster_ip !== FALSE) {
             if (is_string($cluster_ip)) {
                 if (strlen($cluster_ip) > 0) {
@@ -1241,7 +1286,13 @@ class Skylable_AccessSxNew {
      * @return Zend_Log
      */
     protected function getLogger() {
-        return Zend_Controller_Front::getInstance()->getParam('bootstrap')->getResource('log');
+        if (!is_object($this->_logger)) {
+            $bs = Zend_Controller_Front::getInstance()->getParam('bootstrap');
+            if (is_object($bs)) {
+                $this->_logger = $bs->getResource('log');
+            }
+        }
+        return $this->_logger;
     }
 
     /**
@@ -1414,7 +1465,7 @@ class Skylable_AccessSxNew {
             return FALSE;
         }
         
-        $path = @realpath($this->_base_dir) . DIRECTORY_SEPARATOR . substr(Zend_Registry::get('skylable')->get('cluster'), 5) .
+        $path = @realpath($this->_base_dir) . DIRECTORY_SEPARATOR . substr($this->_config->get('cluster'), 5) .
                 DIRECTORY_SEPARATOR . 'volumes' . DIRECTORY_SEPARATOR . My_Utils::getRootFromPath($volume) . DIRECTORY_SEPARATOR;
         
         // If the volume path doesn't exists, can't proceed

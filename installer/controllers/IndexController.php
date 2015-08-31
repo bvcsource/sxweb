@@ -893,6 +893,21 @@ class IndexController extends Zend_Controller_Action {
                         $this->view->errors = $form->getMessages();
                         
                         $can_proceed = FALSE;
+                    } else {
+                        // Strictly check the admin key
+                        $cluster_cfg = array(
+                            'cluster' => $session->config['cluster'],
+                            'cluster_ip' => $session->config['cluster_ip'],
+                            'cluster_ssl' => $session->config['cluster_ssl'],
+                            'cluster_port' => $session->config['cluster_port']
+                        );
+                        $valid_admin_key = $this->testAdminKey( $values['frm_admin_key'], $cluster_cfg );
+                        if ($valid_admin_key['status'] == FALSE) {
+                            $form->getElement('frm_admin_key')->setErrors( array($valid_admin_key['error']) );
+                            $this->view->errors = $form->getMessages();
+
+                            $can_proceed = FALSE;
+                        }
                     }
                 }
 
@@ -926,6 +941,79 @@ class IndexController extends Zend_Controller_Action {
             foreach($data_map as $field => $param) {
                $this->view->$field = $session->config[$param];    
             }
+        }
+    }
+
+    /**
+     * Check if the provided access token is for the admin user.
+     * 
+     * Returns an associative array:
+     * array(
+     * 'status' - boolean - true on success, false on failure
+     * 'error' - string - on failure, the error occurred.
+     * )
+     * 
+     * @param string $admin_key
+     * @param array $cluster_config 
+     * @return array
+     */
+    protected function testAdminKey($admin_key, $cluster_config) {
+       
+       if (strlen($admin_key) == 0) {
+           return array(
+               'status' => FALSE,
+               'error' => $this->translate('Invalid admin key.')
+           );
+       }
+        
+        $session = new Zend_Session_Namespace();
+        $sx_local = str_replace('APPLICATION_PATH', SXWEB_APPLICATION_PATH, $session->config['sx_local']);
+        $cluster_config['sx_local'] = $sx_local;
+        
+        // Create a fake user into the data/ dir and test credentials
+        $the_user = new My_User(NULL, '', '', $admin_key);
+        $base_dir = My_Utils::mktempdir( $sx_local, 'Skylable_' );
+        if ($base_dir === FALSE) {
+            return array(
+                'status' => FALSE,
+                'error' => $this->translate('Failed the check the admin key.')
+            );
+        } 
+
+        try {
+            $logger = new Zend_Log( new Zend_Log_Writer_Null() );
+            $cfg = new Zend_Config($cluster_config);
+            
+            $access_sx = new Skylable_AccessSxNew( $the_user, $base_dir, array( 'user_auth_key' => $admin_key, 'logger' => $logger ), $cfg);
+            $whoami = $access_sx->whoami();
+            My_Utils::deleteDir($base_dir);
+
+            if ($whoami === 'admin') {
+                return array(
+                    'status' => TRUE,
+                    'error' => ''
+                );    
+            } else {
+                return array(
+                    'status' => FALSE,
+                    'error' => $this->translate('User is not the admin.')
+                );   
+            }
+        }
+        catch (Skylable_AccessSxException $e) {
+            My_Utils::deleteDir($base_dir);
+
+            return array(
+                'status' => FALSE,
+                'error' => $this->translate($e->getMessage())
+            );
+        }
+        catch(Exception $e) {
+            My_Utils::deleteDir($base_dir);
+            return array(
+                'status' => FALSE,
+                'error' => $this->translate($e->getMessage())
+            );          
         }
     }
 
