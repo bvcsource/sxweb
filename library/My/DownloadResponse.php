@@ -41,7 +41,7 @@
 class My_DownloadResponse extends Zend_Controller_Response_Http {
 
     protected
-        $_access_sx, $_file_data, $_password, $_purge_dir;
+        $_access_sx, $_file_data, $_password, $_purge_dir, $_content_disposition;
 
     /**
      * Send the file to the browser.
@@ -54,11 +54,12 @@ class My_DownloadResponse extends Zend_Controller_Response_Http {
      * @param string $password
      * @param string $purge_dir if non empty path to delete when download succeded
      */
-    public function __construct(Skylable_AccessSxNew $access_sx, $file_data, $password = '', $purge_dir = '') {
+    public function __construct(Skylable_AccessSxNew $access_sx, $file_data, $password = '', $purge_dir = '', $content_disposition = Skylable_AccessSxNew::DOWNLOAD_DISPOSITION_ATTACHMENT) {
         $this->_access_sx = $access_sx;
         $this->_file_data = $file_data;
         $this->_password = $password;
         $this->_purge_dir = $purge_dir;
+        $this->_content_disposition = $content_disposition;
     }
 
     public function getLogger() {
@@ -83,7 +84,7 @@ class My_DownloadResponse extends Zend_Controller_Response_Http {
         set_time_limit(0);
 
         try {
-            $ret = $this->_access_sx->download($this->_file_data, $this->_password);
+            $ret = $this->_access_sx->download($this->_file_data, $this->_password, $this->_content_disposition);
             if ($ret !== TRUE) {
                 $this->getLogger()->debug(__METHOD__.': download() retval is: '.var_export($ret, TRUE));
             }

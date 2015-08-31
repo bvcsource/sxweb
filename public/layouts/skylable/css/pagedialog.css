@@ -148,6 +148,11 @@
     float: left;
 }
 
+.dialog-box-buttons input[type=submit] {
+    float: right;
+    margin-left: 10px;
+}
+
 .dialog-box-utils a {
     color: #8b91a0;
     text-decoration: none;
