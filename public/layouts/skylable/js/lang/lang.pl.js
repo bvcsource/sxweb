@@ -85,6 +85,8 @@ if (!Skylable_Lang) {
         uploadCanceled : 'Upload canceled',
         uploadDirError : 'Unable to upload %s as it is a directory or has 0 bytes',
         uploadBrowserWindowCloseConfirm : 'This will cancel all current uploads. Are you sure?',
+        uploadOverwriteAll : 'Overwrite All',
+        uploadSkipAll : 'Skip All',
 
         // -------- Revisions
         revisionsErrorTitle : 'Preview error!',

@@ -88,6 +88,8 @@ if (!Skylable_Lang) {
         uploadCanceled : 'Загрузка была прервана',
         uploadDirError : 'Не удалось загрузить %s , поскольку это папка или имеет нулевой размер',
         uploadBrowserWindowCloseConfirm : 'Это остановит все текущие загрузки. Продолжить?',
+        uploadOverwriteAll : 'Overwrite All',
+        uploadSkipAll : 'Skip All',
         
         // -------- Revisions
         revisionsErrorTitle : 'Ошибка предпросмотра!',

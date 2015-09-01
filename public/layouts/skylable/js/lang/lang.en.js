@@ -86,6 +86,9 @@ if (!Skylable_Lang) {
         uploadDirError : 'Unable to upload %s as it is a directory or has 0 bytes',
         uploadBrowserWindowCloseConfirm : 'This will cancel all current uploads. Are you sure?',
         
+        uploadOverwriteAll : 'Overwrite All',
+        uploadSkipAll : 'Skip All',
+        
         // -------- Revisions
         revisionsErrorTitle : 'Preview error!',
         revisionsLoadFailed : 'Failed to load the file.<br/>It is possible that you reached your download limits, please wait some seconds and retry.',

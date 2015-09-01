@@ -86,6 +86,8 @@ if (!Skylable_Lang) {
         uploadCanceled : 'Hochladen abgebrochen',
         uploadDirError : '%s kann nicht hochgeladen werden, da es ein Verzeichnis oder 0 bytes groß ist',
         uploadBrowserWindowCloseConfirm : 'Dies wird alle Uploads abbrechen. Bist Du sicher?',
+        uploadOverwriteAll : 'Overwrite All',
+        uploadSkipAll : 'Skip All',
 
         // -------- Revisions
         revisionsErrorTitle : 'Vorschaufehler!',

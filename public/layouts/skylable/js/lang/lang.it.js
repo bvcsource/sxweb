@@ -85,6 +85,8 @@ if (!Skylable_Lang) {
         uploadCanceled : 'Upload annullato',
         uploadDirError : 'Non posso caricare %s perché è una directory o è grande 0 bytes',
         uploadBrowserWindowCloseConfirm : 'Tutti gli upload in corso saranno annullati. Sei sicuro?',
+        uploadOverwriteAll : 'Sovrascrivi tutto',
+        uploadSkipAll : 'Salta tutto',
 
         // -------- Revisions
         revisionsErrorTitle : 'Errore nell\'anteprima!',
