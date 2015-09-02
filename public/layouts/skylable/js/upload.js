@@ -439,6 +439,39 @@ $(document).ready(function(){
                 }
 
                 console.log('Error: ' + err_msg);
+
+                // Shows an error dialog if needed
+                if (reply_box.length == 0) {
+                    Skylable_Uploads.dlg = $('#dialog');
+
+                    Skylable_Uploads.dlg.dialog({
+                        autoOpen: false,
+                        modal: true,
+                        resizable: true,
+                        title: Skylable_Lang.uploadTitle,
+                        beforeClose: function(ev, ui) {
+                            Skylable_Uploads.cancelUploads();
+                            return true;
+                        }
+                    });
+
+                    Skylable_Uploads.dlg.html('<div id="files"></div>');
+
+                    Skylable_Uploads.dlg.dialog('option', 'buttons', [
+                        {
+                            text : Skylable_Lang.closeBtn,
+                            click : function(e) {
+                                Skylable_Uploads.dlg.dialog('close');
+                                Skylable_Uploads.dlg.dialog('destroy');
+                                $(reply_box).remove();
+                            }
+                        }
+                    ]);
+
+                    Skylable_Uploads.dlg.dialog('open');
+                    reply_box = $('#dialog #files');
+                } 
+                
                 reply_box.append('<p class="upload_error">' + sprintf(Skylable_Lang.uploadError , err_msg ) + '</p>');    
             }
 
