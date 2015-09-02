@@ -124,6 +124,10 @@ class IndexController extends My_BaseAction {
                 } else {
                     $user->setSecretKey( $user_secret_key );
                     
+                    // Set some default configs...
+                    $user->getPreferences()->set(My_User::PREF_PAGE_SIZE, 50);
+                    
+                    // Store the user into the DB
                     $this->getUserModel()->createAccount( $user );
                 }
 

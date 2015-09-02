@@ -35,27 +35,51 @@
     SWCL.
 */
 
+/**
+ * Validate the file list page size.
+ * Valid value are:
+ * an empty string: means no pagination at all
+ * an integer between 1-65535: the desired page size
+ */
+class My_ValidateFilelistPageSize extends Zend_Validate_Abstract {
 
-class Application_Form_UserPreferences extends Zend_Form {
-    public function init() {
-        $this->addElement(
-            $this->createElement('select', 'frm_language')
-                ->setLabel('Language')
-            ->addValidator(new Zend_Validate_InArray(array_keys( My_BaseAction::getLanguageList() )))
-            ->setAllowEmpty(FALSE)
-            ->setRequired(TRUE)
+    const
+        WRONGVALUE = 'wrongvalue';
+    protected
+        $_messageTemplates = array(
+            self::WRONGVALUE => "The value must be an integer between 1 and 65535 or an empty string"
         );
+    
+    /**
+     * Returns true if and only if $value meets the validation requirements
+     *
+     * If $value fails validation, then this method returns false, and
+     * getMessages() will return an array of messages that explain why the
+     * validation failed.
+     *
+     * @param  mixed $value
+     * @return boolean
+     * @throws Zend_Validate_Exception If validation of $value is impossible
+     */
+    public function isValid($value) {
         
-        $this->addElement(
-            $this->createElement('text', 'frm_file_list_size')
-            ->setLabel('File list size')
-                ->addValidator(new My_ValidateFilelistPageSize() )
-            ->setRequired(FALSE)
-        );
+        $this->_setValue($value);
         
-        $this->addElement(
-            $this->createElement('submit', 'frm_launch')
-        );
+        if (strlen($value) == 0) {
+            return TRUE;
+        }
+        
+        if (preg_match('/\d+/', $value) == 1) {
+            if ($value >= 1 && $value <= 65535) {
+                return TRUE;    
+            } 
+        }
+        
+        $this->_error(self::WRONGVALUE);
+        
+        return FALSE;
+        
     }
+
 
 }

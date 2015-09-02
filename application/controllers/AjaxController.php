@@ -62,6 +62,68 @@ class AjaxController extends My_BaseAction {
     }
 
     /**
+     * Set a new page size for the user.
+     * 
+     * 'size' - integer, from 1 to max
+     */
+    public function pagesizeAction() {
+        if (!Zend_Auth::getInstance()->hasIdentity()) {
+            $this->forbidden();
+            return FALSE;
+        }
+
+        
+        $validate_size = new My_ValidateFilelistPageSize();
+        $size = $this->getRequest()->getParam('size');
+        $this->getLogger()->debug('Page Size: '.var_export($size, TRUE));
+        if ($validate_size->isValid($size)) {
+            
+            $user = Zend_Auth::getInstance()->getIdentity();
+            
+            $user->getPreferences()->set(My_User::PREF_PAGE_SIZE, $size);
+
+            try {
+                if ($this->getUserModel()->updateUserPreferences( Zend_Auth::getInstance()->getIdentity() )) {
+                    Zend_Auth::getInstance()->getStorage()->write($user);
+
+                    $this->getResponse()->setHttpResponseCode(200);
+                    echo Zend_Json::encode(array(
+                        'status' => TRUE,
+                        'error' => '',
+                        'url' => $this->view->serverUrl() . '/vol' . $this->getLastVisitedPath()
+                    ));
+                } else {
+                    $this->getResponse()->setHttpResponseCode(400);
+                    echo Zend_Json::encode(array(
+                        'status' => FALSE,
+                        'error' => $this->view->translate('Failed to update file list page size.'),
+                        'url' => $this->view->serverUrl() . '/vol' . $this->getLastVisitedPath()
+                    ));
+                }
+            }
+            catch(Exception $e) {
+                $this->getLogger()->err(__METHOD__.': exception: '.$e->getMessage());
+                $this->getResponse()->setHttpResponseCode(500);
+                echo Zend_Json::encode(array(
+                    'status' => FALSE,
+                    'error' => $this->view->translate('Internal error. Failed to update file list page size.'),
+                    'url' => $this->view->serverUrl() . '/vol' . $this->getLastVisitedPath()
+                ));
+            }
+            
+        } else {
+            $this->getResponse()->setHttpResponseCode(400);
+            echo Zend_Json::encode(array(
+                'status' => FALSE,
+                'error' => $this->view->translate('Invalid value, failed to update file list page size.'),
+                'url' => $this->view->serverUrl() . '/vol' . $this->getLastVisitedPath()
+            ));
+        }
+        
+        
+    }
+
+    /**
      * Sends the standard AJAX "Forbidden access" response.
      *
      * @throws Zend_Controller_Response_Exception

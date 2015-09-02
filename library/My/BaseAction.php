@@ -225,12 +225,14 @@ class My_BaseAction extends Zend_Controller_Action {
      */
     protected function paginateFiles($path, Skylable_AccessSxNew $access_sx, $view_slot = 'list', $view_paginator = 'paginator') {
         // Get view configuration from user
-        $page_size = 20;
+        $page_size = 50;
         $user_page_size = Zend_Auth::getInstance()->getIdentity()->getPreferences()->get(My_User::PREF_PAGE_SIZE, -1);
         if (is_numeric($user_page_size)) {
             if ($user_page_size > 0) {
                 $page_size = $user_page_size;
             }
+        } else if (strlen($user_page_size) == 0) {
+            $page_size = -1; // Don't paginate the results
         }
 
         try {

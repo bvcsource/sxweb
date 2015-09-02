@@ -92,7 +92,7 @@ class SettingsController extends My_BaseAction {
         if ($page_size > 0) {
             $pref_form->setDefault('frm_file_list_size', $page_size);
         } else {
-            $pref_form->setDefault('frm_file_list_size', 20);
+            $pref_form->setDefault('frm_file_list_size', '');
         }
         
 

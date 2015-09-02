@@ -44,6 +44,45 @@
 <?php else: ?>
     <span class="styled-button-disabled"><?php echo $this->translate('Last'); ?></span>
 <?php endif; ?>
-
     </div>
     <?php endif; ?>
+<div class="paginator-right">
+    <?php echo $this->translate('Files to show:'); ?> <select id="pagination_size" onchange="updatePageSize(); return true;">
+        <?php
+        $sizes = array('25' => '25', '50' => '50', '100' => '100', '150' => '150', 'All' => '');
+        $cur_size = Zend_Auth::getInstance()->getIdentity()->getPreferences()->get(My_User::PREF_PAGE_SIZE);
+        if (!array_key_exists($cur_size, $sizes) && strlen($cur_size) > 0) {
+            $sizes[strval($cur_size)] = strval($cur_size);
+        }
+        foreach($sizes as $sl => $sv) {
+            echo '<option value="',$sv,'"',($cur_size == $sv ? 'selected="selected"' : ''),'>',$this->translate($sl),'</option>',PHP_EOL;
+        }
+        ?></select>
+<script type="application/javascript">
+    function updatePageSize() {
+        var sel = document.getElementById('pagination_size');
+        
+        $.ajax({
+            url: '<?php echo $this->serverUrl(),'/ajax/pagesize'; ?>',
+            data: 'size=' + $(sel).val(),
+            dataType: "json",
+            async : true,
+            success : function(data, status, xhr) {
+                if (data.status === true) {
+                    window.location.href = data.url;    
+                } else {
+                    window.alert(statur.error);
+                }
+                
+            },
+            error : function(xhr, status) {
+                var type = xhr.getResponseHeader('Content-Type');
+                if (type === 'application/json') {
+                    var data = JSON.parse(xhr.responseText);
+                    window.alert(data.error);
+                }
+            }
+        });
+    }
+</script>
+</div>

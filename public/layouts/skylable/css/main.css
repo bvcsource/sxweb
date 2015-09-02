@@ -1830,13 +1830,21 @@ a:hover .icon-dl {
     margin: 0 0 !important;
 }
 
-.paginator {
-    text-align: center;
-    padding: 4px;
+.paginator, .paginator-right {
+    padding: 10px 0;
     border-top: 1px solid #eee;
 }
 
-.paginator a {
+.paginator {
+    text-align: center;
+}
+
+.paginator-right {
+    padding-right: 10px;
+    text-align: right;
+}
+
+.paginator a, .paginator-right a {
     margin: 5px 10px 0 0;
 }
 
