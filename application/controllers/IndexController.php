@@ -134,7 +134,7 @@ class IndexController extends My_BaseAction {
 
                 // Sets who you are on the SX server: from version 1.1 of SX server
                 // is the same as the login name
-                $user->getPreferences()->set('whoami', $values['frm_login']);
+                $user->getPreferences()->set(My_User::PREF_WHO_AM_I, $values['frm_login']);
                 $this->getLogger()->debug('You are: '.var_export($values['frm_login'], TRUE));
                 
                 // Get the user role

@@ -63,7 +63,9 @@ class My_User implements Zend_Acl_Role_Interface {
          // Flag tells if we shouldn't show the user welcome dialog
         PREF_DONT_SHOW_WELCOME = 'dont_show_welcome',
          // Integer, number of elements shown in a page while file listing or searching
-         PREF_PAGE_SIZE = 'page_size' ;
+         PREF_PAGE_SIZE = 'page_size',
+         // String, store who you are on the SX Cluster
+        PREF_WHO_AM_I = 'whoami';
     
     protected
             /**
