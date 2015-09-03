@@ -49,8 +49,7 @@ class Zend_View_Helper_HasRevisionsSupport extends Zend_View_Helper_Abstract{
         
         foreach($this->view->volumes as $vol) {
             if (My_Utils::isSamePath($vol['path'], $volume)) {
-                $rev_count = intval( substr($vol['revs'], strlen('rev:')) );
-                return ($rev_count > 1);
+                return (intval($vol['revs']) > 1);
             }
         }
         return FALSE;
