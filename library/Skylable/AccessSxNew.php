@@ -649,6 +649,7 @@ class Skylable_AccessSxNew {
      *   'server' => string with the server URI
      *   'path' => string with the volume name (starts with a /)
      *   'url' => string with the complete volume URL
+     *   'owner' => string - the volume owner's name
      *  ),
      *  ...
      *
@@ -868,10 +869,9 @@ class Skylable_AccessSxNew {
         $output = array();
 
         while( ($data_line = fgets($fd)) !== FALSE ) {
-            if (preg_match('/^\s*(?<type>VOL)\s+(?<replica>rep:[0-9]+)\s+(?<revs>rev:[0-9]+)\s+(?<access>[r-][w-])\s+'.
+            if (preg_match('/^\s*(?<type>VOL)\s+(rep:(?<replica>[0-9]+))\s+(rev:(?<revs>[0-9]+))\s+(?<access>[r-][w-])\s+'.
                     '(?<filter>[a-z0-9\-]+)\s+(?<used_space>[0-9]+)\s+(?<volume_size>[0-9]+)\s+'.
                     '(?<usage>[0-9]+%)\s+(?<owner>.+(?!sx:\/\/))?\s*((?<server>sx:\/\/[^\/]*)(?<path>.*))/', $data_line, $matches) == 1 && ($file_types & self::LIST_VOLUMES) ) {
-            
             
 
                 // Skips some entries
@@ -879,8 +879,8 @@ class Skylable_AccessSxNew {
                     continue;
                 }
 
-                $matches['url'] = $matches[10];
-                for($i = 0; $i < 13; $i++) {
+                $matches['url'] = $matches[12];
+                for($i = 0; $i < 15; $i++) {
                     unset($matches[$i]);
                 }
 
@@ -1942,6 +1942,8 @@ class Skylable_AccessSxNew {
                                         $code = Skylable_RevisionException::REVISIONS_ERROR;
                                     }
                                     throw new Skylable_RevisionException(implode('\n', $log['errors']), $code);
+                                } elseif(stripos($err, 'Failed to locate volume: No such volume') !== FALSE) {
+                                    throw new Skylable_VolumeNotFoundException($err);
                                 }
                             }
                             throw new Skylable_AccessSxException(implode('\n', $log['errors']));
