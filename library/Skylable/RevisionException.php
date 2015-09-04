@@ -43,6 +43,9 @@ class Skylable_RevisionException extends Skylable_AccessSxException {
         REVISIONS_ERROR = 0,
         REVISIONS_NOT_FOUND = 100,
         REVISIONS_VOLUME_NOT_FOUND = 101,
-        REVISIONS_NOT_SUPPORTED = 110;
+        REVISIONS_NOT_SUPPORTED = 110,
+        
+        // You are trying to change the volume limits using the same value
+        REVISIONS_SAME_LIMITS = 300; 
 
 }

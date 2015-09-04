@@ -1944,6 +1944,10 @@ class Skylable_AccessSxNew {
                                     throw new Skylable_RevisionException(implode('\n', $log['errors']), $code);
                                 } elseif(stripos($err, 'Failed to locate volume: No such volume') !== FALSE) {
                                     throw new Skylable_VolumeNotFoundException($err);
+                                } elseif (stripos($err, 'Failed to modify volume') !== FALSE) {
+                                    if (stripos($err, 'New revisions limit is the same as current value')) {
+                                        throw new Skylable_RevisionException(implode('\n', $log['errors']), Skylable_RevisionException::REVISIONS_SAME_LIMITS);    
+                                    }
                                 }
                             }
                             throw new Skylable_AccessSxException(implode('\n', $log['errors']));
@@ -2475,5 +2479,85 @@ class Skylable_AccessSxNew {
         if ($update_base_dir) {
             $this->updateBaseDir();
         }
+    }
+
+    /**
+     * Set the maximum revision count for a volume.
+     * 
+     * On success return an associative array:
+     * array(
+     * 'revisions_limit' => '', - the new revision limits
+     * )
+     *
+     * @param string $volume
+     * @param integer $maximum_revisions
+     * @return bool|array FALSE on failure, or an array
+     * @throws Exception
+     * @throws Zend_Exception
+     */
+    public function setVolumeMaximumRevisions($volume, $maximum_revisions) {
+        $this->_last_error_log = '';
+        if (!is_string($volume) || empty($volume)) {
+            $this->getLogger()->debug(__METHOD__.': invalid volume name.');
+            return FALSE;
+        }
+
+        $vol = My_Utils::getRootFromPath($volume);
+        if (strlen($vol) == 0) {
+            $this->getLogger()->debug(__METHOD__.': empty volume.');
+            return FALSE;
+        }
+        
+        if (intval($maximum_revisions) < 1) {
+            $this->getLogger()->debug(__METHOD__.': maximum revision count less than 1.');
+            return FALSE;
+        }
+        
+        // Failed to modify volume: New revisions limit is the same as current value: sx://192.168.1.2/volumetto
+
+        $ret = $this->executeShellCommand(
+            'sxvol modify '.
+            '-c '.My_utils::escapeshellarg($this->_base_dir).' '.
+            '--max-revisions='.My_Utils::escapeshellarg($maximum_revisions).' '.
+            My_utils::escapeshellarg( $this->_cluster_string.'/'.$vol )
+            , '', $output, $exit_code, $this->_last_error_log, array($this, 'parseSxvolModifyOutput'), array($this, 'parseErrors') );
+        if ($exit_code == 0) {
+            return $output;
+        } else {
+            $this->checkForErrors($this->_last_error_log, TRUE);
+            return FALSE;
+        }
+    }
+
+    /**
+     * Parse the 'sxvol modify' command output
+     * @param $fd
+     * @param $data
+     * @return array
+     */
+    private function parseSxvolModifyOutput($fd, &$data) {
+        $ret = array(
+            'status' => TRUE,
+            'error' => ''
+        );
+        $data = array(
+            'revisions_limit' => '',
+            'owner' => '',
+            'size' => ''
+        );
+
+        while( ($data_line = fgets($fd)) !== FALSE ) {
+            if (preg_match('/^Volume revisions limit changed to (?<revs>\d+)/', $data_line, $matches) == 1) {
+                $data['revisions_limit'] = $matches['revs'];
+            }
+            
+        }
+        if (!feof($fd)) { // fgets exited
+            $retval['status'] = FALSE;
+            $retval['error'] = new Exception('Unexpected end of the file', ERROR_UNEXPECTED_END_OF_FILE);
+            $this->getLogger()->debug(__METHOD__.' - Unexpected end of the file');
+        }
+
+        return $ret;
     }
 }
