@@ -24,6 +24,9 @@ if (!Skylable_Lang) {
         cancelBtn : 'Cancel',
         doLoginBtn: 'Do login',
 
+        // Generic "Update" button
+        updateBtn: 'Update',
+
         // ------------ Create new directory
         // Create dir window title
         createDirTitle: "Create Directory",
@@ -73,6 +76,8 @@ if (!Skylable_Lang) {
         settingsPageSizeChangeSuccess : 'Page size successfully changed.',
         settingsPageSizeChangeFailure : 'Operation failed',
         settingsPageSizeInvalid : 'Invalid page size.',
+        settingsRevisionsLimitWindowTitle : 'Change revisions limits',
+        settingsRevisionsLimitChangeMessage: 'Maximum revisions limit:',
 
         // -------- Uploads
         uploadTitle: 'Uploading...',

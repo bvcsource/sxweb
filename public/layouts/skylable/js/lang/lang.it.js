@@ -23,6 +23,9 @@ if (!Skylable_Lang) {
         noBtn : 'No',
         cancelBtn : 'Annulla',
         doLoginBtn: 'Effettua login',
+        
+        // Generic "Update" button
+        updateBtn: 'Aggiorna',
 
         // ------------ Create new directory
         // Create dir window title
@@ -73,6 +76,8 @@ if (!Skylable_Lang) {
         settingsPageSizeChangeSuccess : 'Dimensione pagina aggiornata.',
         settingsPageSizeChangeFailure : 'Errore',
         settingsPageSizeInvalid : 'Dimensione pagina non valida.',
+        settingsRevisionsLimitWindowTitle : 'Cambia il limite di revisioni',
+        settingsRevisionsLimitChangeMessage: 'Limite massimo di revisioni:',
 
         // -------- Uploads
         uploadTitle: 'Upload in corso...',

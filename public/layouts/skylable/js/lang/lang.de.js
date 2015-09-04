@@ -23,6 +23,9 @@ if (!Skylable_Lang) {
         noBtn : 'Nein',
         cancelBtn : 'Abbrechen',
         doLoginBtn: 'Einloggen',
+        
+        // Generic "Update" button
+        updateBtn: 'Update',
 
         // ------------ Create new directory
         // Create dir window title
@@ -74,6 +77,8 @@ if (!Skylable_Lang) {
         settingsPageSizeChangeSuccess : 'Seitengröße erfolgreich geändert.',
         settingsPageSizeChangeFailure : 'Operation fehlgeschlagen',
         settingsPageSizeInvalid : 'Ungültige Seitengröße.',
+        settingsRevisionsLimitWindowTitle : 'Change revisions limits',
+        settingsRevisionsLimitChangeMessage: 'Maximum revisions limit:',
 
         // -------- Uploads
         uploadTitle: 'Hochladen&#8230;',

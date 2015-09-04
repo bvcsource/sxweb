@@ -49,7 +49,7 @@ class SettingsController extends My_BaseAction {
 
 
     public function indexAction() {
-        // $this->forward('account');
+        
     }
 
     /**
@@ -228,6 +228,102 @@ class SettingsController extends My_BaseAction {
         $this->getResponse()->setRawHeader("Content-Length: ".strval( strlen($str) ));
         // $this->getResponse()->setRawHeader('Content-Transfer-Encoding: binary');
         echo $str;
+    }
+
+    /**
+     * Show all available volumes and let the user manage them.
+     */
+    public function volumesAction() {
+
+        try {
+            $access_sx = new Skylable_AccessSxNew( Zend_Auth::getInstance()->getIdentity() );
+
+            $this->view->volume_list = $access_sx->listVolumes(Skylable_AccessSxNew::SORT_BY_NAME_ASC, TRUE);
+        }
+        catch (Exception $e) {
+            $this->getLogger()->err(__METHOD__.': exception: '.$e->getMessage());
+            $this->view->error = $this->view->translate('Failed to retrieve the volume list.');
+        }
+    }
+
+    /**
+     * Manage a volume.
+     * 
+     * Parameters:
+     * 'volume' - string with the volume name
+     */
+    public function volumeAction() {
+        $req_volume = $this->getRequest()->getParam('volume');
+        $vol_check = new My_ValidatePath();
+        if (!$vol_check->isValid($req_volume)) {
+            $this->view->error = $this->getTranslator()->translate('Fatal error: invalid volume.');
+            return FALSE;
+        }
+        
+        $volume = My_Utils::getRootFromPath($req_volume);
+        if (strlen($volume) == 0) {
+            $this->view->error = $this->getTranslator()->translate('Fatal error: invalid volume.');
+            return FALSE;
+        }
+        $this->view->volume = $volume;
+
+        try {
+            $user = Zend_Auth::getInstance()->getIdentity();
+            $access_sx = new Skylable_AccessSxNew( $user );
+
+            $volume_list = $access_sx->listVolumes(Skylable_AccessSxNew::SORT_BY_NAME_ASC, TRUE);
+            
+            
+            if (empty($volume_list) || !is_array($volume_list)) {
+                $this->view->volume_error = $this->getTranslator()->translate('Volume not found.');
+                return FALSE;
+            }
+            
+            foreach($volume_list as $volume_data) {
+                if (My_Utils::isSamePath($volume_data['path'], $volume) ) {
+                    $this->view->volume_data = $volume_data;
+                    break;
+                }
+            }
+            
+            if (!isset($this->view->volume_data)) {
+                $this->view->volume_error = $this->getTranslator()->translate('Volume not found.');
+                return FALSE;
+            }
+
+            $this->view->volume_acl = $access_sx->getVolumeACL($volume);
+            
+            // This preference key is populated upon login
+            $whoami = $user->getPreferences()->get(My_User::PREF_WHO_AM_I);
+            
+            $can_manage_volume = FALSE;
+            if ($user->getRoleId() === My_User::ROLE_ADMIN) {
+                $can_manage_volume = TRUE;
+            } else {
+                foreach($this->view->volume_acl as $acl_info) {
+                    if (strcmp($acl_info['user'], $whoami) == 0) {
+                        if (in_array('owner', $acl_info['perms']) || in_array('manager', $acl_info['perms'])) {
+                            $can_manage_volume = TRUE;
+                        }
+                    }
+                }
+            }
+            
+            if (!$can_manage_volume) {
+                $this->view->volume_error = $this->getTranslator()->translate('You don\'t have the rights to manage this volume.');
+                return FALSE;
+            }
+            
+        }
+        catch (Skylable_VolumeNotFoundException $e) {
+            $this->getLogger()->err(__METHOD__.': exception: '.$e->getMessage());
+            $this->view->volume_error = $this->view->translate('Volume not found.');
+        }
+        catch (Exception $e) {
+            $this->getLogger()->err(__METHOD__.': exception: '.$e->getMessage());
+            $this->view->error = $this->view->translate('Internal error.');
+        }
+        
     }
 
 }

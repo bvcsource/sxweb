@@ -24,6 +24,9 @@ if (!Skylable_Lang) {
         cancelBtn : 'Anuluj',
         doLoginBtn: 'Zaloguj się',
 
+        // Generic "Update" button
+        updateBtn: 'Update',
+
         // ------------ Create new directory
         // Create dir window title
         createDirTitle: "Utwórz katalog",
@@ -73,6 +76,8 @@ if (!Skylable_Lang) {
         settingsPageSizeChangeSuccess : 'Rozmiar strony został zmieniony.',
         settingsPageSizeChangeFailure : 'Zmiana nie powiodła się',
         settingsPageSizeInvalid : 'Niepoprawny rozmiar strony.',
+        settingsRevisionsLimitWindowTitle : 'Change revisions limits',
+        settingsRevisionsLimitChangeMessage: 'Maximum revisions limit:',
 
         // -------- Uploads
         uploadTitle: 'Przesyłanie...',

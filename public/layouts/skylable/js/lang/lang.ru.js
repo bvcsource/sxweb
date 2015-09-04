@@ -27,6 +27,9 @@ if (!Skylable_Lang) {
         cancelBtn : 'Отмена',
         doLoginBtn: 'Войти',
 
+        // Generic "Update" button
+        updateBtn: 'Update',
+
         // ------------ Create new directory
         // Create dir window title
         createDirTitle: "Создать папку",
@@ -76,6 +79,8 @@ if (!Skylable_Lang) {
         settingsPageSizeChangeSuccess : 'Размер страницы успешно изменён.',
         settingsPageSizeChangeFailure : 'Операция не удалась',
         settingsPageSizeInvalid : 'Неправильный размер страницы.',
+        settingsRevisionsLimitWindowTitle : 'Change revisions limits',
+        settingsRevisionsLimitChangeMessage: 'Maximum revisions limit:',
 
         // -------- Uploads
         uploadTitle: 'Загружется...',

@@ -1041,4 +1041,121 @@ class AjaxController extends My_BaseAction {
             return FALSE;
         }
     }
+
+    /**
+     * AJAX call to manage volumes. Returns a JSON object with the following properties:
+     * 'status' - boolean - TRUE operation succeeded, FALSE on failure
+     * 'message' - string - on failure contains the error to show to the user, on success the text/html to show
+     *
+     * The 'setter' operations must be POST requests.
+     *
+     * Parameters (mandatory):
+     * 'volume' - string the volume on which operate
+     * 'operation' - string, the requested operation on the volume. Valid operations:
+     *      'rev' - set the maximum revisions for a volume
+     *      'adduser' - add an user
+     *      'moduser' - modify an user
+     *
+     * Parameters for operations:
+     * REV
+     * 'rev_count' - integer - the new maximum revisions number.
+     */
+    public function managevolumeAction() {
+
+        if (!Zend_Auth::getInstance()->hasIdentity()) {
+            $this->forbidden();
+            return FALSE;
+        }
+        
+        // Enable the view to let the View JSON helper work.
+        $this->enableView();
+        
+        $volume = $this->getRequest()->getParam('volume');
+        $operation = $this->getRequest()->getParam('operation');
+
+        // The JSON reply
+        $this->view->reply = array(
+            'status' => TRUE,
+            'error' => '',
+            'message' => '',
+            'url' => ''
+        );
+
+        // Parameter check
+        $vol_check = new My_ValidatePath();
+        if (!$vol_check->isValid($volume)) {
+            $this->view->reply['status'] = FALSE;
+            $this->view->reply['message'] = $this->getTranslator()->translate('Fatal error: invalid volume.');
+            return FALSE;
+        }
+
+        $volume = My_Utils::getRootFromPath($volume);
+        if (strlen($volume) == 0) {
+            $this->view->reply['status'] = FALSE;
+            $this->view->reply['message'] = $this->getTranslator()->translate('Fatal error: invalid volume.');
+            return FALSE;
+        }
+
+        if (!in_array($operation, array('rev', 'adduser', 'moduser'))) {
+            $this->view->reply['status'] = FALSE;
+            $this->view->reply['message'] = $this->getTranslator()->translate('Fatal error: invalid operation.');
+            return FALSE;
+        }
+
+        if ($operation === 'rev'  ) {
+            if (!$this->getRequest()->isPost()) {
+                $this->view->reply['status'] = FALSE;
+                $this->view->reply['message'] = $this->getTranslator()->translate('Fatal error: invalid request.');
+                return FALSE;
+            }
+
+            $rev_count = $this->getRequest()->getParam('rev_count');
+            $rev_count_valid = FALSE;
+            if (preg_match('/^\d+$/', $rev_count) == 1 ) {
+                $this->getLogger()->debug(__METHOD__.' REV COUNT: '.var_export($rev_count, TRUE));
+                $rev_count_valid = (intval($rev_count) >= 1);
+            }
+            if (!$rev_count_valid) {
+                $this->view->reply['status'] = FALSE;
+                $this->view->reply['message'] = $this->getTranslator()->translate('Invalid maximum revision count.');
+                return FALSE;
+            }
+
+            try {
+                $user = Zend_Auth::getInstance()->getIdentity();
+                $access_sx = new Skylable_AccessSxNew( $user );
+                $out = $access_sx->setVolumeMaximumRevisions($volume, $rev_count);
+
+                $this->getLogger()->debug(__METHOD__.': OUTPUT:'.print_r($out, TRUE));
+                $this->view->reply['status'] = TRUE;
+                $this->view->reply['message'] = $this->getTranslator()->translate('Successfully set maximum revision count.');
+                $this->view->reply['rev_count'] = $out['revisions_limit'];
+            }
+            catch(Skylable_RevisionException $e) {
+                if ($e->getCode() == Skylable_RevisionException::REVISIONS_SAME_LIMITS) {
+                    $this->view->reply['status'] = TRUE;
+                    $this->view->reply['message'] = $this->getTranslator()->translate('Maximum revisions limit unchanged.');
+                    $this->view->reply['rev_count'] = $rev_count;
+                } else {
+                    $this->getLogger()->err(__METHOD__.': exception: '.$e->getMessage());
+
+                    $this->view->reply['status'] = FALSE;
+                    $this->view->reply['message'] = $this->getTranslator()->translate('Failed to set maximum revision count.');
+                }
+            }
+            catch(Skylable_VolumeNotFoundException $e) {
+                $this->getLogger()->err(__METHOD__.': exception: '.$e->getMessage());
+
+                $this->view->reply['status'] = FALSE;
+                $this->view->reply['message'] = $this->getTranslator()->translate('Volume not found.');
+            }
+            catch(Exception $e) {
+                $this->getLogger()->err(__METHOD__.': exception: '.$e->getMessage());
+
+                $this->view->reply['status'] = FALSE;
+                $this->view->reply['message'] = $this->getTranslator()->translate('Failed to set maximum revision count.');
+            }
+
+        }
+    }
 }
