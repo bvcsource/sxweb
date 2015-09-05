@@ -968,7 +968,9 @@ class Skylable_AccessSxNew {
             'sxacl volshow '.
             '-c '.My_utils::escapeshellarg($this->_base_dir).' '.
             My_utils::escapeshellarg( $this->_cluster_string.'/'.$vol )
-            , '', $output, $exit_code, $this->_last_error_log, array($this, 'processVolumeACL'), array($this, 'parseErrors') );
+            , '', $output, $exit_code, $this->_last_error_log, 
+            array($this, 'parseCommandOutputCallback'), array($this, 'parseErrors'),
+            array( array($this, 'processVolumeACL')  ) );
         if ($exit_code == 0) {
             return $output;
         } else {
@@ -980,34 +982,19 @@ class Skylable_AccessSxNew {
     /**
      * Process the ACL for a volume
      *
-     * @param resource $fd input file descriptor
+     * @param string $data_line
      * @param array $data output data
      * @return array
+     * @see parseCommandOutputCallback
      */
-    private function processVolumeACL($fd, &$data) {
-        $ret = array(
-            'status' => TRUE,
-            'error' => ''
-        );
-        $data = array();
-
-        while( ($data_line = fgets($fd)) !== FALSE ) {
-            if (($p = strpos($data_line, ':')) !== FALSE) {
-                $e = array('user' => substr($data_line, 0, $p), 'perms' => array());
-                if (preg_match_all('/(\s*(\w+))/', substr($data_line, $p), $matches) > 0) {
-                    $e['perms'] = $matches[2];
-                }
-                $data[] = $e;
+    private function processVolumeACL($data_line, &$data, &$ret) {
+        if (($p = strpos($data_line, ':')) !== FALSE) {
+            $e = array('user' => substr($data_line, 0, $p), 'perms' => array());
+            if (preg_match_all('/(\s*(\w+))/', substr($data_line, $p), $matches) > 0) {
+                $e['perms'] = $matches[2];
             }
-
+            $data[] = $e;
         }
-        if (!feof($fd)) { // fgets exited
-            $retval['status'] = FALSE;
-            $retval['error'] = new Exception('Unexpected end of the file', ERROR_UNEXPECTED_END_OF_FILE);
-            $this->getLogger()->debug(__METHOD__.' - Unexpected end of the file');
-        }
-
-        return $ret;
     }
 
 
@@ -1302,7 +1289,7 @@ class Skylable_AccessSxNew {
      * 
      * NOTE: don't check if the volume is encrypted.
      * 
-     * @param $volume the volume name
+     * @param string $volume the volume name
      * @return boolean
      * @throws Exception
      */
@@ -1384,8 +1371,8 @@ class Skylable_AccessSxNew {
      * Sets the volume password of an encrypted volume created 
      * with aes256=nogenkey filter option.
      * 
-     * @param $volume the volume name
-     * @param $password the plain password
+     * @param string $volume the volume name
+     * @param string $password the plain password
      * @return bool TRUE on success, FALSE on failure
      * @throws Exception
      * @throws Skylable_AccessSxException
@@ -1456,12 +1443,12 @@ class Skylable_AccessSxNew {
      */
     public function volumeIsUnlocked($volume) {
         if (empty($volume)) {
-            self::getLogger()->debug(__METHOD__ . ': Volume: '.print_r($volume, TRUE) );
+            $this->getLogger()->debug(__METHOD__ . ': Volume: '.print_r($volume, TRUE) );
             throw new Exception(__METHOD__ .': invalid volume.');
         }
 
         if (!$this->isInitialized()) {
-            self::getLogger()->err(__METHOD__ . ': user not initialized. ');
+            $this->getLogger()->err(__METHOD__ . ': user not initialized. ');
             return FALSE;
         }
         
@@ -1470,7 +1457,7 @@ class Skylable_AccessSxNew {
         
         // If the volume path doesn't exists, can't proceed
         if (!@is_dir($path)) {
-            self::getLogger()->err(__METHOD__ . ': Path don\'t exists: '.$path);
+            $this->getLogger()->err(__METHOD__ . ': Path don\'t exists: '.$path);
             return FALSE;
         }
         
@@ -1497,7 +1484,7 @@ class Skylable_AccessSxNew {
      */
     public function volumeIsEncrypted($volume) {
         if (empty($volume) ) {
-            self::getLogger()->debug(__METHOD__ . ': Volume: '.print_r($volume, TRUE) );
+            $this->getLogger()->debug(__METHOD__ . ': Volume: '.print_r($volume, TRUE) );
             throw new Exception(__METHOD__ .': invalid volume');
         }
         
@@ -1609,7 +1596,7 @@ class Skylable_AccessSxNew {
      */
     public function mkdir($path, $dirname) {
         if (empty($dirname) || empty($path)) {
-            self::getLogger()->debug(__METHOD__. ': invalid path: ' . print_r($path, TRUE) . " or dirname:" . print_r($dirname, TRUE));
+            $this->getLogger()->debug(__METHOD__. ': invalid path: ' . print_r($path, TRUE) . " or dirname:" . print_r($dirname, TRUE));
             return FALSE;
         }
         $dest_path = My_Utils::joinDirectories(array($path, $dirname));
@@ -1758,31 +1745,6 @@ class Skylable_AccessSxNew {
         $this->checkForErrors($this->_last_error_log, TRUE);
 
         return FALSE;
-    }
-
-    /**
-     * STUB: parse sxcp output.
-     *
-     * @param resource $fd file descriptor to analyze
-     * @param array $output processed output
-     * @return array
-     */
-    protected function parseCopyOutput($fd, &$output) {
-        $retval = array(
-            'status' => TRUE,
-            'error' => ''
-        );
-        $output = array();
-
-        while( ($data_line = fgets($fd)) !== FALSE ) {
-            $output[] = $data_line;
-        }
-        if (!feof($fd)) { // fgets exited
-            $retval['status'] = FALSE;
-            $retval['error'] = new Exception('Unexpected end of the file', ERROR_UNEXPECTED_END_OF_FILE);
-            $this->getLogger()->debug(__METHOD__.' - Unexpected end of the file');
-        }
-        return $retval;
     }
 
     /**
@@ -2030,7 +1992,9 @@ class Skylable_AccessSxNew {
         $ret = $this->executeShellCommand('sxinit -I '.
             '-c '.My_utils::escapeshellarg($this->_base_dir).' '.
             My_utils::escapeshellarg( $this->_cluster_string ),
-            '', $out, $exit_code, $this->_last_error_log, array($this, 'parseClusterInfo'), array($this, 'parseErrors'));
+            '', $out, $exit_code, $this->_last_error_log, 
+            array($this, 'parseCommandOutputCallback'), array($this, 'parseErrors'),
+            array( array($this, 'parseClusterInfo') ));
         if ($exit_code == 0) {
             $this->getLogger()->debug(__METHOD__.': returned data: '.var_export($out, TRUE));
             return $out;
@@ -2042,28 +2006,15 @@ class Skylable_AccessSxNew {
     /**
      * Parse the 'sxinit -I' command output
      * 
-     * @param $fd
-     * @param $data
-     * @return array
+     * @param string $data_line
+     * @param array $data
+     * @param array $ret
+     * @see parseCommandOutputCallback
      */
-    protected function parseClusterInfo($fd, &$data) {
-        $retval = array(
-            'status' => TRUE,
-            'error' => ''
-        );
-        $data = array();
-
-        while( ($data_line = fgets($fd)) !== FALSE ) {
-            if (preg_match('/^([^:]+):\s+(.*)/', $data_line, $matches) == 1) {
-                $data[strtolower(str_replace(' ', '_', $matches[1]))] = trim($matches[2]); 
-            }
+    protected function parseClusterInfo($data_line, &$data, &$ret) {
+        if (preg_match('/^([^:]+):\s+(.*)/', $data_line, $matches) == 1) {
+            $data[strtolower(str_replace(' ', '_', $matches[1]))] = trim($matches[2]); 
         }
-        if (!feof($fd)) { // fgets exited
-            $retval['status'] = FALSE;
-            $retval['error'] = new Exception('Unexpected end of the file', ERROR_UNEXPECTED_END_OF_FILE);
-            $this->getLogger()->debug(__METHOD__.' - Unexpected end of the file');
-        }
-        return $retval;
     }
 
     /**
@@ -2186,7 +2137,9 @@ class Skylable_AccessSxNew {
         $ret = $this->executeShellCommand('sxrev list '.
             '-c '.My_utils::escapeshellarg($this->_base_dir).' '.
             My_utils::escapeshellarg( $this->_cluster_string.'/'.My_Utils::removeSlashes($path, TRUE) ),
-            '', $out, $exit_code, $this->_last_error_log, array($this, 'parseSxrevListOutput'), array($this, 'parseErrors'));
+            '', $out, $exit_code, $this->_last_error_log, 
+            array($this, 'parseCommandOutputCallback'), array($this, 'parseErrors'),
+            array( array($this, 'parseSxrevListOutput') ) );
         if ($exit_code == 0) {
             return $out;
         } else {
@@ -2199,33 +2152,21 @@ class Skylable_AccessSxNew {
     /**
      * Parse the sxrev list output.
      * 
-     * @param $fd
-     * @param $data
-     * @return array
+     * @param string $data_line
+     * @param array $data
+     * @param array $ret
+     * @see parseCommandOutputCallback
      */
-    private function parseSxrevListOutput($fd, &$data) {
-        $ret = array(
-            'status' => TRUE,
-            'error' => ''
-        );
-        $data = array();
+    private function parseSxrevListOutput($data_line, &$data, &$ret) {
 
-        while( ($data_line = fgets($fd)) !== FALSE ) {
-            if (preg_match('/^(?<id>\d+)\.\s+(?<date>[^\s]+)\s+(?<time>[^\s]+)\s+size:(?<size>\d+)\s+rev:"(?<rev>[^"]+)/', $data_line, $matches) == 1) {
-                
-                for($i = 0; $i < 6; $i++) {
-                    unset($matches[$i]);
-                }
-                $data[] = $matches;
+        if (preg_match('/^(?<id>\d+)\.\s+(?<date>[^\s]+)\s+(?<time>[^\s]+)\s+size:(?<size>\d+)\s+rev:"(?<rev>[^"]+)/', $data_line, $matches) == 1) {
+            
+            for($i = 0; $i < 6; $i++) {
+                unset($matches[$i]);
             }
-        }
-        if (!feof($fd)) { // fgets exited
-            $retval['status'] = FALSE;
-            $retval['error'] = new Exception('Unexpected end of the file', ERROR_UNEXPECTED_END_OF_FILE);
-            $this->getLogger()->debug(__METHOD__.' - Unexpected end of the file');
+            $data[] = $matches;
         }
 
-        return $ret;
     }
 
     /**
@@ -2417,7 +2358,27 @@ class Skylable_AccessSxNew {
             throw new Exception('Failed to initialize the process.', self::ERROR_CANT_INITIALIZE_PROCESS);
         }
     }
-    
+
+    /**
+     * List all users in a cluster. Only an admin can list the users.
+     * 
+     * On success returns an associative array in the form:
+     * 
+     * array(
+     * 'username' => 'type'
+     * ...
+     * )
+     * 'type' can be 'admin' or 'normal'.
+     * 
+     * @return bool|array FALSE on failure, an associative array on success
+     * @throws Exception
+     * @throws Skylable_AccessSxException
+     * @throws Skylable_InvalidCredentialsException
+     * @throws Skylable_InvalidPasswordException
+     * @throws Skylable_RevisionException
+     * @throws Skylable_VolumeNotFoundException
+     * @see parseSxaclUserlistOutput
+     */
     public function userlist() {
 
         $this->_last_error_log = '';
@@ -2428,7 +2389,10 @@ class Skylable_AccessSxNew {
         $ret = $this->executeShellCommand('sxacl userlist '.
             '-c '.My_utils::escapeshellarg($this->_base_dir).' '.
             My_utils::escapeshellarg( $this->_cluster_string ),
-            '', $out, $exit_code, $this->_last_error_log, array($this, 'parseSxaclUserlistOutput'), array($this, 'parseErrors'));
+            '', $out, $exit_code, $this->_last_error_log, 
+            array($this, 'parseCommandOutputCallback'), array($this, 'parseErrors'),
+            array( array($this, 'parseSxaclUserlistOutput')  )
+        );
         if ($exit_code == 0) {
             return $out;
         } else {
@@ -2438,27 +2402,152 @@ class Skylable_AccessSxNew {
         return FALSE;
     }
 
+    /**
+     * Parse 'sxacl userlist' command output.
+     * 
+     * @param string $data_line
+     * @param array $data
+     * @param array $ret
+     */
+    private function parseSxaclUserlistOutput($data_line, &$data, &$ret) {
+        if (preg_match('/^(?<user>[^\(]+)\((?<type>[^\)]+)/', $data_line, $matches) == 1) {
+            for($i = 0; $i < 3; $i++) {
+                unset($matches[$i]);
+            }
+            $data[trim($matches['user'])] = $matches['type'];
+        }
+    }
+    
+    const
+        PRIVILEGE_READ = 1,
+        PRIVILEGE_WRITE = 2,
+        PRIVILEGE_MANAGER = 3;
+    
+    protected 
+        $_privileges_table = array(
+            self::PRIVILEGE_READ => 'read',
+            self::PRIVILEGE_WRITE => 'write',
+            self::PRIVILEGE_MANAGER => 'manager'
+        );
+    
+    public function sxaclVolumePermissions($user, $volume, $grant, $revoke = array() ) {
+        if (strlen($user) == 0) {
+            $this->getLogger()->err(__METHOD__.': empty user');
+            return FALSE;
+        }
+        $vol = My_Utils::getRootFromPath($volume);
+        if (strlen($vol) == 0) {
+            $this->getLogger()->err(__METHOD__.': empty volume');
+            return FALSE;
+        }
+        
+        $this->sxaclPreparePerms($grant, $grants);
+        $this->sxaclPreparePerms($revoke, $revokes);
+        
+        // Corner case: nothing to do
+        if (empty($grants) && empty($revokes)) {
+            $this->getLogger()->err(__METHOD__.': invalid privileges');
+            return FALSE;
+        }
 
-    private function parseSxaclUserlistOutput($fd, &$data) {
+        $this->_last_error_log = '';
+        if (!$this->isInitialized()) {
+            $this->getLogger()->err(__METHOD__.': SX cluster not initialize');
+            return FALSE;
+        }
+
+        $ret = $this->executeShellCommand('sxacl volperm '.
+            '-c '.My_utils::escapeshellarg($this->_base_dir).' '.
+            (empty($grants) ? '' : '--grant='.implode(',',$grants).' ').
+            (empty($revokes) ? '' : '--revoke='.implode(',',$grants).' ').
+            My_utils::escapeshellarg( $user ).' '.
+            My_utils::escapeshellarg( $this->_cluster_string.'/'.$vol ),
+            '', $out, $exit_code, $this->_last_error_log, 
+            array($this, 'parseCommandOutputCallback'), array($this, 'parseErrors'),
+            array( array($this, 'parseSxaclVolPermOutput')  ));
+        if ($exit_code == 0) {
+            return $out;
+        } else {
+            $this->checkForErrors($this->_last_error_log, TRUE);
+        }
+
+        return FALSE;
+    }
+
+    /**
+     * Prepare permissions string from an array of values.
+     * 
+     * Values are PRIVILEGE_* constants, output is string constants
+     * 
+     * @param array $perms
+     * @param array $out
+     */
+    private function sxaclPreparePerms(&$perms, &$out) {
+        $out = array();
+        if (is_array($perms)) {
+            foreach($perms as $p) {
+                if (array_key_exists($p, $this->_privileges_table)) {
+                    $out[] = $this->_privileges_table[$p];
+                }
+            }
+            $out = array_unique($out);
+        } else {
+            if (array_key_exists($perms, $this->_privileges_table)) {
+                $out[] = $this->_privileges_table[$perms];
+            }
+        }
+    }
+
+    /**
+     * @param string $data_line
+     * @param array $data
+     * @param array $ret
+     * @see parseCommandOutputCallback
+     */
+    private function parseSxaclVolPermOutput($data_line, &$data, &$ret) {
+        // STUB
+    }
+
+    /**
+     * Utility function: parse a command output using a callback.
+     * 
+     * callback($data_line, &$data, &$ret)
+     * 
+     * $data_line is a line of text from the command output
+     * $data is an array that can be populated with processed output
+     * $ret array with the return value (should be populated only on errors
+     * 
+     * Returns an associative array:
+     * array(
+     *  'status' - boolean - TRUE parsing was successfully, FALSE parsing failed
+     *  'error' - Exception - on errors the exception to raise
+     * ) 
+     * 
+     * @param resource $fd
+     * @param array $data
+     * @param callback $callback
+     * @return array
+     */
+    protected function parseCommandOutputCallback($fd, &$data, $callback) {
         $ret = array(
             'status' => TRUE,
             'error' => ''
         );
         $data = array();
+        $callback_failed = FALSE;
 
         while( ($data_line = fgets($fd)) !== FALSE ) {
-            if (preg_match('/^(?<user>[^\(]+)\((?<type>[^\)]+)/', $data_line, $matches) == 1) {
-
-                for($i = 0; $i < 3; $i++) {
-                    unset($matches[$i]);
-                }
-                $data[trim($matches['user'])] = $matches['type'];
+            if (call_user_func_array( $callback, array($data_line, &$data, &$ret) ) === FALSE) {
+                $callback_failed = TRUE;
+                break;
             }
         }
-        if (!feof($fd)) { // fgets exited
-            $retval['status'] = FALSE;
-            $retval['error'] = new Exception('Unexpected end of the file', ERROR_UNEXPECTED_END_OF_FILE);
-            $this->getLogger()->debug(__METHOD__.' - Unexpected end of the file');
+        if ($callback_failed) {
+            $this->getLogger()->err(__METHOD__.': callback failed on data: '.print_r($data_line, TRUE));
+        } elseif (!feof($fd)) { // fgets exited
+            $ret['status'] = FALSE;
+            $ret['error'] = new Exception('Unexpected end of the file', ERROR_UNEXPECTED_END_OF_FILE);
+            $this->getLogger()->err(__METHOD__.' - Unexpected end of the file');
         }
 
         return $ret;
@@ -2520,7 +2609,10 @@ class Skylable_AccessSxNew {
             '-c '.My_utils::escapeshellarg($this->_base_dir).' '.
             '--max-revisions='.My_Utils::escapeshellarg($maximum_revisions).' '.
             My_utils::escapeshellarg( $this->_cluster_string.'/'.$vol )
-            , '', $output, $exit_code, $this->_last_error_log, array($this, 'parseSxvolModifyOutput'), array($this, 'parseErrors') );
+            , '', $output, $exit_code, $this->_last_error_log, 
+            array($this, 'parseCommandOutputCallback'), array($this, 'parseErrors'), 
+            array( array($this, 'parseSxvolModifyOutput') ) 
+        );
         if ($exit_code == 0) {
             return $output;
         } else {
@@ -2530,34 +2622,22 @@ class Skylable_AccessSxNew {
     }
 
     /**
-     * Parse the 'sxvol modify' command output
-     * @param $fd
-     * @param $data
-     * @return array
+     * Parse 'sxvl modify' output
+     * @param string $data_line
+     * @param array $data
+     * @param array $ret
+     * @see parseCommandOutputCallback
      */
-    private function parseSxvolModifyOutput($fd, &$data) {
-        $ret = array(
-            'status' => TRUE,
-            'error' => ''
-        );
-        $data = array(
-            'revisions_limit' => '',
-            'owner' => '',
-            'size' => ''
-        );
-
-        while( ($data_line = fgets($fd)) !== FALSE ) {
-            if (preg_match('/^Volume revisions limit changed to (?<revs>\d+)/', $data_line, $matches) == 1) {
-                $data['revisions_limit'] = $matches['revs'];
-            }
-            
+    private function parseSxvolModifyOutput($data_line, &$data, &$ret) {
+        if (empty($data)) {
+            $data = array(
+                'revisions_limit' => '',
+                'owner' => '',
+                'size' => ''
+            );
         }
-        if (!feof($fd)) { // fgets exited
-            $retval['status'] = FALSE;
-            $retval['error'] = new Exception('Unexpected end of the file', ERROR_UNEXPECTED_END_OF_FILE);
-            $this->getLogger()->debug(__METHOD__.' - Unexpected end of the file');
+        if (preg_match('/^Volume revisions limit changed to (?<revs>\d+)/', $data_line, $matches) == 1) {
+            $data['revisions_limit'] = $matches['revs'];
         }
-
-        return $ret;
     }
 }
