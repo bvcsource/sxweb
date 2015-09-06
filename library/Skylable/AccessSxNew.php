@@ -722,7 +722,7 @@ class Skylable_AccessSxNew {
             'sxls -l '.
             '-c '.My_utils::escapeshellarg($this->_base_dir).' '.
             My_utils::escapeshellarg( $this->_cluster_string.'/'.My_Utils::removeSlashes($filepath, TRUE)),
-            '', $output, $exitcode, $this->_last_error_log, array($this, 'processSxLsOutput'), array($this, 'parseErrors'), array(self::LIST_ALL) );
+            '', $output, $exitcode, $this->_last_error_log, array($this, 'parseSxLsOutput'), array($this, 'parseErrors'), array(self::LIST_ALL) );
         if ($exitcode == 0) {
             if (count($output) == 0) {
                 // File not found!
@@ -782,7 +782,7 @@ class Skylable_AccessSxNew {
             ($recursive ? '-r ' : '').
             '-c '.My_utils::escapeshellarg($this->_base_dir).' '.
             My_utils::escapeshellarg( $this->_cluster_string.'/'.My_Utils::removeSlashes($path, TRUE)),
-            '', $output, $exitcode, $this->_last_error_log, array($this, 'processSxLsOutput'), array($this, 'parseErrors'), array($file_types) );
+            '', $output, $exitcode, $this->_last_error_log, array($this, 'parseSxLsOutput'), array($this, 'parseErrors'), array($file_types) );
         if ($exitcode == 0) {
             switch($sort_order) {
                 case self::SORT_BY_NAME_DESC:
@@ -861,7 +861,7 @@ class Skylable_AccessSxNew {
      * @param integer $file_types file types to include in listing
      * @return array
      */
-    protected function processSxLsOutput($fd, &$output, $file_types) {
+    protected function parseSxLsOutput($fd, &$output, $file_types) {
         $retval = array(
             'status' => TRUE,
             'error' => ''
@@ -970,7 +970,7 @@ class Skylable_AccessSxNew {
             My_utils::escapeshellarg( $this->_cluster_string.'/'.$vol )
             , '', $output, $exit_code, $this->_last_error_log, 
             array($this, 'parseCommandOutputCallback'), array($this, 'parseErrors'),
-            array( array($this, 'processVolumeACL')  ) );
+            array( array($this, 'parseVolumeACL')  ) );
         if ($exit_code == 0) {
             return $output;
         } else {
@@ -987,7 +987,7 @@ class Skylable_AccessSxNew {
      * @return array
      * @see parseCommandOutputCallback
      */
-    private function processVolumeACL($data_line, &$data, &$ret) {
+    private function parseVolumeACL($data_line, &$data, &$ret) {
         if (($p = strpos($data_line, ':')) !== FALSE) {
             $e = array('user' => substr($data_line, 0, $p), 'perms' => array());
             if (preg_match_all('/(\s*(\w+))/', substr($data_line, $p), $matches) > 0) {
@@ -999,7 +999,7 @@ class Skylable_AccessSxNew {
 
 
     /**
-     * Executes a shell command and processes output and errors.
+     * Executes a shell command and parse output and errors.
      *
      * Returned value is an array:
      * array(
@@ -1042,8 +1042,8 @@ class Skylable_AccessSxNew {
      * @param mixed $output the command output
      * @param integer $exit_code the command exit code
      * @param mixed $error_log the error messages
-     * @param callback $output_callback callback to process the output
-     * @param callback $error_callback callback to process the errors
+     * @param callback $output_callback callback to parse the output
+     * @param callback $error_callback callback to parse the errors
      * @param array $output_callback_params additional parameters to pass to the output callback
      * @param array $error_callback_params additional parameters to pass to the error callback
      * @return array
@@ -1906,6 +1906,11 @@ class Skylable_AccessSxNew {
                                     throw new Skylable_RevisionException(implode('\n', $log['errors']), $code);
                                 } elseif(stripos($err, 'Failed to locate volume: No such volume') !== FALSE) {
                                     throw new Skylable_VolumeNotFoundException($err);
+                                } elseif (stripos($err, 'Failed to modify volume acl') !== FALSE) {
+                                    if (stripos($err, 'Cannot retrieve user id for') !== FALSE) {
+                                        throw new Skylable_UserNotFoundException($err);
+                                    }
+                                    throw new Skylable_FailedToModifyVolumeACLException($err);
                                 } elseif (stripos($err, 'Failed to modify volume') !== FALSE) {
                                     if (stripos($err, 'New revisions limit is the same as current value')) {
                                         throw new Skylable_RevisionException(implode('\n', $log['errors']), Skylable_RevisionException::REVISIONS_SAME_LIMITS);    
@@ -2429,7 +2434,20 @@ class Skylable_AccessSxNew {
             self::PRIVILEGE_WRITE => 'write',
             self::PRIVILEGE_MANAGER => 'manager'
         );
-    
+
+    /**
+     * @param string $user
+     * @param string $volume
+     * @param array $grant
+     * @param array $revoke
+     * @return bool
+     * @throws Exception
+     * @throws Skylable_AccessSxException
+     * @throws Skylable_InvalidCredentialsException
+     * @throws Skylable_UserNotFoundException
+     * @throws Skylable_FailedToModifyVolumeACLException
+     * @throws Skylable_VolumeNotFoundException
+     */
     public function sxaclVolumePermissions($user, $volume, $grant, $revoke = array() ) {
         if (strlen($user) == 0) {
             $this->getLogger()->err(__METHOD__.': empty user');
@@ -2450,6 +2468,20 @@ class Skylable_AccessSxNew {
             return FALSE;
         }
 
+        /**
+         * Handle the "manager" privilege mess.
+         * If you _grant_ the manager privilege, you can't revoke read or write.
+         * If you _revoke_ the manager privilege, you can't grant read or write  
+         */
+        
+        if (in_array('manager', $grants)) {
+            $revokes = array();
+        }
+        if (in_array('manager', $revokes)) {
+            $grants = array();
+        }
+         
+
         $this->_last_error_log = '';
         if (!$this->isInitialized()) {
             $this->getLogger()->err(__METHOD__.': SX cluster not initialize');
@@ -2459,7 +2491,7 @@ class Skylable_AccessSxNew {
         $ret = $this->executeShellCommand('sxacl volperm '.
             '-c '.My_utils::escapeshellarg($this->_base_dir).' '.
             (empty($grants) ? '' : '--grant='.implode(',',$grants).' ').
-            (empty($revokes) ? '' : '--revoke='.implode(',',$grants).' ').
+            (empty($revokes) ? '' : '--revoke='.implode(',',$revokes).' ').
             My_utils::escapeshellarg( $user ).' '.
             My_utils::escapeshellarg( $this->_cluster_string.'/'.$vol ),
             '', $out, $exit_code, $this->_last_error_log, 
@@ -2505,7 +2537,9 @@ class Skylable_AccessSxNew {
      * @see parseCommandOutputCallback
      */
     private function parseSxaclVolPermOutput($data_line, &$data, &$ret) {
-        // STUB
+        if (stripos($data_line, 'New volume ACL:') === FALSE) {
+            $this->parseVolumeACL($data_line, $data, $rest);            
+        }
     }
 
     /**
@@ -2514,7 +2548,7 @@ class Skylable_AccessSxNew {
      * callback($data_line, &$data, &$ret)
      * 
      * $data_line is a line of text from the command output
-     * $data is an array that can be populated with processed output
+     * $data is an array that can be populated with parsed output
      * $ret array with the return value (should be populated only on errors
      * 
      * Returns an associative array:
