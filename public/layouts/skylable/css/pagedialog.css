@@ -106,7 +106,7 @@
     border: 1px solid #1575c5
 }
 
-.dialog-box-body input[type=submit] {
+.dialog-box-body input[type=submit], .dialog-box-body button, .dialog-box-body input[type=button]  {
     background: #1575c5;
     color: #fff;
     border: none;
@@ -116,7 +116,7 @@
     float: right;
 }
 
-.dialog-box-body input[type=submit]:hover {
+.dialog-box-body input[type=submit]:hover, .dialog-box-body button:hover, .dialog-box-body input[type=button]:hover {
     background: #0d548f
 }
 
@@ -148,7 +148,7 @@
     float: left;
 }
 
-.dialog-box-buttons input[type=submit] {
+.dialog-box-buttons input[type=submit], .dialog-box-body button, .dialog-box-body input[type=button] {
     float: right;
     margin-left: 10px;
 }
@@ -195,7 +195,7 @@
         border-radius: 0;
     }
 
-    .dialog-box-body input[type=submit] {
+    .dialog-box-body input[type=submit], .dialog-box-body button, .dialog-box-body input[type=button] {
         bottom: 0;
         float: right;
         padding: 3% 5%;

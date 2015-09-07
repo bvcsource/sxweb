@@ -37,10 +37,13 @@
                 <input type="password" value="" name="password" placeholder="<?php echo $this->translate('Password'); ?>" />
 
                 <div class="dialog-box-buttons">
-                    <input type="submit" id="download_start" value="<?php echo $this->translate('Download now!'); ?>" />
                     
                     <?php if (in_array($this->file_type, array('image', 'text', 'source', 'pdf'))): ?>
-                        <input type="submit" id="preview_start" value="<?php echo $this->translate('Preview...'); ?>" onclick="return startPreview();" />
+                        <button type="submit" id="preview_start" value="<?php echo $this->translate('Preview...'); ?>" onclick="return startPreview();"><?php echo $this->translate('Preview...'); ?></button>
+                        <button type="submit" id="download_start" value="<?php echo $this->translate('Download now!'); ?>"><?php echo $this->translate('Download now!'); ?></button>
+                        
+                    <?php else: ?>
+                        <input type="submit" id="download_start" value="<?php echo $this->translate('Download now!'); ?>" />
                     <?php endif; ?>
                     
                 </div>
