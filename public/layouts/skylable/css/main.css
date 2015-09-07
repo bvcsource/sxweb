@@ -2920,3 +2920,38 @@ a, input, .icon-dl, button, .sort-name span, .sort-size span, .sort-date span {
     padding: 5px;
     border: none;
 }
+
+/* Generic table styles */
+.generic_table, .two_column_table {
+    margin: 10px 0;
+}
+
+.generic_table td, .generic_table th, .two_column_table td, .two_column_table th {
+    padding: 10px;
+    border: none;
+    border-top: 1px solid #eee;
+    text-align: center;
+    vertical-align: middle;
+    border-collapse: collapse;
+}
+
+.generic_table tr:first-child td, .generic_table tr:first-child th, .two_column_table tr:first-child td, .two_column_table tr:first-child th {
+    border-top: 1px solid #bbb;
+}
+
+.generic_table tr:last-child td, .generic_table tr:last-child th, .two_column_table tr:last-child td, .two_column_table tr:last-child th {
+    border-bottom: 1px solid #bbb;
+}
+
+.generic_table th, .two_column_table th {
+    font-weight: bold;
+}
+
+.two_column_table th {
+    text-align: right;
+}
+
+.two_column_table td {
+    text-align: left;
+}
+

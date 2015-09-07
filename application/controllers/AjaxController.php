@@ -1053,12 +1053,15 @@ class AjaxController extends My_BaseAction {
      * 'volume' - string the volume on which operate
      * 'operation' - string, the requested operation on the volume. Valid operations:
      *      'rev' - set the maximum revisions for a volume
-     *      'adduser' - add an user
-     *      'moduser' - modify an user
+     *      'modperm' - modify user privileges and permissions on a volume
      *
      * Parameters for operations:
      * REV
      * 'rev_count' - integer - the new maximum revisions number.
+     * 
+     * MODPERM
+     * 'user' - string - the user to which change privileges
+     * 'frm_permissions' - array - array of new permissions to grant, one char per index: 'r' - read, 'w' - write, 'm' - manager
      */
     public function managevolumeAction() {
 
@@ -1096,7 +1099,7 @@ class AjaxController extends My_BaseAction {
             return FALSE;
         }
 
-        if (!in_array($operation, array('rev', 'adduser', 'moduser'))) {
+        if (!in_array($operation, array('rev', 'modperm'))) {
             $this->view->reply['status'] = FALSE;
             $this->view->reply['message'] = $this->getTranslator()->translate('Fatal error: invalid operation.');
             return FALSE;
@@ -1117,7 +1120,7 @@ class AjaxController extends My_BaseAction {
             }
             if (!$rev_count_valid) {
                 $this->view->reply['status'] = FALSE;
-                $this->view->reply['message'] = $this->getTranslator()->translate('Invalid maximum revision count.');
+                $this->view->reply['message'] = $this->getTranslator()->translate('Invalid maximum revision limit.');
                 return FALSE;
             }
 
@@ -1128,7 +1131,7 @@ class AjaxController extends My_BaseAction {
 
                 $this->getLogger()->debug(__METHOD__.': OUTPUT:'.print_r($out, TRUE));
                 $this->view->reply['status'] = TRUE;
-                $this->view->reply['message'] = $this->getTranslator()->translate('Successfully set maximum revision count.');
+                $this->view->reply['message'] = $this->getTranslator()->translate('Successfully set maximum revision limit.');
                 $this->view->reply['rev_count'] = $out['revisions_limit'];
             }
             catch(Skylable_RevisionException $e) {
@@ -1140,7 +1143,7 @@ class AjaxController extends My_BaseAction {
                     $this->getLogger()->err(__METHOD__.': exception: '.$e->getMessage());
 
                     $this->view->reply['status'] = FALSE;
-                    $this->view->reply['message'] = $this->getTranslator()->translate('Failed to set maximum revision count.');
+                    $this->view->reply['message'] = $this->getTranslator()->translate('Failed to set maximum revision limit.');
                 }
             }
             catch(Skylable_VolumeNotFoundException $e) {
@@ -1153,7 +1156,116 @@ class AjaxController extends My_BaseAction {
                 $this->getLogger()->err(__METHOD__.': exception: '.$e->getMessage());
 
                 $this->view->reply['status'] = FALSE;
-                $this->view->reply['message'] = $this->getTranslator()->translate('Failed to set maximum revision count.');
+                $this->view->reply['message'] = $this->getTranslator()->translate('Failed to set maximum revision limit.');
+            }
+
+        } elseif ($operation === 'modperm'  ) {
+            if (!$this->getRequest()->isPost()) {
+                $this->view->reply['status'] = FALSE;
+                $this->view->reply['message'] = $this->getTranslator()->translate('Fatal error: invalid request.');
+                return FALSE;
+            }
+
+            $dest_user = $this->getRequest()->getParam('user');
+            $perms = $this->getRequest()->getParam('frm_permissions');
+
+            $this->getLogger()->debug(__METHOD__.': USER:'.print_r($dest_user, TRUE));
+            $this->getLogger()->debug(__METHOD__.': PERMS:'.print_r($perms, TRUE));
+            
+            $validate_user = new My_ValidateUserLogin();
+            if (!$validate_user->isValid($dest_user)) {
+                $this->view->reply['status'] = FALSE;
+                $this->view->reply['message'] = $this->getTranslator()->translate('Fatal error: invalid user.');
+                return FALSE;
+            }
+            
+            /*
+             * Validate passed permissions.
+             * The permissions array can be empty: this means you revoke all privileges. 
+             */ 
+            if (!is_array($perms) ) {
+                $this->view->reply['status'] = FALSE;
+                $this->view->reply['message'] = $this->getTranslator()->translate('Fatal error: invalid permissions.');
+                return FALSE;
+            }
+            $grants = array();
+            $perms = array_unique($perms);
+            foreach($perms as $p) {
+                if ($p === 'r') {
+                    $grants[] = Skylable_AccessSxNew::PRIVILEGE_READ;
+                } elseif ($p === 'w') {
+                    $grants[] = Skylable_AccessSxNew::PRIVILEGE_WRITE;
+                } elseif ($p === 'm') {
+                    $grants[] = Skylable_AccessSxNew::PRIVILEGE_MANAGER;
+                }
+            }
+            $revokes = array_diff(array( Skylable_AccessSxNew::PRIVILEGE_READ, Skylable_AccessSxNew::PRIVILEGE_WRITE, Skylable_AccessSxNew::PRIVILEGE_MANAGER ), $grants );
+
+            $this->getLogger()->debug(__METHOD__.': GRANTS:'.print_r($grants, TRUE));
+            $this->getLogger()->debug(__METHOD__.': REVOKES:'.print_r($revokes, TRUE));
+            
+
+            try {
+                
+                $user = Zend_Auth::getInstance()->getIdentity();
+                $access_sx = new Skylable_AccessSxNew( $user );
+
+                /**
+                 * Avoid sxacl strange behavior calling it two times:
+                 * revoke than grants privileges.
+                 */
+                
+                if (count($revokes) > 0) {
+                    $step1_ok = $access_sx->sxaclVolumePermissions($dest_user, $volume, array(), $revokes); 
+                } else {
+                    $step1_ok = TRUE;
+                }
+                
+                if ($step1_ok !== FALSE) {
+                    if (count($grants) > 0) {
+                        $out = $access_sx->sxaclVolumePermissions($dest_user, $volume, $grants);
+                    } else {
+                        $out = $step1_ok;
+                    }
+                    $this->getLogger()->debug(__METHOD__.': OUTPUT:'.print_r($out, TRUE));
+
+                    if ($out !== FALSE) {
+                        $this->view->reply['status'] = TRUE;
+                        $this->view->reply['message'] = $this->getTranslator()->translate('Successfully changed user privileges.');
+                        $this->view->volume_acl = $out;
+                        $this->view->reply['acl_table'] = $this->view->render('/settings/volume_acl_table.phtml');
+                        return TRUE;
+                    } 
+                } 
+                
+                // If we are here, something went wrong...
+                $this->view->reply['status'] = FALSE;
+                $this->view->reply['message'] = $this->getTranslator()->translate('Failed to change user privileges.');
+                
+            }
+            catch(Skylable_FailedToModifyVolumeACLException $e) {
+                $this->getLogger()->err(__METHOD__.': exception: '.$e->getMessage());
+
+                $this->view->reply['status'] = FALSE;
+                $this->view->reply['message'] = $this->getTranslator()->translate('Failed to change user privileges.');
+            }
+            catch(Skylable_UserNotFoundException $e) {
+                $this->getLogger()->err(__METHOD__.': exception: '.$e->getMessage());
+
+                $this->view->reply['status'] = FALSE;
+                $this->view->reply['message'] = $this->getTranslator()->translate('Failed to change user privileges: user not found.');
+            }
+            catch(Skylable_VolumeNotFoundException $e) {
+                $this->getLogger()->err(__METHOD__.': exception: '.$e->getMessage());
+
+                $this->view->reply['status'] = FALSE;
+                $this->view->reply['message'] = $this->getTranslator()->translate('Volume not found.');
+            }
+            catch(Exception $e) {
+                $this->getLogger()->err(__METHOD__.': exception: '.$e->getMessage());
+
+                $this->view->reply['status'] = FALSE;
+                $this->view->reply['message'] = $this->getTranslator()->translate('Failed to change user privileges.');
             }
 
         }

@@ -48,7 +48,7 @@ if (isset($this->error)) {
     } else {
         
         echo '<h2>',$this->translate('Volume Info'),'</h2>',PHP_EOL;
-        ?><table>
+        ?><table class="two_column_table">
         <tr><th><?php echo $this->translate('Name'); ?></th><td><?php echo $this->escape($this->volume); ?></td></tr>
         <tr><th><?php echo $this->translate('Owner'); ?></th><td><?php echo $this->escape($this->volume_data['owner']); ?></td></tr>
         <tr><th><?php echo $this->translate('Replica'); ?></th><td><?php echo $this->volume_data['replica']; ?></td></tr>
@@ -61,30 +61,137 @@ if (isset($this->error)) {
     <?php
         echo '<p><a href="',$this->serverUrl('/settings/volumes'),'" class="styled-button">',$this->translate('Manage another volume...'),'</a></p>',PHP_EOL;
 
-        echo '<hr/><h2>',$this->translate('Volume ACL'),'</h2>',PHP_EOL;
-        ?><table id="volume-acl">
-            <tr><th><?php echo $this->translate('User'); ?></th><th><?php echo $this->translate('Rights'); ?></th></tr>
-        <?php
-            foreach($this->volume_acl as $acl) {
-                if (strcmp($acl['user'], '(all admin users)') != 0) {
-                    echo '<tr>';
-                    echo '<td>',$this->escape($acl['user']),'</td>';
-                    echo '<td>',implode(', ', $acl['perms']),' <button class="styled-button" data-user="',$this->escape($acl['user']),'">',$this->translate('Change...'),'</button></td>';
-                    echo '</tr>',PHP_EOL;    
-                }
-            }
+        echo '<hr/><h2>',$this->translate('Volume Access Control List'),'</h2>',PHP_EOL;
+        echo '<div><button class="styled-button" onclick="changeUserPermissions(null, true); return false;">',$this->translate('Add user...'),'</button><div id="acl_table_container">',$this->render('/settings/volume_acl_table.phtml'),'</div></div>';
         ?>
-        </table>
         <script type="application/javascript">
             var ajax_is_working = false;
             var the_volume = '<?php echo $this->volume; ?>';
+
+            /**
+             * Change user permissions using a modal dialog.
+             * @param HTMLElement ctrl the HTML element describing the user
+             * @param boolean new_user true add the user, false modify the user from the control
+             */
+            function changeUserPermissions(ctrl, new_user) {
+                if (new_user === true) {
+                    var user_name = '';
+                } else {
+                    var user_name = $(ctrl).data('user');    
+                }
+                
+                if (ctrl) {
+                    var permissions = $(ctrl).data('permissions');    
+                } else {
+                    var permissions = "";
+                }
+
+                var dlg = $('#dialog');
+                dlg.dialog({
+                    autoOpen: false,
+                    modal: true,
+                    resizable: true,
+                    title: Skylable_Lang.managevolumeChangeUserPrivilegesWTitle,
+                    beforeClose : function(ev, ui) {
+                        return !ajax_is_working;
+                    }
+                });
+
+                dlg.html(
+                    "<ul><li>" + Skylable_Lang.managevolumeChangeUserPrivileges + "</li>" +
+                    '<li><input type="text" value="" class="share-file-link" id="frm_username" name="frm_username" /></li>' +
+                    '<li>' + Skylable_Lang.managevolumePrivileges + '</li>' +
+                    '<li><label><input type="checkbox" name="frm_permissions[]" value="r"'+ (permissions.indexOf("r") == -1 ? "" : ' checked="checked"') +'> ' + Skylable_Lang.managevolumePrivRead + ' </label></li>'+
+                    '<li><label><input type="checkbox" name="frm_permissions[]" value="w"'+ (permissions.indexOf("w") == -1 ? "" : ' checked="checked"') +'> ' + Skylable_Lang.managevolumePrivWrite + ' </label></li>'+
+                    '<li><label><input type="checkbox" name="frm_permissions[]" value="m"'+ (permissions.indexOf("m") == -1 ? "" : ' checked="checked"') +'> ' + Skylable_Lang.managevolumePrivManager + ' </label></li>'+
+                    "</ul>");
+                
+                $('#frm_username').val(user_name);
+
+                dlg.dialog('option', 'buttons', [
+                    {
+                        id : "dlg_yes_btn",
+                        text : Skylable_Lang.updateBtn,
+                        click : function(e) {
+                            
+                            var permissions = $("input[name='frm_permissions[]']:checked").serialize();
+                            if (permissions.length == 0) {
+                                permissions= encodeURIComponent("frm_permissions[]");
+                            }
+                            
+                            var the_user = $('#frm_username').val();
+
+                            jQuery.ajax({
+                                type:"POST",
+                                url:"<?php echo $this->serverUrl('/ajax/managevolume'); ?>",
+                                data:"volume="+encodeURIComponent(the_volume)+"&operation=modperm&user=" + encodeURIComponent(the_user) + "&" + permissions,
+                                dataType:"json",
+                                beforeSend:function(xhr, opt) {
+                                    ajax_is_working = true;
+
+                                    dlg.dialog('option', 'buttons', [{
+                                        text : Skylable_Lang.closeBtn,
+                                        click : function(e) {
+                                            dlg.dialog('close');
+                                            dlg.dialog('destroy');
+                                        }
+                                    }]);
+                                },
+                                complete:function(xhr, status){
+                                    ajax_is_working = false;
+                                },
+                                success:function(data, status, xhr) {
+                                    
+                                    dlg.html("<p>" + data.message + "</p>");
+
+                                    if (data.status === true) {
+                                        $('#acl_table_container').html(data.acl_table);
+                                    }
+                                },
+                                error:function(xhr, status) {
+                                    
+                                    if (xhr.getResponseHeader('Content-Type') === 'application/json') {
+                                        var response_text = JSON.parse(xhr.responseText);
+                                        dlg.html("<p>" + response_text.error + "</p>");
+
+                                        if (xhr.status == 403) {
+                                            dlg.dialog({
+                                                buttons:[{
+                                                    text : Skylable_Lang['doLoginBtn'],
+                                                    click : function (e) {
+                                                        window.location.href = response_text.url;
+                                                    }
+                                                }]
+                                            });
+                                        }
+                                    } else {
+                                        dlg.html(xhr.responseText);
+                                    }
+                                }
+                            });
+                        }
+                    },
+                    {
+                        text : Skylable_Lang.cancelBtn,
+                        click : function(e) {
+                            dlg.dialog('close');
+                            dlg.dialog('destroy');
+
+                        }
+                    }
+                ]);
+                
+                ajax_is_working = false;
+                dlg.dialog('open');
+            }
             
             $(document).ready(function(){
+                
+                // Manage the revision limit change 
                 $('#change-revisions-btn').click(function(e){
                     var item = document.getElementById('revision-count-item');
                     
                     // Shows the dialog to change the revision count
-                    
                     var dlg = $('#dialog');
                     dlg.dialog({
                         autoOpen: false,

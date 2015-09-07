@@ -102,7 +102,15 @@ if (!Skylable_Lang) {
         revisionsNextBtn : 'Successivo',
         revisionsPrevBtn : 'Precedente',
         revisionsRestoreBtn : 'Ripristina',
-        revisionsNavBarLabel : 'Rev. %s'
+        revisionsNavBarLabel : 'Rev. %s',
+
+        // --------- Manage volume
+        managevolumeChangeUserPrivilegesWTitle: "Cambia i privilegi",
+        managevolumeChangeUserPrivileges: "Cambia i privilegi per l'utente:",
+        managevolumePrivileges: "Privilegi:",
+        managevolumePrivRead : "Lettura",
+        managevolumePrivWrite : "Scrittura",
+        managevolumePrivManager : "Manager"
         
     }
 }

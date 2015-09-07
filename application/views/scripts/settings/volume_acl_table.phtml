@@ -1,4 +1,3 @@
-<div class="wrap">
 <?php
 /*
     The contents of this file are subject to the Common Public Attribution License
@@ -36,40 +35,23 @@
     SWCL.
 */
 
-echo '<h1>',$this->translate('Manage Volumes'),'</h1>',PHP_EOL;
 
-if (isset($this->error)) {
-    echo '<p>',$this->error,'</p>',PHP_EOL;
-} else {
-    if (empty($this->volume_list) || !is_array($this->volume_list)) {
-        echo '<p>',$this->translate('No volumes found!'),'</p>',PHP_EOL;
-    } else {
-        ?>
-<table class="generic_table">
-    <thead>
-    <tr><th><?php echo $this->translate('Name'); ?></th><th><?php echo $this->translate('Owner'); ?></th><th><?php echo $this->translate('Replica'); ?></th><th><?php echo $this->translate('Revisions'); ?></th><th><?php echo $this->translate('Filter'); ?></th><th><?php echo $this->translate('Access'); ?></th><th><?php echo $this->translate('Size'); ?></th><th><?php echo $this->translate('Used Space'); ?></th></tr>
-    </thead>
-    <tbody>
-<?php
-
-        foreach($this->volume_list as $volume) {
+/**
+ * You need to define the variable "volume_acl": an associative array containing the output
+ * of Skylable_AccessSxNew::getVolumeACL()
+ */
+?><table id="volume-acl" class="generic_table">
+    <tr><th><?php echo $this->translate('User'); ?></th><th><?php echo $this->translate('Privileges'); ?></th><th></th></tr>
+    <?php
+    foreach($this->volume_acl as $acl) {
+        if (strcmp($acl['user'], '(all admin users)') != 0) {
+            $p = '';
+            foreach($acl['perms'] as $pe) $p .= $pe[0];
             echo '<tr>';
-            $v = My_Utils::getRootFromPath($volume['path']);
-            echo '<td><a href="',$this->serverUrl('/settings/volume'),'?volume=',rawurlencode($v),'" title="',$this->translate('Manage the volume'),'">',$this->escape($v),'</a></td>';
-            echo '<td>',$this->escape($volume['owner']),'</td>';
-            echo '<td>',$volume['replica'],'</td>';
-            echo '<td>',$volume['revs'],'</td>';
-            echo '<td>',$volume['filter'],'</td>';
-            echo '<td>',$this->prettifyVolumeAccessRights($volume['access']),'</td>';
-            echo '<td>',$volume['volume_size'],'</td>';
-            echo '<td>',$volume['used_space'],'</td>';
+            echo '<td>',$this->escape($acl['user']),'</td>';
+            echo '<td>',implode(', ', $acl['perms']),'</td><td><button class="styled-button" data-user="',$this->escape($acl['user']),'" onclick="changeUserPermissions(this); return false;" data-permissions="',$p,'">',$this->translate('Change...'),'</button></td>';
             echo '</tr>',PHP_EOL;
         }
-        ?>
-    </tbody>
-</table>
-<?php
     }
-}
-?>
-</div>
+    ?>
+</table>
