@@ -52,6 +52,9 @@
 ?>
         <div class="alert alert-success"><?php echo $this->translate('<strong>Success!</strong> You have successfully configured your Skylable SXWeb installation!'); ?></div>
         <p><?php printf($this->translate('You can find the <code>skylable.ini</code> file here: <code>%s</code>.'), $this->skylable_ini_path); ?></p>
+        <?php if (isset($this->suggest_sxweb_address_meta)): ?>
+        <p><?php printf($this->translate('Please register your SXWeb address into the SX cluster using this command:<br/><code>%s</code>'), $this->escape($this->suggest_sxweb_address_meta)); ?></p>
+        <?php endif; ?>
         <p><a href="<?php echo $this->ServerUrl(); ?>" class="btn btn-default"><?php echo $this->translate('Start using it!'); ?></a></p>
 <?php
     else:
@@ -61,6 +64,11 @@
         <textarea class="form-control" id="skylable_ini_text" rows="15" readonly><?php echo $this->escape( $this->skylable_ini ); ?></textarea>
         <script type="text/javascript"> $(document).ready(function(){ $('#skylable_ini_text').select();  }); </script>
         <p><a href="<?php echo $this->ServerUrl(); ?>" class="btn btn-default"><?php echo $this->translate('OK, I created the file manually!'); ?></a></p>
+        
+        <?php if (isset($this->suggest_sxweb_address_meta)): ?>
+        <p><?php printf($this->translate('Please register your SXWeb address into the SX cluster using this command:<br/><code>%s</code>'), $this->escape($this->suggest_sxweb_address_meta)); ?></p>
+        <?php endif; ?>
+        
     <?php
     endif;
 

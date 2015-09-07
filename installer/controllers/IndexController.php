@@ -235,6 +235,7 @@ class IndexController extends Zend_Controller_Action {
         
         // Prepares the session
         $session = new Zend_Session_Namespace();
+        $session->unsetAll();
         $session->config = $this->getBaseConfig();
 
         $session->steps_registry = array(
@@ -907,6 +908,13 @@ class IndexController extends Zend_Controller_Action {
                             $this->view->errors = $form->getMessages();
 
                             $can_proceed = FALSE;
+                        } else {
+                            // Register the SXWeb address
+                            $out = $this->registerSXWebAddressIntoSXCluster( $values['frm_admin_key'], $cluster_cfg );
+                            if ($out['status'] == FALSE) {
+                                // Tell us to show a message about this later
+                                $session->register_sxweb_address = TRUE;
+                            }
                         }
                     }
                 }
@@ -1014,6 +1022,74 @@ class IndexController extends Zend_Controller_Action {
                 'status' => FALSE,
                 'error' => $this->translate($e->getMessage())
             );          
+        }
+    }
+
+    /**
+     * 
+     * Store the SXWeb address into the SX Cluster.
+     * 
+     * @param string $admin_key the admin key
+     * @param array $cluster_config
+     * @return array
+     */
+    protected function registerSXWebAddressIntoSXCluster($admin_key, $cluster_config) {
+
+        if (strlen($admin_key) == 0) {
+            return array(
+                'status' => FALSE,
+                'error' => $this->translate('Invalid admin key.')
+            );
+        }
+
+        $session = new Zend_Session_Namespace();
+        $sx_local = str_replace('APPLICATION_PATH', SXWEB_APPLICATION_PATH, $session->config['sx_local']);
+        $cluster_config['sx_local'] = $sx_local;
+
+        // Create a fake user into the data/ dir 
+        $the_user = new My_User(NULL, 'admin', '', $admin_key);
+        $base_dir = My_Utils::mktempdir( $sx_local, 'Skylable_' );
+        if ($base_dir === FALSE) {
+            return array(
+                'status' => FALSE,
+                'error' => $this->translate('Failed the check the admin key.')
+            );
+        }
+
+        try {
+            $logger = new Zend_Log( new Zend_Log_Writer_Null() );
+            $cfg = new Zend_Config($cluster_config);
+
+            $access_sx = new Skylable_AccessSxNew( $the_user, $base_dir, array( 'user_auth_key' => $admin_key, 'logger' => $logger ), $cfg);
+            $out = $access_sx->clusterSetMeta('sxweb_address', $session->config['url']);
+            My_Utils::deleteDir($base_dir);
+
+            if ($out !== FALSE) {
+                return array(
+                    'status' => TRUE,
+                    'error' => ''
+                );
+            } else {
+                return array(
+                    'status' => FALSE,
+                    'error' => $this->translate('Failed to set SXWeb meta info.')
+                );
+            }
+        }
+        catch (Skylable_AccessSxException $e) {
+            My_Utils::deleteDir($base_dir);
+
+            return array(
+                'status' => FALSE,
+                'error' => $this->translate($e->getMessage())
+            );
+        }
+        catch(Exception $e) {
+            My_Utils::deleteDir($base_dir);
+            return array(
+                'status' => FALSE,
+                'error' => $this->translate($e->getMessage())
+            );
         }
     }
 
@@ -1427,6 +1503,10 @@ class IndexController extends Zend_Controller_Action {
         
         $this->view->title = $this->translate('SXWeb successfully installed!');
         
+        if (isset($session->register_sxweb_address)) {
+            $this->view->assign('suggest_sxweb_address_meta','sxadm cluster --set-meta="sxweb_address='.$session->config['url'].'" sx://admin@'.substr($session->config['cluster'], strlen('sx://')));
+        }
+        
         if (@file_exists($skylable_ini_path)) {
             $this->view->write_success = FALSE;
             $this->view->reason = $this->translate('Configuration file already exists.');
@@ -1459,6 +1539,8 @@ class IndexController extends Zend_Controller_Action {
         if (!$this->inhibitInstallScript()) {
             $this->view->installer_not_writable = TRUE;
         }
+        
+        
     }
 
     /**

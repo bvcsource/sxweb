@@ -2660,4 +2660,44 @@ class Skylable_AccessSxNew {
             $data['revisions_limit'] = $matches['revs'];
         }
     }
+
+    /**
+     * Set a SX server meta key.
+     * 
+     * Only an 'admin' user can do this.
+     * 
+     * @param string $key
+     * @param string $value
+     * @return bool
+     * @throws Exception
+     * @throws Skylable_AccessSxException
+     */
+    public function clusterSetMeta($key, $value) {
+        $this->_last_error_log = '';
+        if (!is_string($key) || empty($key)) {
+            $this->getLogger()->debug(__METHOD__.': invalid key.');
+            return FALSE;
+        }
+
+        
+        if (!is_string($value)) {
+            $this->getLogger()->debug(__METHOD__.': invalid value.');
+            return FALSE;
+        }
+
+        $ret = $this->executeShellCommand(
+            'sxadm cluster '.
+            '-c '.My_utils::escapeshellarg($this->_base_dir).' '.
+            '--set-meta='.My_Utils::escapeshellarg($key . '=' . $value).' '.
+            My_utils::escapeshellarg( $this->_cluster_string )
+            , '', $output, $exit_code, $this->_last_error_log,
+            NULL, array($this, 'parseErrors') 
+        );
+        if ($exit_code == 0) {
+            return $output;
+        } else {
+            $this->checkForErrors($this->_last_error_log, TRUE);
+            return FALSE;
+        }
+    }
 }
