@@ -1291,7 +1291,7 @@ class IndexController extends Zend_Controller_Action {
         
         $skylable_ini .= PHP_EOL;
         $skylable_ini .= '; Base URL used to generate other URLs, ie the shared file URL'.PHP_EOL;
-        $skylable_ini .= 'url = "' . $session->config['url'] . '"' . PHP_EOL;
+        $skylable_ini .= '; url = "' . $session->config['url'] . '"' . PHP_EOL;
 
         $skylable_ini .= PHP_EOL;
         $skylable_ini .= '; Main directory' . PHP_EOL; 

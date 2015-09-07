@@ -59,6 +59,42 @@ class My_BaseAction extends Zend_Controller_Action {
     }
 
     /**
+     * Returns the URL to a shared file.
+     * 
+     * @param string $key the unique file key
+     * @param string $path the complete path to the file
+     * @return string the URL to access the file
+     * @throws Zend_Exception
+     */
+    public function getSharedFileURL($key, $path) {
+        return $this->getSXWebURL() . "/shared/file/" . $key . "/" . rawurlencode(basename($path));
+    }
+
+    /**
+     * Returns the SXWeb base URL.
+     * 
+     * How this URL is generated:
+     * - If the 'url' configuration parameter is not empty use it
+     * - Use the View 'serverUrl' call to generate the URL: you need a view.
+     * 
+     * The 'url' configuration parameter is stored into the 'skylable' registry key.
+     * 
+     * @return string the URL
+     * @throws Zend_Exception
+     */
+    public function getSXWebURL() {
+        $url = '';
+        if (Zend_Registry::isRegistered('skylable')) {
+            $url = Zend_Registry::get('skylable')->get('url', FALSE);    
+        }
+        
+        if ($url === FALSE || empty($url)) {
+            $url = $this->view->serverUrl();
+        }
+        return $url;
+    }
+
+    /**
      * Apply the preferred user locale (if any).
      */
     public function applyUserLocale() {

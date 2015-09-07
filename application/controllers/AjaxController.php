@@ -598,7 +598,7 @@ class AjaxController extends My_BaseAction {
             }
             
             $this->_helper->viewRenderer->setNoRender(FALSE);
-            $this->view->url = Zend_Registry::get('skylable')->get('url') . "/shared/file/" . $key . "/" . rawurlencode(basename($path));
+            $this->view->url = $this->getSharedFileURL($key, $path);
         } catch (My_NotUniqueException $e) {
             $this->getLogger()->err(__METHOD__.': exception: '.$e->getMessage());
             $this->sendErrorResponse('<p>' . $this->getTranslator()->translate('Failed to create the file share link.').'</p>');

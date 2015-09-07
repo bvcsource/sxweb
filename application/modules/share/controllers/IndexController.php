@@ -289,7 +289,7 @@ class Share_IndexController extends My_BaseAction {
                 if ($ok_up) {
                     echo Zend_Json::encode(array(
                         'status' => TRUE,
-                        'publink' => $this->getPublink($file_key, $path)
+                        'publink' => $this->getSharedFileURL($file_key, $path)
                     ));    
                 } else {
                     echo Zend_Json::encode(array(
@@ -307,7 +307,7 @@ class Share_IndexController extends My_BaseAction {
                 } else {
                     echo Zend_Json::encode(array(
                         'status' => TRUE,
-                        'publink' => $this->getPublink($file_key, $path)
+                        'publink' => $this->getSharedFileURL($file_key, $path)
                     ));
                 }
             }
@@ -335,18 +335,4 @@ class Share_IndexController extends My_BaseAction {
         }
     }
 
-    /**
-     * Given a shared file info, returns the URL to use to access it
-     *
-     * NOTE: $path is the complete path of the file
-     *
-     * @param string $file_key
-     * @param string $path
-     * @return string
-     * @throws Zend_Exception
-     */
-    protected function getPublink($file_key, $path) {
-        return Zend_Registry::get('skylable')->get('url') . "/shared/file/" . $file_key . "/" . rawurlencode(basename($path));
-        // return "https://share.".parse_url(Zend_Registry::get('skylable')->get('cluster'), PHP_URL_HOST)."/shared/file/".$file_key."/".rawurlencode(basename($path));
-    }
 }

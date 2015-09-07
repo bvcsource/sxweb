@@ -783,7 +783,7 @@ class IndexController extends My_BaseAction {
                 // Send the email
                 $view = Zend_Layout::getMvcInstance()->getView();
                 $view->hash = $token;
-                $view->url = Zend_Registry::get('skylable')->url;
+                $view->url = $this->getSXWebURL();
 
                 try {
 

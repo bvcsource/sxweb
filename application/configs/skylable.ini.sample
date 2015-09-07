@@ -15,7 +15,7 @@ cluster_ssl = true
 ;cluster_ip = 192.168.0.1
 
 ; Base URL used to generate other URLS, ie the shared file URL
-url = "https://sxweb.example.com"
+; url = "https://sxweb.example.com"
 
 ; Main directory 
 local = APPLICATION_PATH "/../"
