@@ -2468,20 +2468,6 @@ class Skylable_AccessSxNew {
             return FALSE;
         }
 
-        /**
-         * Handle the "manager" privilege mess.
-         * If you _grant_ the manager privilege, you can't revoke read or write.
-         * If you _revoke_ the manager privilege, you can't grant read or write  
-         */
-        
-        if (in_array('manager', $grants)) {
-            $revokes = array();
-        }
-        if (in_array('manager', $revokes)) {
-            $grants = array();
-        }
-         
-
         $this->_last_error_log = '';
         if (!$this->isInitialized()) {
             $this->getLogger()->err(__METHOD__.': SX cluster not initialize');
