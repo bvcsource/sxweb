@@ -69,13 +69,22 @@ class SettingsController extends My_BaseAction {
         
         // Pre-compile the form.
         $lang = Zend_Auth::getInstance()->getIdentity()->getPreferences()->get(My_User::PREF_LANGUAGE, '');
+        
         if (empty($lang)) {
-            if (Zend_Registry::isRegistered('Zend_Locale')) {
+            if (Zend_Registry::isRegistered('Zend_Translate')) {
+                // Gets the current language, if any
+                $locale = Zend_Registry::get('Zend_Translate')->getLocale();
+                if (is_string($locale)) {
+                    $lang = $locale;
+                } elseif (is_object($locale)) {
+                    $lang = $locale->getLanguage();
+                }
+                
+                $this->getLogger()->debug(__METHOD__.': lang from Zend_Translate: '.print_r($lang, TRUE));
+            } elseif (Zend_Registry::isRegistered('Zend_Locale')) {
                 // Gets the current language, if any
                 $lang = Zend_Registry::get('Zend_Locale')->getLanguage();
-            } elseif (Zend_Registry::isRegistered('Zend_Translate')) {
-                // Gets the current language, if any
-                $lang = Zend_Registry::get('Zend_Translate')->getLocale()->getLanguage();
+                $this->getLogger()->debug(__METHOD__.': lang from Zend_Locale: '.print_r($lang, TRUE));
             } else {
                 $def_lang = Zend_Registry::get('skylable')->get('default_language', NULL);
                 if (!empty($def_lang) && $def_lang !== 'auto' ) {
@@ -84,6 +93,7 @@ class SettingsController extends My_BaseAction {
                     // Defaults to english
                     $lang = 'en';    
                 }
+                $this->getLogger()->debug(__METHOD__.': lang from defaults: '.print_r($lang, TRUE));
             }
         }
         $pref_form->setDefault('frm_language', $lang);
