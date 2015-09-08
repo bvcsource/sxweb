@@ -838,4 +838,50 @@ class My_Utils {
 
         return true;
     }
+
+    /**
+     * Returns the server URL, eventually adding a request URI.
+     * 
+     * Does the same as the 'serverUrl' view helper: in fact it's a cut and paste of the code.
+     * 
+     * @param null $requestUri
+     * @return string
+     */
+    public static function serverUrl($requestUri = NULL) {
+
+        // Taken from the serverUrl Zend Framework view helper
+        switch (true) {
+            case (isset($_SERVER['HTTPS']) && ($_SERVER['HTTPS'] == 'on' || $_SERVER['HTTPS'] === true)):
+            case (isset($_SERVER['HTTP_SCHEME']) && ($_SERVER['HTTP_SCHEME'] == 'https')):
+            case (isset($_SERVER['SERVER_PORT']) && ($_SERVER['SERVER_PORT'] == 443)):
+                $scheme = 'https';
+                break;
+            default:
+                $scheme = 'http';
+        }
+
+        if (isset($_SERVER['HTTP_HOST']) && !empty($_SERVER['HTTP_HOST'])) {
+            $host = $_SERVER['HTTP_HOST'];
+        } else if (isset($_SERVER['SERVER_NAME'], $_SERVER['SERVER_PORT'])) {
+            $name = $_SERVER['SERVER_NAME'];
+            $port = $_SERVER['SERVER_PORT'];
+
+            if (($scheme == 'http' && $port == 80) ||
+                ($scheme == 'https' && $port == 443)) {
+                $host = $name;
+            } else {
+                $host = $name . ':' . $port;
+            }
+        }
+
+        if ($requestUri === true) {
+            $path = $_SERVER['REQUEST_URI'];
+        } else if (is_string($requestUri)) {
+            $path = $requestUri;
+        } else {
+            $path = '';
+        }
+
+        return $scheme . '://'.$host.$path;
+    }
 }

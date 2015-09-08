@@ -69,7 +69,7 @@ class IndexController extends Zend_Controller_Action {
             'cluster_ip' => '',
 
             // Base URL used to generate other URLs, ie the shared file URL
-            'url' => $this->view->ServerUrl(),
+            'url' => My_Utils::serverUrl(),
             
             // Main directory 
             'local' => $app_path . '"/../"',

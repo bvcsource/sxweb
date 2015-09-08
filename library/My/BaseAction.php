@@ -89,7 +89,7 @@ class My_BaseAction extends Zend_Controller_Action {
         }
         
         if ($url === FALSE || empty($url)) {
-            $url = $this->view->serverUrl();
+            $url = My_Utils::serverUrl();
         }
         return $url;
     }
