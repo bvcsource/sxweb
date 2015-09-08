@@ -214,7 +214,7 @@ class SearchController extends My_BaseAction {
 					'operator' => 'and'
 				);
 
-				$params['body']['query']['bool']['must_not'][]['wildcard']['path'] = '*'.Skylable_AccessSxNew::NEWDIR_FILENAME.'*';
+				$params['body']['query']['bool']['must_not'][]['wildcard']['path'] = '*'.Skylable_AccessSx::NEWDIR_FILENAME.'*';
 
 				$params['body']['fields'] = 'path';
 

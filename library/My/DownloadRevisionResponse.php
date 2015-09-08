@@ -46,15 +46,15 @@ class My_DownloadRevisionResponse extends Zend_Controller_Response_Http {
     /**
      * Send the file to the browser.
      *
-     * $file_data is an associative array as returned by the {@link Skylable_AccessSxNew::sxrevList }
+     * $file_data is an associative array as returned by the {@link Skylable_AccessSx::sxrevList }
      * method.
      *
-     * @param Skylable_AccessSxNew $access_sx
+     * @param Skylable_AccessSx $access_sx
      * @param array $file_data
      * @param string $password
      * @param string $purge_dir if non empty path to delete when download succeded
      */
-    public function __construct(Skylable_AccessSxNew $access_sx, $file_data, $password = '', $purge_dir = '', $disposition = Skylable_AccessSxNew::DOWNLOAD_DISPOSITION_ATTACHMENT) {
+    public function __construct(Skylable_AccessSx $access_sx, $file_data, $password = '', $purge_dir = '', $disposition = Skylable_AccessSx::DOWNLOAD_DISPOSITION_ATTACHMENT) {
         $this->_access_sx = $access_sx;
         $this->_file_data = $file_data;
         $this->_password = $password;

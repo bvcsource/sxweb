@@ -992,7 +992,7 @@ class IndexController extends Zend_Controller_Action {
             $logger = new Zend_Log( new Zend_Log_Writer_Null() );
             $cfg = new Zend_Config($cluster_config);
             
-            $access_sx = new Skylable_AccessSxNew( $the_user, $base_dir, array( 'user_auth_key' => $admin_key, 'logger' => $logger ), $cfg);
+            $access_sx = new Skylable_AccessSx( $the_user, $base_dir, array( 'user_auth_key' => $admin_key, 'logger' => $logger ), $cfg);
             $whoami = $access_sx->whoami();
             My_Utils::deleteDir($base_dir);
 
@@ -1060,7 +1060,7 @@ class IndexController extends Zend_Controller_Action {
             $logger = new Zend_Log( new Zend_Log_Writer_Null() );
             $cfg = new Zend_Config($cluster_config);
 
-            $access_sx = new Skylable_AccessSxNew( $the_user, $base_dir, array( 'user_auth_key' => $admin_key, 'logger' => $logger ), $cfg);
+            $access_sx = new Skylable_AccessSx( $the_user, $base_dir, array( 'user_auth_key' => $admin_key, 'logger' => $logger ), $cfg);
             $out = $access_sx->clusterSetMeta('sxweb_address', $session->config['url']);
             My_Utils::deleteDir($base_dir);
 

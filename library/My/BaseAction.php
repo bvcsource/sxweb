@@ -254,12 +254,12 @@ class My_BaseAction extends Zend_Controller_Action {
      * The file list goes into the $view_slot.
      *
      * @param string $path the path to show
-     * @param Skylable_AccessSxNew $access_sx
+     * @param Skylable_AccessSx $access_sx
      * @param string $view_slot
      * @param string $view_paginator
      * @throws Zend_Paginator_Exception
      */
-    protected function paginateFiles($path, Skylable_AccessSxNew $access_sx, $view_slot = 'list', $view_paginator = 'paginator') {
+    protected function paginateFiles($path, Skylable_AccessSx $access_sx, $view_slot = 'list', $view_paginator = 'paginator') {
         // Get view configuration from user
         $page_size = 50;
         $user_page_size = Zend_Auth::getInstance()->getIdentity()->getPreferences()->get(My_User::PREF_PAGE_SIZE, -1);
@@ -345,14 +345,14 @@ class My_BaseAction extends Zend_Controller_Action {
      * Centralized way to manage the userUse this method when you 
      * @param string $where where in the code the problem happened, set always as __METHOD__
      * @param Exception $e the exception
-     * @param Skylable_AccessSxNew $access_sx the source of the exception
+     * @param Skylable_AccessSx $access_sx the source of the exception
      */
-    public function invalidCredentialsExceptionHandler($where = '', Exception $e, Skylable_AccessSxNew $access_sx, $http_response_code = 403) {
+    public function invalidCredentialsExceptionHandler($where = '', Exception $e, Skylable_AccessSx $access_sx, $http_response_code = 403) {
         $this->getResponse()->setHttpResponseCode($http_response_code);
         if (empty($where)) {
             $where = __METHOD__;
         }
-        $this->getLogger()->err($where. ': Skylable_AccessSxNew library error, last command: '.var_export($access_sx->getLastExecutedCommand(), TRUE));
+        $this->getLogger()->err($where. ': Skylable_AccessSx library error, last command: '.var_export($access_sx->getLastExecutedCommand(), TRUE));
         $this->getLogger()->err($where. ': Error code: '.strval($e->getCode()).' Errors:'. $e->getMessage());
 
         $this->view->error_title = $this->getTranslator()->translate('Invalid credentials!');
@@ -374,7 +374,7 @@ class My_BaseAction extends Zend_Controller_Action {
             return FALSE;
         }
         try {
-            $access_sx = new Skylable_AccessSxNew( Zend_Auth::getInstance()->getIdentity(), '', array('initialize' => FALSE) );
+            $access_sx = new Skylable_AccessSx( Zend_Auth::getInstance()->getIdentity(), '', array('initialize' => FALSE) );
             $access_sx->purgeProfile();
         }
         catch(Exception $e) {

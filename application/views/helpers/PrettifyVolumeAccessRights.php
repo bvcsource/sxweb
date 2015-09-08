@@ -41,7 +41,7 @@
  *
  * Pretty prints the access rights to a volume.
  * 
- * You should pass the volume 'access' field returned by {@link Skylable_AccessSxNew::listVolumes}.
+ * You should pass the volume 'access' field returned by {@link Skylable_AccessSx::listVolumes}.
  * 
  * Given a string in the form 'rw', outputs 'read,write'.
  * 

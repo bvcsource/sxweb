@@ -231,7 +231,7 @@ class Share_IndexController extends My_BaseAction {
                 $this->getLogger()->debug(__METHOD__.': temporary user dir is: '.$the_dir);
             }
 
-            $access_sx = new Skylable_AccessSxNew( $the_user, $base_dir, array( 'user_auth_key' => $data['access_key'] ));
+            $access_sx = new Skylable_AccessSx( $the_user, $base_dir, array( 'user_auth_key' => $data['access_key'] ));
 
             // Check if the volume is encrypted
             if ($access_sx->volumeIsEncrypted( My_Utils::getRootFromPath($path) )) {

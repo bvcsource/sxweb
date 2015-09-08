@@ -42,7 +42,7 @@
  * Tells if the current user has read access to the volume.
  *
  * Only works if $this->view->acl hold the ACL for the volume from
- * the method Skylable_AccessSxNew::getVolumeACL() and the Zend_Registry
+ * the method Skylable_AccessSx::getVolumeACL() and the Zend_Registry
  * 'whoami' key holds the user on the SX Cluster.
  */
 class Zend_View_Helper_HasReadAccess extends Zend_View_Helper_Abstract {

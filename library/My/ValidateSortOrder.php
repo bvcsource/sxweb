@@ -39,15 +39,15 @@
 /**
  * Validate a HTTP parameter that contains a sort order
  * which is an integer equal to one of the 
- * Skylable_AccessSxNew::SORT_* constants
+ * Skylable_AccessSx::SORT_* constants
  *
  */
 class My_ValidateSortOrder extends Zend_Validate {
     public function __construct() {
         $this->addValidator(new Zend_Validate_Int(), TRUE);
         $this->addValidator(new Zend_Validate_Between(
-                    array( 'min' => Skylable_AccessSxNew::SORT_NONE, 
-                           'max' => Skylable_AccessSxNew::SORT_LAST_VALID_VALUE,
+                    array( 'min' => Skylable_AccessSx::SORT_NONE, 
+                           'max' => Skylable_AccessSx::SORT_LAST_VALID_VALUE,
                             'inclusive' => TRUE
                     )
                 )

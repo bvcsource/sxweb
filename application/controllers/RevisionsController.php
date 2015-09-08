@@ -74,7 +74,7 @@ class RevisionsController extends My_BaseAction {
         if ($this->getRequest()->isPost()) {
             if ($this->checkRevisionHash('rev_id', $rev_id)) {
                 try {
-                    $access_sx = new Skylable_AccessSxNew( Zend_Auth::getInstance()->getIdentity() );
+                    $access_sx = new Skylable_AccessSx( Zend_Auth::getInstance()->getIdentity() );
                     $revisions = $access_sx->sxrevList($path);
                     if ($revisions === FALSE) {
                         $this->view->error = $this->getTranslator()->translate('Path not found or revisions not supported.');
@@ -115,7 +115,7 @@ class RevisionsController extends My_BaseAction {
             $this->view->path = $path;
 
             if (!isset($access_sx)) {
-                $access_sx = new Skylable_AccessSxNew( Zend_Auth::getInstance()->getIdentity() );    
+                $access_sx = new Skylable_AccessSx( Zend_Auth::getInstance()->getIdentity() );    
             }
             
             $revisions = $access_sx->sxrevList($path);
@@ -194,7 +194,7 @@ class RevisionsController extends My_BaseAction {
                     $this->view->error_message = $this->getTranslator()->translate('Please wait a minute and retry. ').sprintf($continue_browsing, pathinfo($filename, PATHINFO_DIRNAME));
                     $allow_download = FALSE;
                 } else {
-                    $access_sx = new Skylable_AccessSxNew( Zend_Auth::getInstance()->getIdentity() );
+                    $access_sx = new Skylable_AccessSx( Zend_Auth::getInstance()->getIdentity() );
 
                     // Get file data
                     $rev_data = $access_sx->sxrevList($filename);

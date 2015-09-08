@@ -44,7 +44,7 @@ class Menu_IndexController extends My_BaseAction {
 
     public function volumesAction() {
         try {
-            $access_sx = new Skylable_AccessSxNew( Zend_Auth::getInstance()->getIdentity() );
+            $access_sx = new Skylable_AccessSx( Zend_Auth::getInstance()->getIdentity() );
             $this->view->volumes = $access_sx->listVolumes();
             $this->view->current_volume = My_Utils::getRootFromPath( $this->getLastVisitedPath() );
         }
@@ -56,7 +56,7 @@ class Menu_IndexController extends My_BaseAction {
     public function volmobileAction() {
 
         try {
-            $access_sx = new Skylable_AccessSxNew( Zend_Auth::getInstance()->getIdentity() );
+            $access_sx = new Skylable_AccessSx( Zend_Auth::getInstance()->getIdentity() );
             $this->view->volumes = $access_sx->listVolumes();
             // $this->view->selected = My_Utils::getRootFromPath( strval($this->getRequest()->getParam('vol', '')) );
             $this->view->selected = My_Utils::getRootFromPath( $this->getLastVisitedPath() );

@@ -39,7 +39,7 @@
  * Tells if a volume supports encryption.
  * 
  * To use it you must populate the view variable 'volumes' with volume data
- * taken from Skylable_AccessSxNew::listVolumes().
+ * taken from Skylable_AccessSx::listVolumes().
  */
 class Zend_View_Helper_VolumeIsEncrypted extends Zend_View_Helper_Abstract{
     

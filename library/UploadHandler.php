@@ -292,7 +292,7 @@ class UploadHandler {
     protected function store_on_sx_cluster($file, $source_file = '') {
         try {
             $logger = Zend_Controller_Front::getInstance()->getParam('bootstrap')->getResource('log');
-            $access_sx = new Skylable_AccessSxNew( Zend_Auth::getInstance()->getIdentity() );
+            $access_sx = new Skylable_AccessSx( Zend_Auth::getInstance()->getIdentity() );
 
             if (strlen($source_file) > 0) {
                 $the_name = $source_file;

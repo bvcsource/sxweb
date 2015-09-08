@@ -59,7 +59,7 @@
  * 'cluster_port' - integer - port to connect to, leave empty or not defined to use the default one
  * 'cluster_ip' - string - the IP address of the SX Cluster, for non-DNS clusters. Leave empty to access via DNS (default).
  */
-class Skylable_AccessSxNew {
+class Skylable_AccessSx {
 
     // List cache
     protected static
@@ -160,7 +160,7 @@ class Skylable_AccessSxNew {
     /**
      * Initialize using a user: this will create all necessary dirs and configs.
      * 
-     * Valid parameters:
+     * Valid parameters for the $params array:
      * 'password' - string - the plain user password
      * 'initialize' - boolean - FALSE don't initialize, TRUE (default) do initializations
      * 'user_auth_key' - string - the user secret key to use instead of password or identity
@@ -168,7 +168,8 @@ class Skylable_AccessSxNew {
      *
      * @param My_User $user
      * @param string $base_dir directory of operations, if NULL generate one using the user
-     * @param array $params additional parameters 
+     * @param array $params additional parameters
+     * @param Zend_Config|array $config use this configuration to interact with the SX cluster  
      * @throws Skylable_AccessSxException
      * @throws Exception
      * @see initialize
@@ -1505,7 +1506,7 @@ class Skylable_AccessSxNew {
      * Tells if a volume supports encryption.
      * 
      * The $volume_info parameter is one of the associative arrays returned 
-     * by {@link Skylable_AccessSxNew::listVolumes}.
+     * by {@link Skylable_AccessSx::listVolumes}.
      * 
      * @param array $volume_info
      * @return bool
@@ -1861,7 +1862,7 @@ class Skylable_AccessSxNew {
     /**
      * Check if the execution error log has errors and throw exception.
      *
-     * Works only with an error log made by {@link Skylable_AccessSxNew::parseErrors}.
+     * Works only with an error log made by {@link Skylable_AccessSx::parseErrors}.
      *
      * @param array $log
      * @param bool $throw_exception TRUE on errors throw an exception, FALSE return the value

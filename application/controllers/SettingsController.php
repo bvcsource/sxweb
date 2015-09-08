@@ -163,7 +163,7 @@ class SettingsController extends My_BaseAction {
 
             $this->getLogger()->debug(__METHOD__ . ': Old user key: '.var_export( Zend_Auth::getInstance()->getIdentity()->getSecretKey(), TRUE ));
             
-            $access_sx = new Skylable_AccessSxNew( Zend_Auth::getInstance()->getIdentity() );
+            $access_sx = new Skylable_AccessSx( Zend_Auth::getInstance()->getIdentity() );
             $new_user_key = $access_sx->sxaclUserNewKey($values['frm_new_password'], Zend_Auth::getInstance()->getIdentity()->getLogin());
 
             $this->getLogger()->debug(__METHOD__ . ': New user key: '.var_export( $new_user_key, TRUE ));
@@ -177,7 +177,7 @@ class SettingsController extends My_BaseAction {
                 $this->getLogger()->debug(__METHOD__ . ': Re-initializing the user.');
                 $user = Zend_Auth::getInstance()->getIdentity();
                 $user->setSecretKey('');
-                $access_sx = new Skylable_AccessSxNew( $user, NULL, array( 'password' => $values['frm_new_password'], 'initialize' => FALSE ) );
+                $access_sx = new Skylable_AccessSx( $user, NULL, array( 'password' => $values['frm_new_password'], 'initialize' => FALSE ) );
                 $init_ok = $access_sx->initialize(TRUE);
                 
                 if ($init_ok) {
@@ -211,7 +211,7 @@ class SettingsController extends My_BaseAction {
          * sx://$clustername;token=$authkey,volume=$volname
          */
         try {
-            $access_sx = new Skylable_AccessSxNew( Zend_Auth::getInstance()->getIdentity() );
+            $access_sx = new Skylable_AccessSx( Zend_Auth::getInstance()->getIdentity() );
 
             $str = $access_sx->getUserLink();    
         }
@@ -236,9 +236,9 @@ class SettingsController extends My_BaseAction {
     public function volumesAction() {
 
         try {
-            $access_sx = new Skylable_AccessSxNew( Zend_Auth::getInstance()->getIdentity() );
+            $access_sx = new Skylable_AccessSx( Zend_Auth::getInstance()->getIdentity() );
 
-            $this->view->volume_list = $access_sx->listVolumes(Skylable_AccessSxNew::SORT_BY_NAME_ASC, TRUE);
+            $this->view->volume_list = $access_sx->listVolumes(Skylable_AccessSx::SORT_BY_NAME_ASC, TRUE);
         }
         catch (Exception $e) {
             $this->getLogger()->err(__METHOD__.': exception: '.$e->getMessage());
@@ -269,9 +269,9 @@ class SettingsController extends My_BaseAction {
 
         try {
             $user = Zend_Auth::getInstance()->getIdentity();
-            $access_sx = new Skylable_AccessSxNew( $user );
+            $access_sx = new Skylable_AccessSx( $user );
 
-            $volume_list = $access_sx->listVolumes(Skylable_AccessSxNew::SORT_BY_NAME_ASC, TRUE);
+            $volume_list = $access_sx->listVolumes(Skylable_AccessSx::SORT_BY_NAME_ASC, TRUE);
             
             
             if (empty($volume_list) || !is_array($volume_list)) {

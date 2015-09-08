@@ -74,7 +74,7 @@ class My_SearchPaginator implements Zend_Paginator_Adapter_Interface {
             'operator' => 'and'
         );
 
-        $params['body']['query']['bool']['must_not'][]['wildcard']['path'] = '*'.Skylable_AccessSxNew::NEWDIR_FILENAME.'*';
+        $params['body']['query']['bool']['must_not'][]['wildcard']['path'] = '*'.Skylable_AccessSx::NEWDIR_FILENAME.'*';
 
         return $params;
     }

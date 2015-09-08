@@ -108,7 +108,7 @@ class IndexController extends My_BaseAction {
             // Check user credentials using sxinit
             // Note: the login is an email
             $user = new My_User(NULL, $values['frm_login'], $the_email, '', My_User::ROLE_REGISTERED);
-            $access_sx = new Skylable_AccessSxNew( $user, NULL, array( 'password' => $values['frm_password'], 'initialize' => FALSE ) );
+            $access_sx = new Skylable_AccessSx( $user, NULL, array( 'password' => $values['frm_password'], 'initialize' => FALSE ) );
             $init_ok = $access_sx->initialize(TRUE);
             if ($init_ok) {
                 $user_secret_key = $access_sx->getLocalUserSecretKey();
@@ -304,7 +304,7 @@ class IndexController extends My_BaseAction {
         $this->view->sort = $this->getFileSortOrder();
 
         try {
-            $access_sx = new Skylable_AccessSxNew(Zend_Auth::getInstance()->getIdentity());    
+            $access_sx = new Skylable_AccessSx(Zend_Auth::getInstance()->getIdentity());    
         }
         catch(Exception $e) {
             $this->getLogger()->err(__METHOD__ . ': Step #1 Access SX error: ' . $e->getMessage());
@@ -562,7 +562,7 @@ class IndexController extends My_BaseAction {
             return FALSE;
         }
         catch (Skylable_AccessSxException $e) {
-            $logger->err(__METHOD__. ': Skylable_AccessSxNew library error, last command: '.var_export($access_sx->getLastExecutedCommand(), TRUE));
+            $logger->err(__METHOD__. ': Skylable_AccessSx library error, last command: '.var_export($access_sx->getLastExecutedCommand(), TRUE));
             $logger->err(__METHOD__. ': Error code: '.strval($e->getCode()).' Errors:'. $e->getMessage());
 
             $this->view->error_title = $this->getTranslator()->translate('Internal error!');
@@ -613,7 +613,7 @@ class IndexController extends My_BaseAction {
                     $this->view->error_message = $this->getTranslator()->translate('Please wait a minute and retry. ').$continue_browsing;
                     $allow_download = FALSE;
                 } else {
-                    $access_sx = new Skylable_AccessSxNew( Zend_Auth::getInstance()->getIdentity() );
+                    $access_sx = new Skylable_AccessSx( Zend_Auth::getInstance()->getIdentity() );
 
                     // Get file data
                     $file_data = $access_sx->getFileInfo($filename);
@@ -742,7 +742,7 @@ class IndexController extends My_BaseAction {
             }
 
             $fake_admin = new My_User(NULL, 'admin', '', Zend_Registry::get('skylable')->get('admin_key'));
-            $access_sx = new Skylable_AccessSxNew($fake_admin, $tempdir, array( 'user_auth_key' => Zend_Registry::get('skylable')->get('admin_key') ) );
+            $access_sx = new Skylable_AccessSx($fake_admin, $tempdir, array( 'user_auth_key' => Zend_Registry::get('skylable')->get('admin_key') ) );
 
             // Check the user list: only users who have the login equal to the email are "valid".
             $user_list = $access_sx->userlist();
@@ -870,7 +870,7 @@ class IndexController extends My_BaseAction {
                             }
                             
                             $fake_admin = new My_User(NULL, 'admin', '', Zend_Registry::get('skylable')->get('admin_key'));
-                            $access_sx = new Skylable_AccessSxNew($fake_admin, $tempdir, array( 'user_auth_key' => Zend_Registry::get('skylable')->get('admin_key') ) );
+                            $access_sx = new Skylable_AccessSx($fake_admin, $tempdir, array( 'user_auth_key' => Zend_Registry::get('skylable')->get('admin_key') ) );
                             $new_user_key = $access_sx->sxaclUserNewKey($pwd1, $usr);
                             My_Utils::deleteDir($tempdir);
                             if ($new_user_key === FALSE) {

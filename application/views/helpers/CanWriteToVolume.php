@@ -42,7 +42,7 @@
  * Tells if the current user has write access to the volume.
  *
  * Only works if $this->view->acl hold the ACL for the volume from
- * the method Skylable_AccessSxNew::getVolumeACL()
+ * the method Skylable_AccessSx::getVolumeACL()
  */
 class Zend_View_Helper_CanWriteToVolume extends Zend_View_Helper_Abstract {
 

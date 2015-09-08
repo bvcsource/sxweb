@@ -248,7 +248,7 @@ class AjaxController extends My_BaseAction {
         }
 
         try {
-            $access_sx = new Skylable_AccessSxNew( Zend_Auth::getInstance()->getIdentity() );
+            $access_sx = new Skylable_AccessSx( Zend_Auth::getInstance()->getIdentity() );
             $status = $access_sx->copy($files, My_Utils::slashPath($dest), TRUE, '');
             if ($status === FALSE) {
                 $errors = $access_sx->getLastErrorLog();
@@ -313,7 +313,7 @@ class AjaxController extends My_BaseAction {
         }
 
         try {
-            $access_sx = new Skylable_AccessSxNew( Zend_Auth::getInstance()->getIdentity() );
+            $access_sx = new Skylable_AccessSx( Zend_Auth::getInstance()->getIdentity() );
             $status = $access_sx->move($files, My_Utils::slashPath($dest), TRUE, '');
             if ($status === FALSE) {
                 $errors = $access_sx->getLastErrorLog();
@@ -350,7 +350,7 @@ class AjaxController extends My_BaseAction {
         $validate_path = new My_ValidatePath();
         if ($validate_path->isValid($path)) {
             try {
-                $access_sx  = new Skylable_AccessSxNew( Zend_Auth::getInstance()->getIdentity() );
+                $access_sx  = new Skylable_AccessSx( Zend_Auth::getInstance()->getIdentity() );
                 $this->view->url = $path;
                 $this->view->volumes = $access_sx->listVolumes();
                 $this->paginateFiles($path, $access_sx);
@@ -427,7 +427,7 @@ class AjaxController extends My_BaseAction {
         }
 
         try {
-            $access_sx = new Skylable_AccessSxNew( Zend_Auth::getInstance()->getIdentity() );
+            $access_sx = new Skylable_AccessSx( Zend_Auth::getInstance()->getIdentity() );
 
             if ($access_sx->move($source, $the_new_path, TRUE)) {
                 $this->getLogger()->debug(__METHOD__.': rename successful.');
@@ -493,7 +493,7 @@ class AjaxController extends My_BaseAction {
             /*
              * Sharing from encrypted volumes is not possible.
              */
-            $access_sx2 = new Skylable_AccessSxNew( Zend_Auth::getInstance()->getIdentity() );
+            $access_sx2 = new Skylable_AccessSx( Zend_Auth::getInstance()->getIdentity() );
             $this->view->volumes = $access_sx2->listVolumes();
             if ($this->view->volumeIsEncrypted( My_Utils::getRootFromPath( $path ) )) {
                 $this->sendErrorResponse('<p>'.$this->getTranslator()->translate('File not found or invalid.').'</p>');
@@ -647,10 +647,10 @@ class AjaxController extends My_BaseAction {
 
         try {
 
-            $access_sx = new Skylable_AccessSxNew( Zend_Auth::getInstance()->getIdentity() );
+            $access_sx = new Skylable_AccessSx( Zend_Auth::getInstance()->getIdentity() );
 
             $this->view->path = $path;
-            $volumes = $access_sx->listVolumes( Skylable_AccessSxNew::SORT_BY_NAME_ASC );
+            $volumes = $access_sx->listVolumes( Skylable_AccessSx::SORT_BY_NAME_ASC );
 
             // Removes all the non unlocked volumes from the list.
             foreach ($volumes as $k => $v) {
@@ -661,7 +661,7 @@ class AjaxController extends My_BaseAction {
                 }
             }
             $this->view->vol = $volumes;
-            $this->view->list = $access_sx->sxls($path, Skylable_AccessSxNew::SORT_BY_NAME_ASC, FALSE,  Skylable_AccessSxNew::LIST_DIRECTORIES );
+            $this->view->list = $access_sx->sxls($path, Skylable_AccessSx::SORT_BY_NAME_ASC, FALSE,  Skylable_AccessSx::LIST_DIRECTORIES );
             if ($this->view->list === FALSE) {
                 $this->getResponse()->setHttpResponseCode(500);
                 $this->view->has_error = TRUE;
@@ -736,7 +736,7 @@ class AjaxController extends My_BaseAction {
 
         if ($validate_path->isValid($path) && $validate_dir_name->isValid($dir_name)) {
             try {
-                $access_sx = new Skylable_AccessSxNew( Zend_Auth::getInstance()->getIdentity() );
+                $access_sx = new Skylable_AccessSx( Zend_Auth::getInstance()->getIdentity() );
                 if ($access_sx->mkdir($path, $dir_name)) {
                     $this->getResponse()->setHttpResponseCode(200);
                     echo Zend_Json::encode(array(
@@ -813,7 +813,7 @@ class AjaxController extends My_BaseAction {
         }
 
         try {
-            $access_sx = new Skylable_AccessSxNew( Zend_Auth::getInstance()->getIdentity() );
+            $access_sx = new Skylable_AccessSx( Zend_Auth::getInstance()->getIdentity() );
             $status = $access_sx->remove($files, TRUE);
             if ($status === FALSE) {
                 $errors = $access_sx->getLastErrorLog();
@@ -987,7 +987,7 @@ class AjaxController extends My_BaseAction {
                         }
                     }
 
-                    $access_sx = new Skylable_AccessSxNew( $the_user, $base_dir, array( 'user_auth_key' => $file_data['user_auth_token'] ));
+                    $access_sx = new Skylable_AccessSx( $the_user, $base_dir, array( 'user_auth_key' => $file_data['user_auth_token'] ));
 
                     // Get file data
                     $the_file = $access_sx->getFileInfo($file_data['file_path']);
@@ -1016,7 +1016,7 @@ class AjaxController extends My_BaseAction {
                     $this->getLogger()->debug(__METHOD__.': purge dir: '.(isset($base_dir) ? $base_dir : '' ));
 
                     $res = new My_DownloadResponse($access_sx, $the_file, '', (isset($base_dir) ? $base_dir : '' ),
-                        ($is_inline ? Skylable_AccessSxNew::DOWNLOAD_DISPOSITION_INLINE : Skylable_AccessSxNew::DOWNLOAD_DISPOSITION_ATTACHMENT) );
+                        ($is_inline ? Skylable_AccessSx::DOWNLOAD_DISPOSITION_INLINE : Skylable_AccessSx::DOWNLOAD_DISPOSITION_ATTACHMENT) );
                     $this->getFrontController()->setResponse($res);
                 } else {
                     $this->_helper->layout()->setLayout('application-failure');
@@ -1126,7 +1126,7 @@ class AjaxController extends My_BaseAction {
 
             try {
                 $user = Zend_Auth::getInstance()->getIdentity();
-                $access_sx = new Skylable_AccessSxNew( $user );
+                $access_sx = new Skylable_AccessSx( $user );
                 $out = $access_sx->setVolumeMaximumRevisions($volume, $rev_count);
 
                 $this->getLogger()->debug(__METHOD__.': OUTPUT:'.print_r($out, TRUE));
@@ -1192,14 +1192,14 @@ class AjaxController extends My_BaseAction {
             $perms = array_unique($perms);
             foreach($perms as $p) {
                 if ($p === 'r') {
-                    $grants[] = Skylable_AccessSxNew::PRIVILEGE_READ;
+                    $grants[] = Skylable_AccessSx::PRIVILEGE_READ;
                 } elseif ($p === 'w') {
-                    $grants[] = Skylable_AccessSxNew::PRIVILEGE_WRITE;
+                    $grants[] = Skylable_AccessSx::PRIVILEGE_WRITE;
                 } elseif ($p === 'm') {
-                    $grants[] = Skylable_AccessSxNew::PRIVILEGE_MANAGER;
+                    $grants[] = Skylable_AccessSx::PRIVILEGE_MANAGER;
                 }
             }
-            $revokes = array_diff(array( Skylable_AccessSxNew::PRIVILEGE_READ, Skylable_AccessSxNew::PRIVILEGE_WRITE, Skylable_AccessSxNew::PRIVILEGE_MANAGER ), $grants );
+            $revokes = array_diff(array( Skylable_AccessSx::PRIVILEGE_READ, Skylable_AccessSx::PRIVILEGE_WRITE, Skylable_AccessSx::PRIVILEGE_MANAGER ), $grants );
 
             $this->getLogger()->debug(__METHOD__.': GRANTS:'.print_r($grants, TRUE));
             $this->getLogger()->debug(__METHOD__.': REVOKES:'.print_r($revokes, TRUE));
@@ -1208,7 +1208,7 @@ class AjaxController extends My_BaseAction {
             try {
                 
                 $user = Zend_Auth::getInstance()->getIdentity();
-                $access_sx = new Skylable_AccessSxNew( $user );
+                $access_sx = new Skylable_AccessSx( $user );
 
                 /**
                  * Avoid sxacl strange behavior calling it two times:
