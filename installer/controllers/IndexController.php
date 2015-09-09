@@ -320,8 +320,10 @@ class IndexController extends Zend_Controller_Action {
             'sxcp' => array('1.1', '>='),
             'sxrm' => array('1.1', '>='),
             'sxmv' => array('1.1', '>='),
+            'sxls' => array('1.1', '>='),
             'sxacl' => array('1.1', '>='),
-            'sxrev' => array('1.1', '>=')
+            'sxrev' => array('1.1', '>='),
+            'sxadm' => array('1.1', '>=')
         );
         
         $this->view->sx_commands_search_path = $this->getExecPath();
