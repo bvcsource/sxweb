@@ -244,6 +244,11 @@ class SettingsController extends My_BaseAction {
      * Show all available volumes and let the user manage them.
      */
     public function volumesAction() {
+        
+        if ($this->isDemoMode()) {
+            $this->redirect('/demo');
+            return FALSE;
+        }
 
         try {
             $access_sx = new Skylable_AccessSx( Zend_Auth::getInstance()->getIdentity() );
@@ -263,6 +268,12 @@ class SettingsController extends My_BaseAction {
      * 'volume' - string with the volume name
      */
     public function volumeAction() {
+
+        if ($this->isDemoMode()) {
+            $this->redirect('/demo');
+            return FALSE;
+        }
+        
         $req_volume = $this->getRequest()->getParam('volume');
         $vol_check = new My_ValidatePath();
         if (!$vol_check->isValid($req_volume)) {

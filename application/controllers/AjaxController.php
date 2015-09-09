@@ -1065,7 +1065,7 @@ class AjaxController extends My_BaseAction {
      */
     public function managevolumeAction() {
 
-        if (!Zend_Auth::getInstance()->hasIdentity()) {
+        if (!Zend_Auth::getInstance()->hasIdentity() || $this->isDemoMode()) {
             $this->forbidden();
             return FALSE;
         }
@@ -1211,8 +1211,8 @@ class AjaxController extends My_BaseAction {
                 $access_sx = new Skylable_AccessSx( $user );
 
                 /**
-                 * Avoid sxacl strange behavior calling it two times:
-                 * revoke than grants privileges.
+                 * Calls sxacl two times:
+                 * revoke then grants privileges.
                  */
                 
                 if (count($revokes) > 0) {
