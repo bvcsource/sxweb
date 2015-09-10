@@ -30,7 +30,7 @@ $this->declareVars(
 <p><?php echo $this->translate('Change your login password here.');?></p>
 <p><label for="frm_new_password"><?php echo $this->translate('New Password'); ?></label><input type="password" name="frm_new_password" placeholder="<?php echo $this->translate('New Password'); ?>" value=""></p>
 <p><label for="frm_new_cpassword"><?php echo $this->translate('Confirm Password'); ?></label><input type="password" name="frm_new_cpassword" placeholder="<?php echo $this->translate('Confirm Password'); ?>" value=""></p>
-<p><input type="submit" name="frm_launch" value="Save!"></p>
+<p><input type="submit" name="frm_launch" value="<?php echo $this->translate('Save!'); ?>"></p>
 </form>
 <?php    
     endif;
