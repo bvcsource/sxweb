@@ -56,7 +56,6 @@ if (!Skylable_Lang) {
         deleteMsg: "Bist Du sicher, dass Du die ausgewählte(n) Datei(en) löschen möchtest?",
         deleteNoFiles: "Keine Dateien ausgewählt",
 
-
         // --------- Share window
         shareTitle : "Datei teilen",
         shareMsg : "Bist Du sicher, dass Du die Datei teilen möchtest?",
@@ -66,7 +65,7 @@ if (!Skylable_Lang) {
 
         // -------- Preview
         previewErrorTitle : 'Vorschaufehler!',
-        previewLoadFailed : 'Fehler beim Laden der Datei.<br/>Möglicherweise hast Du Dein Download-Limit erreicht, bitte warte einige Sekunden und versuche es dann erneut.',
+        previewLoadFailed : 'Fehler beim Laden der Datei.<br/>Möglicherweise hast Du das Download-Limit erreicht, bitte warte einige Sekunden und versuche es dann erneut.',
         previewLoading:'Läd&#8230;',
         previewCloseBtn : 'Schließen',
         previewDownloadBtn : 'Herunterladen&#8230;',
@@ -77,8 +76,8 @@ if (!Skylable_Lang) {
         settingsPageSizeChangeSuccess : 'Seitengröße erfolgreich geändert.',
         settingsPageSizeChangeFailure : 'Operation fehlgeschlagen',
         settingsPageSizeInvalid : 'Ungültige Seitengröße.',
-        settingsRevisionsLimitWindowTitle : 'Change revisions limits',
-        settingsRevisionsLimitChangeMessage: 'Maximum revisions limit:',
+        settingsRevisionsLimitWindowTitle : 'Versionsanzahl ändern',
+        settingsRevisionsLimitChangeMessage: 'Maximale Versionsanzahl:',
 
         // -------- Uploads
         uploadTitle: 'Hochladen&#8230;',
@@ -91,12 +90,13 @@ if (!Skylable_Lang) {
         uploadCanceled : 'Hochladen abgebrochen',
         uploadDirError : '%s kann nicht hochgeladen werden, da es ein Verzeichnis oder 0 bytes groß ist',
         uploadBrowserWindowCloseConfirm : 'Dies wird alle Uploads abbrechen. Bist Du sicher?',
+
         uploadOverwriteAll : 'Overwrite All',
         uploadSkipAll : 'Skip All',
 
         // -------- Revisions
         revisionsErrorTitle : 'Vorschaufehler!',
-        revisionsLoadFailed : 'Fehler beim Laden der Datei.<br/>Möglicherweise hast Du Dein Download-Limit erreicht, bitte warte einige Sekunden und versuche es dann erneut.',
+        revisionsLoadFailed : 'Fehler beim Laden der Datei.<br/>Möglicherweise hast Du das Download-Limit erreicht, bitte warte einige Sekunden und versuche es dann erneut.',
         revisionsLoading:'Läd&#8230;',
         revisionsCloseBtn : 'Schließen',
         revisionsDownloadBtn : 'Herunterladen&#8230;',
@@ -106,12 +106,12 @@ if (!Skylable_Lang) {
         revisionsNavBarLabel : 'Rev. %s',
 
         // --------- Manage volume
-        managevolumeChangeUserPrivilegesWTitle: "Change privileges",
-        managevolumeChangeUserPrivileges: "Change privileges for user:",
-        managevolumePrivileges: "Privileges:",
-        managevolumePrivRead : "Read",
-        managevolumePrivWrite : "Write",
-        managevolumePrivManager : "Manager"
+        managevolumeChangeUserPrivilegesWTitle: "Berechtigungen ändern",
+        managevolumeChangeUserPrivileges: "Berechtigungen ändern für:",
+        managevolumePrivileges: "Berechtigungen:",
+        managevolumePrivRead : "Lesen",
+        managevolumePrivWrite : "Schreiben",
+        managevolumePrivManager : "Verwalten"
         
     }
 }

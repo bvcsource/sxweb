@@ -28,7 +28,7 @@ if (!Skylable_Lang) {
         doLoginBtn: 'Войти',
 
         // Generic "Update" button
-        updateBtn: 'Update',
+        updateBtn: 'Обновить',
 
         // ------------ Create new directory
         // Create dir window title
@@ -79,8 +79,8 @@ if (!Skylable_Lang) {
         settingsPageSizeChangeSuccess : 'Размер страницы успешно изменён.',
         settingsPageSizeChangeFailure : 'Операция не удалась',
         settingsPageSizeInvalid : 'Неправильный размер страницы.',
-        settingsRevisionsLimitWindowTitle : 'Change revisions limits',
-        settingsRevisionsLimitChangeMessage: 'Maximum revisions limit:',
+        settingsRevisionsLimitWindowTitle : 'Изменить лимит количества ревизий',
+        settingsRevisionsLimitChangeMessage: 'Лимит количества резивий:',
 
         // -------- Uploads
         uploadTitle: 'Загружется...',
@@ -93,8 +93,8 @@ if (!Skylable_Lang) {
         uploadCanceled : 'Загрузка была прервана',
         uploadDirError : 'Не удалось загрузить %s , поскольку это папка или имеет нулевой размер',
         uploadBrowserWindowCloseConfirm : 'Это остановит все текущие загрузки. Продолжить?',
-        uploadOverwriteAll : 'Overwrite All',
-        uploadSkipAll : 'Skip All',
+        uploadOverwriteAll : 'Перезаписать все',
+        uploadSkipAll : 'Пропустить все',
         
         // -------- Revisions
         revisionsErrorTitle : 'Ошибка предпросмотра!',
@@ -108,12 +108,12 @@ if (!Skylable_Lang) {
         revisionsNavBarLabel : 'Версия %s',
 
         // --------- Manage volume
-        managevolumeChangeUserPrivilegesWTitle: "Change privileges",
-        managevolumeChangeUserPrivileges: "Change privileges for user:",
-        managevolumePrivileges: "Privileges:",
-        managevolumePrivRead : "Read",
-        managevolumePrivWrite : "Write",
-        managevolumePrivManager : "Manager"
+        managevolumeChangeUserPrivilegesWTitle: "Изменить привилегии",
+        managevolumeChangeUserPrivileges: "Изменить привилегии для пользователя:",
+        managevolumePrivileges: "Привилегии:",
+        managevolumePrivRead : "Чтение",
+        managevolumePrivWrite : "Запись",
+        managevolumePrivManager : "Управление"
         
     }
 }
