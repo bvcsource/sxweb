@@ -61,8 +61,8 @@ if (isset($this->error)) {
             echo '<td>',$volume['revs'],'</td>';
             echo '<td>',$volume['filter'],'</td>';
             echo '<td>',$this->prettifyVolumeAccessRights($volume['access']),'</td>';
-            echo '<td>',$volume['volume_size'],'</td>';
-            echo '<td>',$volume['used_space'],'</td>';
+            echo '<td>',$this->fileSizeFormat($volume['volume_size']),'</td>';
+            echo '<td>',$this->fileSizeFormat($volume['used_space']),'</td>';
             echo '</tr>',PHP_EOL;
         }
         ?>
