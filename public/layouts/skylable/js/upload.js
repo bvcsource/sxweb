@@ -70,20 +70,87 @@ if (!Skylable_Uploads) {
             this.skipall = false;
             this.active_upload_queue = [];
 		},
+        
+        hideUploadDialog : function() {
+            if (Skylable_Uploads.dlg) {
+                Skylable_Uploads.dlg.dialog('close');
+            }
+        },
+
+        showUploadDialog : function() {
+            if (Skylable_Uploads.dlg) {
+                Skylable_Uploads.dlg.dialog('open');
+            }
+        },
+        
+        hasUploadDialog : function() {
+            return (Skylable_Uploads.dlg.dialog('instance') !== undefined);
+        },
+        
+        removeUploadDialog : function() {
+            if (Skylable_Uploads.dlg) {
+                Skylable_Uploads.dlg.dialog('close');
+                Skylable_Uploads.dlg.dialog('destroy');
+                Skylable_Uploads.dlg = null;
+            }    
+        },
 
         /**
-         * Uploads the file in the upload queue
+         * Checks the upload queue: if the queue is empty, reset some internal variables
+         * and returns true.
+         * Otherwise don't set anything and returns false.
+         * @returns {boolean}
          */
-        startUploading : function() {
-            /**
-             * We use some recursive calls to progress into the upload queue
-             * and avoid AJAX async calls problems.
-             */
-            
-            if ( Skylable_Uploads.upload_queue.length == 0 ) {
+        checkUploadQueue : function() {
+            if (Skylable_Uploads.upload_queue.length == 0) {
                 Skylable_Uploads.overwriteall = false;
                 Skylable_Uploads.skipall = false;
-                return;
+
+                return true;
+            }
+            return false;
+        },
+
+        /**
+         * Update the upload dialog buttons when there are no more uploads in queue
+         */
+        noMoreUploadsDialogButtons : function(){
+            Skylable_Uploads.dlg.dialog('option', 'buttons', [
+                {
+                    text : Skylable_Lang.closeBtn,
+                    click : function(e) {
+                        Skylable_Uploads.dlg.dialog('close');
+                        Skylable_Uploads.dlg.dialog('destroy');
+                        Skylable_Uploads.dlg = null;
+                    }
+                }
+            ]);
+        },
+        
+
+        /**
+         * Uploads the file in the upload queue.
+         * 
+         * To avoid async AJAX calls advance the queue in a recursive way or 
+         * using the 'always' event handler of the upload handler.
+         */
+        startUploading : function() {
+            console.log('start uploading...');
+            
+            /**
+             * There are no more uploads: update the file list.
+             * 
+             */
+            if (Skylable_Uploads.checkUploadQueue() ) {
+                Skylable_Uploads.noMoreUploadsDialogButtons();
+                
+                Skylable_Uploads.updateFilelist(true);
+            }
+            
+            if (Skylable_Uploads.dlg === null) {
+                Skylable_Uploads.is_working = true;
+                Skylable_Uploads.has_errors = false;
+                Skylable_Uploads.prepareUploadDialog(true);
             }
             
             var file = Skylable_Uploads.upload_queue.pop();
@@ -106,6 +173,7 @@ if (!Skylable_Uploads) {
                     var file_path = current_path + the_file;
 
                     // Check if the file exists, asks what to do
+                    $('#overwrite_confirmation_dlg').remove();
                     $.ajax({
                         url: "/fileexists",
                         data: 'path=' + encodeURIComponent(file_path),
@@ -115,7 +183,7 @@ if (!Skylable_Uploads) {
                             if (qdata.status == false) {
                                 file.submit();
 
-                                Skylable_Uploads.startUploading();
+                                // Skylable_Uploads.startUploading();
                             } else {
                                 
                                 // Skip all already existing files...
@@ -123,7 +191,8 @@ if (!Skylable_Uploads) {
                                     Skylable_Uploads.startUploading();
                                 } else {
                                     // File exists, should we overwrite it?
-                                    var dlg = $('<div><p>'+
+                                    var dlg_no_means_no = true; // FLAG: if true on closing, use the default "no" action
+                                    var dlg = $('<div id="overwrite_confirmation_dlg"><p>'+
                                     Skylable_Utils.nl2br(sprintf(Skylable_Lang.uploadFileAlreadyExistsOverwrite, the_file)) +
                                     '</p></div>').hide().appendTo('body');
                                     dlg.dialog({
@@ -131,44 +200,69 @@ if (!Skylable_Uploads) {
                                         modal : true,
                                         resizable: true,
                                         title: Skylable_Lang.uploadTitle,
+                                        close : function(ev, ui) {
+                                            if (dlg_no_means_no) {
+                                                $(this).dialog('destroy');
+                                                Skylable_Uploads.showUploadDialog();
+
+                                                Skylable_Uploads.startUploading();
+                                            }
+                                        },
                                         buttons :[{
                                             text: Skylable_Lang.yesBtn,
                                             click : function() {
+                                                dlg_no_means_no = false;
                                                 $(this).dialog('close');
                                                 $(this).dialog('destroy');
+                                                Skylable_Uploads.showUploadDialog();
 
                                                 file.submit();
 
-                                                Skylable_Uploads.startUploading();
+                                                // Skylable_Uploads.startUploading();
                                             }
                                         },{
                                             text: Skylable_Lang.noBtn,
                                             click : function() {
+                                                dlg_no_means_no = false;
                                                 $(this).dialog('close');
                                                 $(this).dialog('destroy');
+                                                Skylable_Uploads.showUploadDialog();
 
                                                 Skylable_Uploads.startUploading();
+                                            }
+                                        },{
+                                            text: Skylable_Lang.cancelBtn,
+                                            click : function() {
+                                                dlg_no_means_no = false;
+                                                $(this).dialog('close');
+                                                $(this).dialog('destroy');
+                                                Skylable_Uploads.removeUploadDialog();
+                                                Skylable_Uploads.cancelUploads();
                                             }
                                         },
                                             {
                                                 text: Skylable_Lang.uploadOverwriteAll,
                                                 click : function() {
+                                                    dlg_no_means_no = false;
                                                     $(this).dialog('close');
                                                     $(this).dialog('destroy');
+                                                    Skylable_Uploads.showUploadDialog();
 
                                                     Skylable_Uploads.overwriteall = true;
 
                                                     file.submit();
 
-                                                    Skylable_Uploads.startUploading();
+                                                    // Skylable_Uploads.startUploading();
 
                                                 }
                                             },
                                             {
                                                 text: Skylable_Lang.uploadSkipAll,
                                                 click : function() {
+                                                    dlg_no_means_no = false;
                                                     $(this).dialog('close');
                                                     $(this).dialog('destroy');
+                                                    Skylable_Uploads.showUploadDialog();
 
                                                     Skylable_Uploads.skipall = true;
 
@@ -178,7 +272,8 @@ if (!Skylable_Uploads) {
                                             }
                                         ]
                                     });
-
+                                    
+                                    Skylable_Uploads.hideUploadDialog();
                                     dlg.dialog('open');    
                                 }
                                 
@@ -239,6 +334,77 @@ if (!Skylable_Uploads) {
 
             Skylable_Uploads.upload_queue = [];
             Skylable_Uploads.active_upload_queue = [];
+            
+            Skylable_Uploads.reset();
+        },
+
+        /**
+         * Update the file list and close the upload window (if any)
+         */
+        updateFilelist : function(close_window) {
+            FileOperations.updateFileList(function(s){
+                Skylable_Uploads.is_working = false;
+
+                if (!Skylable_Uploads.has_errors && Skylable_Uploads.dlg) {
+                    if (close_window) {
+                        Skylable_Uploads.dlg.dialog('close');
+                        Skylable_Uploads.dlg.dialog('destroy');
+                        Skylable_Uploads.dlg = null;
+                    }
+                }
+            });
+        },
+
+        /**
+         * Initialize the upload dialog.
+         * 
+         * @param boolean show_dlg true after initialization, show the dialog
+         */
+        prepareUploadDialog : function(show_dlg) {
+            Skylable_Uploads.dlg = $('#dialog');
+
+            Skylable_Uploads.dlg.dialog({
+                autoOpen: false,
+                modal: true,
+                resizable: true,
+                title: Skylable_Lang.uploadTitle,
+                closeOnEscape : false,
+                create : function() {
+                    // disable the X for closing the window
+                    $(this).closest('div.ui-dialog')
+                        .find('.ui-dialog-titlebar-close')
+                        .hide();
+                        /*
+                        .click(function(e) {
+                            console.log('disabled...');
+                            e.preventDefault();
+                        });
+                        */
+                }
+            });
+
+            Skylable_Uploads.dlg.html('<div id="progressbar"><div class="progress-label"></div></div><div id="files"></div>');
+            $('#progressbar').progressbar({
+                max : 100,
+                value : 1,
+                enable: true
+            });
+
+            Skylable_Uploads.dlg.dialog('option', 'buttons', [
+                {
+                    text : Skylable_Lang.cancelBtn,
+                    click : function(e) {
+                        Skylable_Uploads.cancelUploads();
+                        Skylable_Uploads.dlg.dialog('close');
+                        Skylable_Uploads.dlg.dialog('destroy');
+                        Skylable_Uploads.dlg = null;
+                    }
+                }
+            ]);
+
+            if (show_dlg) {
+                Skylable_Uploads.dlg.dialog('open');
+            }
         }
 	};
 }
@@ -306,8 +472,10 @@ $(document).ready(function(){
 
                 sx_upload_queue.uploads.push(data);
                 sx_upload_queue.uploads_accepted++;
-                
-                
+
+                /**
+                 * If all uploads are accepted, start the uploading from the upload queue
+                 */
                 if ((sx_upload_queue.uploads_accepted >= sx_upload_queue.upload_count) && !data.errorThrown) {
                     // remove the temporary queue
                     delete data.originalFiles.sx_upload_queue;
@@ -344,46 +512,7 @@ $(document).ready(function(){
             
         },
 		start : function(e) {
-
-			Skylable_Uploads.dlg = $('#dialog');
-
-			Skylable_Uploads.dlg.dialog({
-				autoOpen: false,
-				modal: true,
-				resizable: true,
-				title: Skylable_Lang.uploadTitle,
-				beforeClose: function(ev, ui) {
-                    Skylable_Uploads.cancelUploads();
-                    return true;
-                    
-                    /*
-					// Avoids closing while running AJAX calls
-                    if (Skylable_Uploads.is_working) {
-                        return false;
-                    }
-                    */
-				}
-			});
-
-			Skylable_Uploads.is_working = true;
-			Skylable_Uploads.has_errors = false;
-			Skylable_Uploads.dlg.html('<div id="progressbar"><div class="progress-label"></div></div><div id="files"></div>');
-			$('#progressbar').progressbar({
-				max : 100,
-				value : 1,
-				enable: true
-			});
-
-			Skylable_Uploads.dlg.dialog('option', 'buttons', [
-				{
-					text : Skylable_Lang.closeBtn,
-					click : function(e) {
-						Skylable_Uploads.dlg.dialog('close');
-					}
-				}
-			]);
-
-			Skylable_Uploads.dlg.dialog('open');
+            console.log('START');
 		},
 		progressall: function (e, data) {
 			var progress = parseInt(data.loaded / data.total * 100, 10);
@@ -391,9 +520,12 @@ $(document).ready(function(){
 			$('#progressbar .progress-label').text(progress + '%');
 		},
 		done: function(e, data) {
-			$('#progressbar').progressbar('value', 100);
+            console.log('DONE.');
+			/*
+            $('#progressbar').progressbar('value', 100);
 			$('#progressbar .progress-label').text('100%');
-
+            */
+            
 			var reply_box = $('#dialog #files');
 
 			if (data.textStatus === 'success') {
@@ -410,6 +542,8 @@ $(document).ready(function(){
 				Skylable_Uploads.has_errors = true;
                 reply_box.append('<p class="upload_error">' + sprintf(Skylable_Lang.uploadError , data.errorThrown ) + '</p>');
 			}
+
+            
 		},
 		fail: function(e, data) {
             console.log('FAIL HANDLER');
@@ -464,6 +598,7 @@ $(document).ready(function(){
                                 Skylable_Uploads.dlg.dialog('close');
                                 Skylable_Uploads.dlg.dialog('destroy');
                                 $(reply_box).remove();
+                                Skylable_Uploads.dlg = null;
                             }
                         }
                     ]);
@@ -476,21 +611,18 @@ $(document).ready(function(){
             }
 
 		},
-		stop: function(e, data) {
-			
-            FileOperations.updateFileList(function(s){
-                Skylable_Uploads.is_working = false;
-
-                if (!Skylable_Uploads.has_errors) {
-                    Skylable_Uploads.dlg.dialog('close');
-                }    
-            });
-		},
         always : function (e, data) {
-            if ( Skylable_Uploads.upload_queue.length == 0 ) {
-                Skylable_Uploads.overwriteall = false;
-                Skylable_Uploads.skipall = false;
+            console.log('ALWAYS');
+            
+            if (!Skylable_Uploads.checkUploadQueue()) {
+                // Advance the upload queue...
+                Skylable_Uploads.startUploading();
+            } else {
+                // The upload queue is empty: show the right dialog and update the file list
+                Skylable_Uploads.noMoreUploadsDialogButtons();
+                Skylable_Uploads.updateFilelist(true);
             }
+            
         }
 	});
 });
