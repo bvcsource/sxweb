@@ -1916,6 +1916,11 @@ class Skylable_AccessSx {
                                     if (stripos($err, 'New revisions limit is the same as current value')) {
                                         throw new Skylable_RevisionException(implode('\n', $log['errors']), Skylable_RevisionException::REVISIONS_SAME_LIMITS);    
                                     }
+                                } elseif (stripos($err, 'Failed to upload file content hashes') !== FALSE) {
+                                    if (stripos($err, 'Not enough space left on volume') !== FALSE) {
+                                        throw new Skylable_NotEnoughSpaceLeftOnVolumeException($err);
+                                    }
+                                    throw new Skylable_UploadFailedException($err);
                                 }
                             }
                             throw new Skylable_AccessSxException(implode('\n', $log['errors']));
