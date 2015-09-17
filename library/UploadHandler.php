@@ -322,6 +322,10 @@ class UploadHandler {
                 }
             }
         }
+        catch(Skylable_NotEnoughSpaceLeftOnVolumeException $e) {
+            $file->error = 'Not enough space left on the volume.';
+            $logger->err(__METHOD__.': Exception: '.$e->getMessage());
+        }
         catch(Skylable_AccessSxException $e) {
             $file->error = 'Cluster access error, upload failed.';
             $logger->err(__METHOD__.': Skylable_AccessSxException exception: '.$e->getMessage());
