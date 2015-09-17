@@ -74,7 +74,7 @@ $(document).ready(function() {
     addSlimScroll();
     
     // Add the "Select All" file list behavior
-    $("p.table-title span.date").append('<input style="float: right;" type="checkbox" name="table_title_file_list_select_all">').change(function(e){
+    $("p.table-title span.date").append('<input style="float: right;" type="checkbox" name="table_title_file_list_select_all">').click(function(e){
         var is_checked = $('p.table-title span.date input[name=table_title_file_list_select_all]').prop('checked');
         $('#main-file-list input[name=file_element]').prop('checked', is_checked );
     });

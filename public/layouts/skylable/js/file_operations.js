@@ -353,6 +353,10 @@ if (!FileOperations) {
 
             event.preventDefault();
         },
+        
+        uncheckSelectAllControl : function() {
+            $('p.table-title span.date input[name=table_title_file_list_select_all]').prop('checked', false);
+        },
 
         /**
          * Updates the file list.
@@ -366,6 +370,7 @@ if (!FileOperations) {
          * @returns {boolean} true on success, false on failure
          */
         updateFileList : function(callback) {
+            FileOperations.uncheckSelectAllControl();
             var _this = this;
             var _status = false;
             $.ajax({
