@@ -25,7 +25,7 @@ if (!Skylable_Lang) {
         doLoginBtn: 'Zaloguj się',
 
         // Generic "Update" button
-        updateBtn: 'Update',
+        updateBtn: 'Zaktualizuj',
 
         // ------------ Create new directory
         // Create dir window title
@@ -76,41 +76,41 @@ if (!Skylable_Lang) {
         settingsPageSizeChangeSuccess : 'Rozmiar strony został zmieniony.',
         settingsPageSizeChangeFailure : 'Zmiana nie powiodła się',
         settingsPageSizeInvalid : 'Niepoprawny rozmiar strony.',
-        settingsRevisionsLimitWindowTitle : 'Change revisions limits',
-        settingsRevisionsLimitChangeMessage: 'Maximum revisions limit:',
+        settingsRevisionsLimitWindowTitle : 'Zmień limit rewizji',
+        settingsRevisionsLimitChangeMessage: 'Maksymalna liczba rewizji:',
 
         // -------- Uploads
         uploadTitle: 'Przesyłanie...',
-        uploadFailed: "%s: upload failed, reason: %s",
-        uploadSuccess: '%s: successfully uploaded',
-        uploadError: 'Upload failed. Reason: %s',
-        uploadAborted: 'Aborted (maybe you are trying to upload an invalid file type?).',
-        uploadExceedingFileSize: 'Upload failed!\nThe file "%s" is too big (%d bytes)!\nMaximum allowed file size is %d bytes.',
-        uploadFileAlreadyExistsOverwrite: 'File "%s" already exists.\nDo you want to overwrite it?',
-        uploadCanceled : 'Upload canceled',
-        uploadDirError : 'Unable to upload %s as it is a directory or has 0 bytes',
-        uploadBrowserWindowCloseConfirm : 'This will cancel all current uploads. Are you sure?',
-        uploadOverwriteAll : 'Overwrite All',
-        uploadSkipAll : 'Skip All',
+        uploadFailed: "%s: przesyłanie nie powiodło się: %s",
+        uploadSuccess: '%s: pomyślnie przesłano',
+        uploadError: 'Przesyłanie nie powiodło się: %s',
+        uploadAborted: 'Przerwano (niepoprawny typ pliku?).',
+        uploadExceedingFileSize: 'Nie można przesłać!\nPlik "%s" jest za duży (%d bajtów)!\nMaksymalny rozmiar pliku to %d bajtów.',
+        uploadFileAlreadyExistsOverwrite: 'Plik "%s" już istnieje.\nCzy chcesz go nadpisać?',
+        uploadCanceled : 'Anulowano przesyłanie',
+        uploadDirError : 'Nie udało się przesłać %s - katalog lub pusty plik',
+        uploadBrowserWindowCloseConfirm : 'Wszystkie aktywne transfery zostaną anulowane. Kontynuować?',
+        uploadOverwriteAll : 'Nadpisz wszystko',
+        uploadSkipAll : 'Zignoruj wszystko',
 
         // -------- Revisions
-        revisionsErrorTitle : 'Preview error!',
-        revisionsLoadFailed : 'Failed to load the file.<br/>It is possible that you reached your download limits, please wait some seconds and retry.',
-        revisionsLoading:'Loading...',
-        revisionsCloseBtn : 'Close',
-        revisionsDownloadBtn : 'Download...',
-        revisionsNextBtn : 'Next File',
-        revisionsPrevBtn : 'Previous File',
-        revisionsRestoreBtn : 'Restore',
-        revisionsNavBarLabel : 'Rev. %s',
+        revisionsErrorTitle : 'Błąd podglądu!',
+        revisionsLoadFailed : 'Nie udało się wczytać pliku.<br/>Być może przekroczono limit transferów, odczekaj chwilę i spróbuj ponownie.',
+        revisionsLoading:'Wczytywanie...',
+        revisionsCloseBtn : 'Zamknij',
+        revisionsDownloadBtn : 'Pobierz...',
+        revisionsNextBtn : 'Następny plik',
+        revisionsPrevBtn : 'Poprzedni plik',
+        revisionsRestoreBtn : 'Odtwórz',
+        revisionsNavBarLabel : 'Rew. %s',
 
         // --------- Manage volume
-        managevolumeChangeUserPrivilegesWTitle: "Change privileges",
-        managevolumeChangeUserPrivileges: "Change privileges for user:",
-        managevolumePrivileges: "Privileges:",
-        managevolumePrivRead : "Read",
-        managevolumePrivWrite : "Write",
-        managevolumePrivManager : "Manager"
+        managevolumeChangeUserPrivilegesWTitle: "Zmień prawa dostępu",
+        managevolumeChangeUserPrivileges: "Zmień prawa dostępu dla użytkownika:",
+        managevolumePrivileges: "Prawa dostępu:",
+        managevolumePrivRead : "Odczyt",
+        managevolumePrivWrite : "Zapis",
+        managevolumePrivManager : "Menedżer"
         
     }
 }
