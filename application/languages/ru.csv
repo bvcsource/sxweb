@@ -245,3 +245,4 @@
 "Failed to change user privileges: user not found.","Не удалось изменить привилегии пользователя: пользователь не найден."
 "User","Пользователь"
 "Privileges","Привилегии"
+"The SX Cluster is unreachable, please retry again later or contact your sysadmin.","The SX Cluster is unreachable, please retry again later or contact your sysadmin."

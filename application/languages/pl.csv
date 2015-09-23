@@ -244,3 +244,4 @@
 "Failed to change user privileges: user not found.","Nie udało się zaktualizować praw dostępu użytkownika: nie odnaleziono użytkownika."
 "User","Użytkownik"
 "Privileges","Prawa dostępu"
+"The SX Cluster is unreachable, please retry again later or contact your sysadmin.","The SX Cluster is unreachable, please retry again later or contact your sysadmin."

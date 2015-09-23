@@ -244,3 +244,5 @@
 "Failed to change user privileges: user not found.","Ändern der Berechtigungen fehlgeschlagen: Benutzer nicht gefunden."
 "User","User"
 "Privileges","Berechtigungen"
+"The SX Cluster is unreachable, please retry again later or contact your sysadmin.","The SX Cluster is unreachable, please retry again later or contact your sysadmin."
+
