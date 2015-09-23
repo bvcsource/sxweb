@@ -137,6 +137,21 @@ if (!Skylable_Utils) {
          */
         nl2br : function (str) {
             return str.replace(/(?:\r\n|\r|\n)/g, '<br />');
+        },
+
+        /**
+         * Trim a string to a given size, removing chars from the center and adding '...'
+         * IE: "big string with a lot of text" became "big...text" when trimmed to 10 chars.
+         * @param string str
+         * @param integer length desired length
+         * @returns {*}
+         */
+        trim_str_center: function(str, length) {
+            if ((str.length > length) && (length > 0)) {
+                return str.substring(0, (length - 3) / 2) + '...' + str.substring(str.length - (length - 3) / 2); 
+            } else {
+                return str;
+            }
         }
     }
 }

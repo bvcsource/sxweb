@@ -924,6 +924,7 @@ if (!FileOperations) {
                 .appendTo('body');
 
             $('<div id="preview-nav-bar">' +
+                '<span class="preview-nav-bar-text" id="preview-nav-bar-filename"></span>' +
                 '<a class="preview-nav-bar-btn" id="preview-nav-bar-close">' + Skylable_Lang['previewCloseBtn'] + '</a>' +
                 '<a class="preview-nav-bar-btn" id="preview-nav-bar-download">' + Skylable_Lang['previewDownloadBtn'] + '</a>' +
                 '<a class="preview-nav-bar-btn" id="preview-nav-bar-prev">' + Skylable_Lang['previewPrevBtn'] + '</a>' +
@@ -966,6 +967,11 @@ if (!FileOperations) {
          * @param file_type the file type
          */
         previewShowFile : function(file_url, file_type) {
+
+            // Update the current showed file name
+            $('#preview-nav-bar-filename')
+                .html( Skylable_Utils.trim_str_center( Skylable_Utils.basename(file_url), 30 ) )
+                .attr('title', Skylable_Utils.basename(file_url) );
 
             var pnb = $('#preview-nav-bar');
             $(pnb)
