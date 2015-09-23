@@ -108,9 +108,7 @@ if(isset($this->list)) {
                 </span>
                     <span class="size"><?php echo $this->fileSizeFormat($file['size']); ?></span>
 		        <span class="date"><span><?php echo $file['date']; ?></span>
-                    <?php if ($can_write_to_volume): ?>
                         <input name="file_element" type="checkbox" value="<?php echo $this->escape($file['path']); ?>"/>
-                    <?php endif; ?>
 		        </span>
                     <a class="ir actions-trigger"></a>
                     <ul class="actions">
