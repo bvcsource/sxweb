@@ -569,14 +569,15 @@ class Skylable_AccessSx {
                 '',
                 $output,
                 $exitcode,
-                $this->_last_error_log);
+                $this->_last_error_log, NULL, array($this, 'parseErrors'));
             @unlink($tmp_file);
             if ($exitcode == 0) {
                 return TRUE;
             } else {
-                $this->getLogger()->err(__METHOD__.': sxinit failed: '.$this->_last_error_log);
-                return FALSE;
-            }    
+                $this->checkForErrors($this->_last_error_log, TRUE);
+            }
+            
+            return FALSE;
         }
         catch (Exception $e) {
             @unlink($tmp_file);
@@ -623,7 +624,7 @@ class Skylable_AccessSx {
             ($delete_recursive ? '-r ' : '').
             '-c '.My_utils::escapeshellarg($this->_base_dir).' '.
             (is_array($path) ? implode(' ', $path) : $path),
-            '', $output, $exitcode, $this->_last_error_log);
+            '', $output, $exitcode, $this->_last_error_log, NULL, array($this, 'parseErrors') );
         if ($exitcode == 0) {
             return TRUE;
         }
@@ -1921,6 +1922,8 @@ class Skylable_AccessSx {
                                         throw new Skylable_NotEnoughSpaceLeftOnVolumeException($err);
                                     }
                                     throw new Skylable_UploadFailedException($err);
+                                } elseif(stripos($err, 'Failed to fetch nodes') !== FALSE || stripos($err, 'Failed to fetch cluster') !== FALSE ||  stripos($err, 'Failed to connect to') !== FALSE ) {
+                                    throw new Skylable_ConnectionFailedException($err);
                                 }
                             }
                             throw new Skylable_AccessSxException(implode('\n', $log['errors']));
