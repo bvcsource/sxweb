@@ -55,7 +55,7 @@
             $sizes[strval($cur_size)] = strval($cur_size);
         }
         foreach($sizes as $sl => $sv) {
-            echo '<option value="',$sv,'"',($cur_size == $sv ? 'selected="selected"' : ''),'>',$this->translate($sl),'</option>',PHP_EOL;
+            echo '<option value="',$sv,'"',($cur_size == $sv ? ' selected="selected"' : ''),'>',$this->translate($sl),'</option>',PHP_EOL;
         }
         ?></select>
 <script type="application/javascript">
