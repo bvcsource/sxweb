@@ -739,6 +739,9 @@ class IndexController extends My_BaseAction {
             return FALSE;
         }
         
+        // bug #1519 - email must be lowercase
+        $the_email = My_Utils::strtolower($the_email);
+        
         // Check the user existence using the configured SX cluster
         $user_exists = FALSE;
         try {
@@ -755,7 +758,8 @@ class IndexController extends My_BaseAction {
             $user_list = $access_sx->userlist();
             if (is_array($user_list)) {
                 foreach($user_list as $u => $ut) {
-                    if ($u == $the_email) {
+                    // bug #1519 - email must be lowercase
+                    if (strcmp(My_Utils::strtolower($u), $the_email) == 0) {
                         $user_exists = TRUE;
                         break;
                     }

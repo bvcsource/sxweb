@@ -884,4 +884,17 @@ class My_Utils {
 
         return $scheme . '://'.$host.$path;
     }
+
+    /**
+     * Convert to lower case a string, possibly using UTF-8 chars.
+     * 
+     * @param string $str
+     * @return string
+     */
+    public static function strtolower($str) {
+        if (function_exists('mb_strtolower')) {
+            return mb_strtolower($str);
+        } 
+        return strtolower($str);
+    }
 }
