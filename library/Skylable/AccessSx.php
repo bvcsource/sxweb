@@ -1879,7 +1879,7 @@ class Skylable_AccessSx {
                     if ($throw_exception) {
                         // Check to see if the password is wrong
                         foreach($log['messages'] as $msg) {
-                            if (stripos($msg, 'invalid password') !== FALSE) {
+                            if (stripos($msg, 'invalid password') !== FALSE || stripos($msg, 'password is too short') !== FALSE) {
                                 throw new Skylable_InvalidPasswordException(implode('\n', $log['messages']));
                             }
                         }
