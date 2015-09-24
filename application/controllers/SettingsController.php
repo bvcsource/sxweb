@@ -318,12 +318,20 @@ class SettingsController extends My_BaseAction {
             $whoami = $user->getPreferences()->get(My_User::PREF_WHO_AM_I);
             
             $can_manage_volume = FALSE;
+            
+            // This flag tell us if the user can manage the revisions limits
+            $this->view->volume_can_manage_revisions = FALSE;
+            
             if ($user->getRoleId() === My_User::ROLE_ADMIN) {
                 $can_manage_volume = TRUE;
+                $this->view->volume_can_manage_revisions = TRUE;
             } else {
                 foreach($this->view->volume_acl as $acl_info) {
                     if (strcmp($acl_info['user'], $whoami) == 0) {
-                        if (in_array('owner', $acl_info['perms']) || in_array('manager', $acl_info['perms'])) {
+                        if (in_array('owner', $acl_info['perms'])) {
+                            $can_manage_volume = TRUE;
+                            $this->view->volume_can_manage_revisions = TRUE;
+                        } elseif (in_array('manager', $acl_info['perms'])) {
                             $can_manage_volume = TRUE;
                         }
                     }

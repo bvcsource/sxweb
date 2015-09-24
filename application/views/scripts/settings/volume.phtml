@@ -52,7 +52,7 @@ if (isset($this->error)) {
         <tr><th><?php echo $this->translate('Name'); ?></th><td><?php echo $this->escape($this->volume); ?></td></tr>
         <tr><th><?php echo $this->translate('Owner'); ?></th><td><?php echo $this->escape($this->volume_data['owner']); ?></td></tr>
         <tr><th><?php echo $this->translate('Replica'); ?></th><td><?php echo $this->volume_data['replica']; ?></td></tr>
-        <tr><th><?php echo $this->translate('Revisions'); ?></th><td><span id="revision-count-item"><?php echo $this->volume_data['revs']; ?></span> <button class="styled-button" id="change-revisions-btn"><?php echo $this->translate('Change...'); ?></button></td></tr>
+        <tr><th><?php echo $this->translate('Revisions'); ?></th><td><span id="revision-count-item"><?php echo $this->volume_data['revs']; ?></span><?php if ($this->volume_can_manage_revisions): ?> <button class="styled-button" id="change-revisions-btn"><?php echo $this->translate('Change...'); ?></button><?php endif; ?></td></tr>
         <tr><th><?php echo $this->translate('Filter'); ?></th><td><?php echo $this->volume_data['filter']; ?></td></tr>
         <tr><th><?php echo $this->translate('Access'); ?></th><td><?php echo $this->prettifyVolumeAccessRights($this->volume_data['access']); ?></td></tr>
         <tr><th><?php echo $this->translate('Size'); ?></th><td><?php echo $this->fileSizeFormat($this->volume_data['volume_size']); ?></td></tr>
