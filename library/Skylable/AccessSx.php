@@ -2042,12 +2042,12 @@ class Skylable_AccessSx {
             return FALSE;
         }
 
-        $ret = $this->executeShellCommand('sxacl whoami --role '.
+        $ret = $this->executeShellCommand('sxacl whoami -v '.
             '-c '.My_utils::escapeshellarg($this->_base_dir).' '.
             My_utils::escapeshellarg( $this->_cluster_string ),
             '', $out, $exit_code, $this->_last_error_log, NULL, array($this, 'parseErrors'));
         if ($exit_code == 0) {
-            if (preg_match('/\(([^\)]+)\)$/', trim($out), $matches) == 1) {
+            if (preg_match('/\s+role:([\S]+)/', trim($out), $matches) == 1) {
                 return $matches[1];
             } else {
                 return '';
