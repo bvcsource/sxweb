@@ -941,11 +941,9 @@ class Skylable_AccessSx {
      *
      * Array (
      *  [user] => 'user name'
-     *  [perms] => Array - permissions
+     *  [perms] => Array - permissions strings
      *   (
-     *     [0] => read
-     *     [1] => write
-     *     [2] => owner
+     *     read, write, manager, owner
      *   )
      * )
      *

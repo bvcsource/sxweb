@@ -1242,6 +1242,44 @@ class AjaxController extends My_BaseAction {
                 
                 $user = Zend_Auth::getInstance()->getIdentity();
                 $access_sx = new Skylable_AccessSx( $user );
+
+                // Get the current volume ACL
+                $vol_acl = $access_sx->getVolumeACL($volume);
+                if ($vol_acl === FALSE || !is_array($vol_acl) || empty($vol_acl)) {
+                    $this->getLogger()->err(__METHOD__.': failed to retrieve volume ACL');
+                    $this->view->reply['status'] = FALSE;
+                    $this->view->reply['message'] = $this->getTranslator()->translate('Failed to change user privileges.');
+                    return FALSE;
+                }
+                
+                // If the user is not an admin or owner, he can't revoke or grant the 'manager' privilege
+                $i_am_god = FALSE;
+                foreach($vol_acl as $acl) {
+                    if (strcmp($acl['user'], $user->getLogin()) == 0 ) {
+                        if (in_array('owner', $acl['perms'])) {
+                            $i_am_god = TRUE;
+                        }
+                    }
+                }
+                if ($user->getRoleId() == My_User::ROLE_ADMIN) {
+                    $i_am_god = TRUE;
+                }
+                
+                if (!$i_am_god) { // Remove the "manager" privilege from the list
+                    $this->getLogger()->debug(__METHOD__.': user is not owner or admin of the volume: '.$volume);
+                    foreach($grants as $gk => $gv) {
+                        if ($gv == Skylable_AccessSx::PRIVILEGE_MANAGER) {
+                            $this->getLogger()->debug(__METHOD__.': removed manager privilege from GRANTS');
+                            unset($grants[$gk]);
+                        }
+                    }
+                    foreach($revokes as $rk => $rv) {
+                        if ($rv == Skylable_AccessSx::PRIVILEGE_MANAGER) {
+                            $this->getLogger()->debug(__METHOD__.': removed manager privilege from REVOKES');
+                            unset($revokes[$rk]);
+                        }
+                    }
+                }
                 
                 if ($use_new_sxacl === TRUE) {
                     $this->getLogger()->debug(__METHOD__.': calling sxacl directly');
