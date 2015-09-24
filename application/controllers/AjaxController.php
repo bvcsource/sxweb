@@ -1203,30 +1203,49 @@ class AjaxController extends My_BaseAction {
 
             $this->getLogger()->debug(__METHOD__.': GRANTS:'.print_r($grants, TRUE));
             $this->getLogger()->debug(__METHOD__.': REVOKES:'.print_r($revokes, TRUE));
-            
+
+            /**
+             * FIXME - this is a hack for bug #1246
+             * Check the sxacl version: if >= 2.0 use only one invocation, otherwise 
+             * if >= 1.2 use the revoke then grant  
+             */
+            $exit_code = exec('sxacl -V', $output, $ret_val);
+            $use_new_sxacl = FALSE;
+            if (empty($output)) {
+                // Command was not found...
+                $this->getLogger()->err(__METHOD__.': sxacl command not found');
+                $this->view->reply['status'] = FALSE;
+                $this->view->reply['message'] = $this->getTranslator()->translate('Failed to change user privileges.');
+                return FALSE;
+            } else {
+                if (preg_match('/^sxacl\s+(.+)/', $output[0], $matches) == 1) {
+                    $sxacl_version = trim($matches[1]);
+                    $this->getLogger()->err(__METHOD__.': sxacl version is: '.$sxacl_version);
+                    
+                    if (version_compare($sxacl_version, '2.0', '>=')) {
+                        $use_new_sxacl = TRUE;
+                    } elseif (version_compare($sxacl_version, '1.2', '>=')) {
+                        $use_new_sxacl = FALSE;
+                    } else {
+                        $this->getLogger()->err(__METHOD__.': sxacl version is too low');
+                        $this->view->reply['status'] = FALSE;
+                        $this->view->reply['message'] = $this->getTranslator()->translate('Failed to change user privileges.');
+                        return FALSE;
+                    }
+                } else {
+                    $this->getLogger()->err(__METHOD__.': unknown sxacl version; command output is: '.print_r($output, TRUE));
+                    $use_new_sxacl = FALSE;
+                }
+            }
 
             try {
                 
                 $user = Zend_Auth::getInstance()->getIdentity();
                 $access_sx = new Skylable_AccessSx( $user );
-
-                /**
-                 * Calls sxacl two times:
-                 * revoke then grants privileges.
-                 */
                 
-                if (count($revokes) > 0) {
-                    $step1_ok = $access_sx->sxaclVolumePermissions($dest_user, $volume, array(), $revokes); 
-                } else {
-                    $step1_ok = TRUE;
-                }
-                
-                if ($step1_ok !== FALSE) {
-                    if (count($grants) > 0) {
-                        $out = $access_sx->sxaclVolumePermissions($dest_user, $volume, $grants);
-                    } else {
-                        $out = $step1_ok;
-                    }
+                if ($use_new_sxacl === TRUE) {
+                    $this->getLogger()->debug(__METHOD__.': calling sxacl directly');
+                    $out = $access_sx->sxaclVolumePermissions($dest_user, $volume, $grants, $revokes);
                     $this->getLogger()->debug(__METHOD__.': OUTPUT:'.print_r($out, TRUE));
 
                     if ($out !== FALSE) {
@@ -1235,8 +1254,38 @@ class AjaxController extends My_BaseAction {
                         $this->view->volume_acl = $out;
                         $this->view->reply['acl_table'] = $this->view->render('/settings/volume_acl_table.phtml');
                         return TRUE;
-                    } 
-                } 
+                    }
+                } else {
+                    $this->getLogger()->debug(__METHOD__.': calling sxacl two times');
+                    
+                    /**
+                     * Calls sxacl two times:
+                     * revoke then grants privileges.
+                     */
+                    if (count($revokes) > 0) {
+                        $step1_ok = $access_sx->sxaclVolumePermissions($dest_user, $volume, array(), $revokes);
+                        $this->getLogger()->debug(__METHOD__.': FIRST CALL OUTPUT:'.print_r($step1_ok, TRUE));
+                    } else {
+                        $step1_ok = TRUE;
+                    }
+
+                    if ($step1_ok !== FALSE) {
+                        if (count($grants) > 0) {
+                            $out = $access_sx->sxaclVolumePermissions($dest_user, $volume, $grants);
+                        } else {
+                            $out = $step1_ok;
+                        }
+                        $this->getLogger()->debug(__METHOD__.': SECOND CALL OUTPUT:'.print_r($out, TRUE));
+
+                        if ($out !== FALSE) {
+                            $this->view->reply['status'] = TRUE;
+                            $this->view->reply['message'] = $this->getTranslator()->translate('Successfully changed user privileges.');
+                            $this->view->volume_acl = $out;
+                            $this->view->reply['acl_table'] = $this->view->render('/settings/volume_acl_table.phtml');
+                            return TRUE;
+                        }
+                    }    
+                }
                 
                 // If we are here, something went wrong...
                 $this->view->reply['status'] = FALSE;
