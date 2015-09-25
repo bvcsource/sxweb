@@ -40,30 +40,57 @@ if (isset($this->error)) {
     echo '<p>',$this->error,'</p>',PHP_EOL;
     echo '<p><a href="',$this->serverUrl('/settings/volumes'),'" class="styled-button">',$this->translate('Go to volume list...'),'</a></p>',PHP_EOL;
 } else {
-    echo '<h1>',sprintf($this->translate('Manage Volume: %s'), $this->volume),'</h1>',PHP_EOL;
+    echo '<h1>',sprintf($this->translate('Manage Volume: %s'), '<a href="'.$this->serverUrl('/vol').'/'.rawurlencode($this->volume).'" title="' . $this->translate('Browse the volume...') .'">' . $this->escape($this->volume) . '</a>'),'</h1>',PHP_EOL;
     
     if (isset($this->volume_error)) {
         echo '<p>',$this->escape($this->volume_error),'</p>',PHP_EOL;
         echo '<p><a href="',$this->serverUrl('/settings/volumes'),'" class="styled-button">',$this->translate('Go to volume list...'),'</a></p>',PHP_EOL;
     } else {
-        
-        echo '<h2>',$this->translate('Volume Info'),'</h2>',PHP_EOL;
-        ?><table class="two_column_table">
-        <tr><th><?php echo $this->translate('Name'); ?></th><td><a href="<?php echo $this->serverUrl('/vol'),'/',rawurlencode($this->volume); ?>" title="<?php echo $this->translate('Browse the volume...');?>"><?php echo $this->escape($this->volume); ?></a></td></tr>
-        <tr><th><?php echo $this->translate('Owner'); ?></th><td><?php echo $this->escape($this->volume_data['owner']); ?></td></tr>
-        <tr><th><?php echo $this->translate('Replica'); ?></th><td><?php echo $this->volume_data['replica']; ?></td></tr>
-        <tr><th><?php echo $this->translate('Revisions'); ?></th><td><span id="revision-count-item"><?php echo $this->volume_data['revs']; ?></span><?php if ($this->volume_can_manage_revisions): ?> <button class="styled-button" id="change-revisions-btn"><?php echo $this->translate('Change...'); ?></button><?php endif; ?></td></tr>
-        <tr><th><?php echo $this->translate('Filter'); ?></th><td><?php echo $this->volume_data['filter']; ?></td></tr>
-        <tr><th><?php echo $this->translate('Access'); ?></th><td><?php echo $this->prettifyVolumeAccessRights($this->volume_data['access']); ?></td></tr>
-        <tr><th><?php echo $this->translate('Size'); ?></th><td><?php echo $this->fileSizeFormat($this->volume_data['volume_size']); ?></td></tr>
-        <tr><th><?php echo $this->translate('Used Space'); ?></th><td><?php echo $this->fileSizeFormat($this->volume_data['used_space']); ?></td></tr>
+
+        echo '<h2>', $this->translate('Volume Info'), '</h2>', PHP_EOL;
+        ?>
+        <table class="two_column_table">
+            <tr>
+                <th><?php echo $this->translate('Owner'); ?></th>
+                <td><?php echo $this->escape($this->volume_data['owner']); ?></td>
+            </tr>
+            <tr>
+                <th><?php echo $this->translate('Replica'); ?></th>
+                <td><?php echo $this->volume_data['replica']; ?></td>
+            </tr>
+            <tr>
+                <th><?php echo $this->translate('Revisions'); ?></th>
+                <td><span
+                        id="revision-count-item"><?php echo $this->volume_data['revs']; ?></span><?php if ($this->volume_can_manage_revisions): ?>
+                        <button class="styled-button"
+                                id="change-revisions-btn"><?php echo $this->translate('Change...'); ?></button><?php endif; ?>
+                </td>
+            </tr>
+            <tr>
+                <th><?php echo $this->translate('Filter'); ?></th>
+                <td><?php echo $this->volume_data['filter']; ?></td>
+            </tr>
+            <tr>
+                <th><?php echo $this->translate('Access'); ?></th>
+                <td><?php echo $this->prettifyVolumeAccessRights($this->volume_data['access']); ?></td>
+            </tr>
+            <tr>
+                <th><?php echo $this->translate('Size'); ?></th>
+                <td><?php echo $this->fileSizeFormat($this->volume_data['volume_size']); ?></td>
+            </tr>
+            <tr>
+                <th><?php echo $this->translate('Used Space'); ?></th>
+                <td><?php echo $this->fileSizeFormat($this->volume_data['used_space']); ?></td>
+            </tr>
         </table>
     <?php
-        echo '<p><a href="',$this->serverUrl('/settings/volumes'),'" class="styled-button">',$this->translate('Manage another volume...'),'</a></p>',PHP_EOL;
 
-        echo '<hr/><h2>',$this->translate('Volume Access Control List'),'</h2>',PHP_EOL;
-        echo '<div><button class="styled-button" onclick="changeUserPermissions(null, true); return false;">',$this->translate('Add user...'),'</button><div id="acl_table_container">',$this->render('/settings/volume_acl_table.phtml'),'</div></div>';
-        ?>
+
+    echo '<hr/><h2>', $this->translate('Volume Access Control List'), '</h2>', PHP_EOL;
+    echo '<div><button class="styled-button" onclick="changeUserPermissions(null, true); return false;">', $this->translate('Add user...'), '</button><div id="acl_table_container">', $this->render('/settings/volume_acl_table.phtml'), '</div></div>';
+
+    echo '<p><a href="', $this->serverUrl('/settings/volumes'), '" class="styled-button">', $this->translate('Manage another volume...'), '</a></p>', PHP_EOL;
+    ?>
         <script type="application/javascript">
             var ajax_is_working = false;
             var the_volume = '<?php echo $this->volume; ?>';
@@ -77,11 +104,11 @@ if (isset($this->error)) {
                 if (new_user === true) {
                     var user_name = '';
                 } else {
-                    var user_name = $(ctrl).data('user');    
+                    var user_name = $(ctrl).data('user');
                 }
-                
+
                 if (ctrl) {
-                    var permissions = $(ctrl).data('permissions');    
+                    var permissions = $(ctrl).data('permissions');
                 } else {
                     var permissions = "";
                 }
@@ -92,7 +119,7 @@ if (isset($this->error)) {
                     modal: true,
                     resizable: true,
                     title: Skylable_Lang.managevolumeChangeUserPrivilegesWTitle,
-                    beforeClose : function(ev, ui) {
+                    beforeClose: function (ev, ui) {
                         return !ajax_is_working;
                     }
                 });
@@ -101,64 +128,64 @@ if (isset($this->error)) {
                     "<ul><li>" + Skylable_Lang.managevolumeChangeUserPrivileges + "</li>" +
                     '<li><input type="text" value="" class="share-file-link" id="frm_username" name="frm_username" /></li>' +
                     '<li>' + Skylable_Lang.managevolumePrivileges + '</li>' +
-                    '<li><label><input type="checkbox" name="frm_permissions[]" value="r"'+ (permissions.indexOf("r") == -1 ? "" : ' checked="checked"') +'> ' + Skylable_Lang.managevolumePrivRead + ' </label></li>'+
-                    '<li><label><input type="checkbox" name="frm_permissions[]" value="w"'+ (permissions.indexOf("w") == -1 ? "" : ' checked="checked"') +'> ' + Skylable_Lang.managevolumePrivWrite + ' </label></li>'+
-                    '<li><label><input type="checkbox" name="frm_permissions[]" value="m"'+ (permissions.indexOf("m") == -1 ? "" : ' checked="checked"') +'> ' + Skylable_Lang.managevolumePrivManager + ' </label></li>'+
+                    '<li><label><input type="checkbox" name="frm_permissions[]" value="r"' + (permissions.indexOf("r") == -1 ? "" : ' checked="checked"') + '> ' + Skylable_Lang.managevolumePrivRead + ' </label></li>' +
+                    '<li><label><input type="checkbox" name="frm_permissions[]" value="w"' + (permissions.indexOf("w") == -1 ? "" : ' checked="checked"') + '> ' + Skylable_Lang.managevolumePrivWrite + ' </label></li>' +
+                    '<li><label><input type="checkbox" name="frm_permissions[]" value="m"' + (permissions.indexOf("m") == -1 ? "" : ' checked="checked"') + '> ' + Skylable_Lang.managevolumePrivManager + ' </label></li>' +
                     "</ul>");
-                
+
                 $('#frm_username').val(user_name);
 
                 dlg.dialog('option', 'buttons', [
                     {
-                        id : "dlg_yes_btn",
-                        text : Skylable_Lang.updateBtn,
-                        click : function(e) {
-                            
+                        id: "dlg_yes_btn",
+                        text: Skylable_Lang.updateBtn,
+                        click: function (e) {
+
                             var permissions = $("input[name='frm_permissions[]']:checked").serialize();
                             if (permissions.length == 0) {
-                                permissions= encodeURIComponent("frm_permissions[]");
+                                permissions = encodeURIComponent("frm_permissions[]");
                             }
-                            
+
                             var the_user = $('#frm_username').val();
 
                             jQuery.ajax({
-                                type:"POST",
-                                url:"<?php echo $this->serverUrl('/ajax/managevolume'); ?>",
-                                data:"volume="+encodeURIComponent(the_volume)+"&operation=modperm&user=" + encodeURIComponent(the_user) + "&" + permissions,
-                                dataType:"json",
-                                beforeSend:function(xhr, opt) {
+                                type: "POST",
+                                url: "<?php echo $this->serverUrl('/ajax/managevolume'); ?>",
+                                data: "volume=" + encodeURIComponent(the_volume) + "&operation=modperm&user=" + encodeURIComponent(the_user) + "&" + permissions,
+                                dataType: "json",
+                                beforeSend: function (xhr, opt) {
                                     ajax_is_working = true;
 
                                     dlg.dialog('option', 'buttons', [{
-                                        text : Skylable_Lang.closeBtn,
-                                        click : function(e) {
+                                        text: Skylable_Lang.closeBtn,
+                                        click: function (e) {
                                             dlg.dialog('close');
                                             dlg.dialog('destroy');
                                         }
                                     }]);
                                 },
-                                complete:function(xhr, status){
+                                complete: function (xhr, status) {
                                     ajax_is_working = false;
                                 },
-                                success:function(data, status, xhr) {
-                                    
+                                success: function (data, status, xhr) {
+
                                     dlg.html("<p>" + data.message + "</p>");
 
                                     if (data.status === true) {
                                         $('#acl_table_container').html(data.acl_table);
                                     }
                                 },
-                                error:function(xhr, status) {
-                                    
+                                error: function (xhr, status) {
+
                                     if (xhr.getResponseHeader('Content-Type') === 'application/json') {
                                         var response_text = JSON.parse(xhr.responseText);
                                         dlg.html("<p>" + response_text.error + "</p>");
 
                                         if (xhr.status == 403) {
                                             dlg.dialog({
-                                                buttons:[{
-                                                    text : Skylable_Lang['doLoginBtn'],
-                                                    click : function (e) {
+                                                buttons: [{
+                                                    text: Skylable_Lang['doLoginBtn'],
+                                                    click: function (e) {
                                                         window.location.href = response_text.url;
                                                     }
                                                 }]
@@ -172,25 +199,25 @@ if (isset($this->error)) {
                         }
                     },
                     {
-                        text : Skylable_Lang.cancelBtn,
-                        click : function(e) {
+                        text: Skylable_Lang.cancelBtn,
+                        click: function (e) {
                             dlg.dialog('close');
                             dlg.dialog('destroy');
 
                         }
                     }
                 ]);
-                
+
                 ajax_is_working = false;
                 dlg.dialog('open');
             }
-            
-            $(document).ready(function(){
-                
+
+            $(document).ready(function () {
+
                 // Manage the revision limit change 
-                $('#change-revisions-btn').click(function(e){
+                $('#change-revisions-btn').click(function (e) {
                     var item = document.getElementById('revision-count-item');
-                    
+
                     // Shows the dialog to change the revision count
                     var dlg = $('#dialog');
                     dlg.dialog({
@@ -198,41 +225,41 @@ if (isset($this->error)) {
                         modal: true,
                         resizable: true,
                         title: Skylable_Lang.settingsRevisionsLimitWindowTitle,
-                        beforeClose : function(ev, ui) {
+                        beforeClose: function (ev, ui) {
                             return !ajax_is_working;
                         }
                     });
 
-                    dlg.html('<ul><li>' + Skylable_Lang.settingsRevisionsLimitChangeMessage + '</li><li><input id="new-revision-count" class="share-file-link" type="text" value="'+ item.innerHTML +'"></li></ul>');
+                    dlg.html('<ul><li>' + Skylable_Lang.settingsRevisionsLimitChangeMessage + '</li><li><input id="new-revision-count" class="share-file-link" type="text" value="' + item.innerHTML + '"></li></ul>');
 
                     dlg.dialog('option', 'buttons', [
                         {
-                            id : "dlg_yes_btn",
-                            text : Skylable_Lang.updateBtn,
-                            click : function(e) {
+                            id: "dlg_yes_btn",
+                            text: Skylable_Lang.updateBtn,
+                            click: function (e) {
 
-                                var rev_count = $.trim( $('#new-revision-count').val() );
-                                
+                                var rev_count = $.trim($('#new-revision-count').val());
+
                                 jQuery.ajax({
-                                    type:"POST",
-                                    url:"<?php echo $this->serverUrl('/ajax/managevolume'); ?>",
-                                    data:"volume="+encodeURIComponent(the_volume)+"&operation=rev&rev_count="+encodeURIComponent( rev_count ),
-                                    dataType:"json",
-                                    beforeSend:function(xhr, opt) {
+                                    type: "POST",
+                                    url: "<?php echo $this->serverUrl('/ajax/managevolume'); ?>",
+                                    data: "volume=" + encodeURIComponent(the_volume) + "&operation=rev&rev_count=" + encodeURIComponent(rev_count),
+                                    dataType: "json",
+                                    beforeSend: function (xhr, opt) {
                                         ajax_is_working = true;
                                     },
-                                    complete:function(xhr, status){
+                                    complete: function (xhr, status) {
                                         ajax_is_working = false;
                                     },
-                                    success:function(data, status, xhr) {
+                                    success: function (data, status, xhr) {
                                         $('#dlg_yes_btn').hide();
                                         dlg.html("<p>" + data.message + "</p>");
-                                        
+
                                         if (data.status === true) {
                                             item.innerHTML = data.rev_count;
-                                        } 
+                                        }
                                     },
-                                    error:function(xhr, status) {
+                                    error: function (xhr, status) {
                                         $('#dlg_yes_btn').hide();
                                         if (xhr.getResponseHeader('Content-Type') === 'application/json') {
                                             var response_text = JSON.parse(xhr.responseText);
@@ -240,14 +267,14 @@ if (isset($this->error)) {
 
                                             if (xhr.status == 403) {
                                                 dlg.dialog({
-                                                    buttons:[{
-                                                        text : Skylable_Lang['doLoginBtn'],
-                                                        click : function (e) {
+                                                    buttons: [{
+                                                        text: Skylable_Lang['doLoginBtn'],
+                                                        click: function (e) {
                                                             window.location.href = response_text.url;
                                                         }
                                                     }]
-                                                });    
-                                            } 
+                                                });
+                                            }
                                         } else {
                                             dlg.html(xhr.responseText);
                                         }
@@ -256,22 +283,22 @@ if (isset($this->error)) {
                             }
                         },
                         {
-                            text : Skylable_Lang.closeBtn,
-                            click : function(e) {
+                            text: Skylable_Lang.closeBtn,
+                            click: function (e) {
                                 dlg.dialog('close');
                                 dlg.dialog('destroy');
-                                
+
                             }
                         }
                     ]);
 
                     dlg.dialog('open');
-                    
-                    
+
+
                 });
             });
         </script>
-    <?php
+        <?php
     }
 }
 

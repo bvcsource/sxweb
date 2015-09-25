@@ -99,7 +99,6 @@
 "QR Code for iOS:","QR-код для iOS:"
 "Secret Key:","Секретный ключ:"
 "Secret Key","Секретный ключ"
-"Download SXDrive Cluster Config","Скачать кластерную конфигурацию для SXDrive"
 "(You can download SXDrive for Desktop here:","(Вы можете скачать десктопное приложение SXDrive здесь:"
 "Size: %s of %s used","Размер: использовано %s из %s"
 "Usage: %s of %s","Usage: %s of %s"
@@ -251,3 +250,4 @@
 "Change your password","Поменять ваш пароль"
 "Go back to settings...","Вернуться в настройки..."
 "Browse the volume...","Обзор раздела..."
+"Download SXDrive config file","Download SXDrive config file"
