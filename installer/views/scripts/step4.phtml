@@ -62,8 +62,7 @@ if (isset($this->errors)): ?>
                 'frm_default_from_mail' => $this->translate('&quot;From&quot; Address'),
                 'frm_default_from_name' => $this->translate('&quot;From&quot; Name'),
 
-                'frm_default_replyto_mail' => $this->translate('&quot;Reply To&quot; Address'),
-                'frm_default_replyto_name' => $this->translate('&quot;Reply To&quot; Name')
+                'frm_default_replyto_mail' => $this->translate('&quot;Reply To&quot; Address')
 
             );
 
@@ -180,13 +179,6 @@ endif;
         <div class="col-sm-10">
             <input class="form-control" name="frm_default_replyto_mail" id="frm_default_replyto_mail" type="text" size="25" value="<?php echo $this->escape( $this->frm_default_replyto_mail ); ?>" />
             <span class="help-block"><?php echo $this->translate('The default &quot;Reply To&quot; address.'); ?></span>
-        </div>
-    </div>
-    <div class="form-group<?php if (isset($this->errors['frm_default_replyto_name'])) echo ' has-error'; ?>">
-        <label for="frm_default_replyto_name" class="col-sm-2 control-label"><?php echo $this->translate('&quot;Reply To&quot; Name'); ?></label>
-        <div class="col-sm-10">
-            <input class="form-control" name="frm_default_replyto_name" id="frm_default_replyto_name" type="text" size="25" value="<?php echo $this->escape( $this->frm_default_replyto_name ); ?>" />
-            <span class="help-block"><?php echo $this->translate('The default &quot;Reply To&quot; name.'); ?></span>
         </div>
     </div>
     </fieldset>

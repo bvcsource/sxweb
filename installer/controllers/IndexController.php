@@ -1131,8 +1131,7 @@ class IndexController extends Zend_Controller_Action {
                 
             'frm_default_from_mail' => 'mail.defaultFrom.email',
             'frm_default_from_name' => 'mail.defaultFrom.name',
-            'frm_default_replyto_mail' => 'mail.defaultReplyTo.email',
-            'frm_default_replyto_name' => 'mail.defaultReplyTo.name'
+            'frm_default_replyto_mail' => 'mail.defaultReplyTo.email'
         );
 
         $form = new Zend_Form();
@@ -1201,11 +1200,6 @@ class IndexController extends Zend_Controller_Action {
         
         $form->addElement( 'text', 'frm_default_replyto_mail', array(
             'validators' => array( new Zend_Validate_EmailAddress() ),
-            'filters' => array( 'StringTrim' ),
-            'required' => FALSE
-        ));
-        $form->addElement( 'text', 'frm_default_replyto_name', array(
-            'validators' => array( new Zend_Validate_StringLength(array('min' => 0, 'max' => 255)) ),
             'filters' => array( 'StringTrim' ),
             'required' => FALSE
         ));
