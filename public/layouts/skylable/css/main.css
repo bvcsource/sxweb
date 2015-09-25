@@ -1421,15 +1421,16 @@ a:hover .icon-dl {
 }
 
 .icon-bc-settings {
-    background-position: -129px -47px;
-    height: 26px;
-    width: 24px;
+    background-position: -132px -51px;
+    height: 20px;
+    width: 20px;
+    vertical-align: middle !important;
 }
 
 a:hover .icon-bc-settings, .icon-bc-settings:hover {
-    background-position: -129px -87px;
-    height: 26px;
-    width: 24px;
+    background-position: -132px -91px;
+    height: 20px;
+    width: 20px;
 }
 
 /* drag & drop */
@@ -2185,7 +2186,7 @@ input[type=checkbox] {
 
 /* transitions & animations */
 
-a, input, .icon-dl, button, .sort-name span, .sort-size span, .sort-date span {
+a, input, .icon-dl, button, .sort-name span, .sort-size span, .sort-date span, .icon-bc-settings {
     -webkit-transition: all .20s ease;
     -moz-transition: all .20s ease;
     -ms-transition: all .20s ease;
