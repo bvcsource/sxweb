@@ -547,6 +547,7 @@ class IndexController extends My_BaseAction {
             
             $logger->debug("IndexAction - Step #4");
             $this->view->acl = $access_sx->getVolumeACL( My_Utils::getRootFromPath( $path ) );
+            $this->view->user_can_manage_volume = $this->userCanManageVolume($this->view->acl);
 
             $session = new Zend_Session_Namespace();
 

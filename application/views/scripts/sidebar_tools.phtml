@@ -7,7 +7,7 @@
 ?>
 	<div class="sidebar-tools">
 	<?php if(Zend_Auth::getInstance()->hasIdentity()): ?>
-            <a href="/settings" title="<?php echo $this->translate('Manage your account');?>"><span class="icon-settings ir"></span><span><?php echo $this->translate('My Account'); ?></span></a>
+            <a href="/settings" title="<?php echo $this->translate('Manage your account');?>"><span class="icon-settings ir"></span><span><?php echo $this->translate('Settings'); ?></span></a>
 			<a href="/logout"><span class="icon-logout ir"></span><span><?php echo $this->translate('Logout'); ?></span></a>
 	<?php else: ?>		
 			<a href="/login"><span class="icon-login ir"></span><span><?php echo $this->translate('Login'); ?></span></a>

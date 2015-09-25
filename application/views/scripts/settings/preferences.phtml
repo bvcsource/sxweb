@@ -19,6 +19,9 @@
     ?>
     <p><?php echo $this->formLabel('frm_language', $this->translate('Language')), $this->formSelect('frm_language', $this->form->getValue('frm_language'), NULL, My_BaseAction::getLanguageList()); ?></p>
         <p><label for="frm_file_list_size"><?php echo $this->translate('File list size:'); ?></label><input name="frm_file_list_size" type="text" placeholder="<?php echo $this->translate('File list size'); ?>" value="<?php echo $this->form->getValue('frm_file_list_size'); ?>"></p>
-    <p><input class="styled-button" type="submit" id="frm_launch" value="<?php echo $this->translate('Save!'); ?>"></p>
+    <p>
+        <input class="styled-button" type="submit" id="frm_launch" value="<?php echo $this->translate('Save!'); ?>">
+        <a class="styled-button" href="<?php echo $this->serverUrl('/settings'); ?>" title="<?php echo $this->translate('Go back to settings...'); ?>"><?php echo $this->translate('Go back to settings...'); ?></a>
+    </p>
     </form>
 </div>

@@ -209,7 +209,7 @@
 "Internal error. Failed to update file list page size.","Interner fehler. Setzen der Dateianzahl pro Seite fehlgeschlagen."
 "Invalid value, failed to update file list page size.","Ungültiger Wert für Dateianzahl pro Seite."
 "The value must be an integer between 1 and 65535 or an empty string","Der Wert muss eine Zahl zwischen 1 und 65535 sein"
-"Manage Volumes","Volumes verwalten"
+"Manage volumes","Volumes verwalten"
 "No volumes found!","Keine Volumes gefunden!"
 "Owner","Besitzer"
 "Replica","Replizierung"
@@ -245,4 +245,8 @@
 "User","User"
 "Privileges","Berechtigungen"
 "The SX Cluster is unreachable, please retry again later or contact your sysadmin.","Der SX Cluster ist nicht erreichbar. Bitte versuche es später erneut oder kontaktiere Deinen Systemadministrator."
-
+"Settings","Settings"
+"Allows you to change your password","Allows you to change your password"
+"Change your password","Change your password"
+"Go back to settings...","Go back to settings..."
+"Browse the volume...","Browse the volume..."

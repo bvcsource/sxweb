@@ -1420,6 +1420,18 @@ a:hover .icon-dl {
     background-position: -49px -409px;
 }
 
+.icon-bc-settings {
+    background-position: -129px -47px;
+    height: 26px;
+    width: 24px;
+}
+
+a:hover .icon-bc-settings, .icon-bc-settings:hover {
+    background-position: -129px -87px;
+    height: 26px;
+    width: 24px;
+}
+
 /* drag & drop */
 
 .drag-drop-top {
@@ -1704,6 +1716,34 @@ a:hover .icon-dl {
 
 /* Styled form */
 
+.styled-button {
+    background: #1575c5;
+    color: #fff;
+    border: none;
+    padding: 5px 5px;
+    border-radius: 3px;
+    margin: 5px 10px 0 0;
+    display: inline-block;
+}
+
+.styled-button:hover {
+    background: #0d548f;
+}
+
+.styled-button-disabled {
+    background: #eee;
+    color: #000;
+    border: none;
+    padding: 5px 5px;
+    border-radius: 3px;
+    margin: 5px 10px 0 0;
+    display: inline-block;
+}
+
+.styled-button-disable:hover {
+    background: #ccc;
+}
+
 .styled-form-success {
     margin: 10px 10px;
     padding: 10px 10px;
@@ -1748,7 +1788,7 @@ a:hover .icon-dl {
     border: 1px solid #1575c5;
 }
 
-.styled-form input[type=submit], .styled-form button {
+.styled-form input[type=submit], .styled-form button, .styled-form .styled-button {
     background: #1575c5;
     color: #fff;
     border: none;
@@ -1757,7 +1797,7 @@ a:hover .icon-dl {
     margin: 10px 0 0 0;
 }
 
-.styled-form input[type=submit]:hover, .styled-form button:hover {
+.styled-form input[type=submit]:hover, .styled-form button:hover, .styled-form .styled-button:hover {
     background: #0d548f;
 }
 
@@ -1796,34 +1836,6 @@ a:hover .icon-dl {
     width: auto !important;
     float: none !important;
     font-weight: normal !important;
-}
-
-.styled-button {
-    background: #1575c5;
-    color: #fff;
-    border: none;
-    padding: 5px 5px;
-    border-radius: 3px;
-    margin: 5px 10px 0 0;
-    display: inline-block;
-}
-
-.styled-button:hover {
-    background: #0d548f;
-}
-
-.styled-button-disabled {
-    background: #eee;
-    color: #000;
-    border: none;
-    padding: 5px 5px;
-    border-radius: 3px;
-    margin: 5px 10px 0 0;
-    display: inline-block;
-}
-
-.styled-button-disable:hover {
-    background: #ccc;
 }
 
 .styled-form .no-margin {

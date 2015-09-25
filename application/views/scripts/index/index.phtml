@@ -10,7 +10,7 @@
 		<hr />		
 	</div>
 	<hr />
-        <p class="bread-crumbs"><?php echo $this->breadcrumbs($this->url);?></p>
+        <p class="bread-crumbs"><?php if($this->user_can_manage_volume): ?><a href="<?php echo $this->serverUrl('/settings/volume'),'?volume=',rawurlencode($this->url); ?>" title="<?php echo $this->translate('Manage the volume'); ?>"><span class="ir icon-bc-settings"></span></a> <?php endif;?><?php echo $this->breadcrumbs($this->url);?></p>
 		<div class="bulk-actions">
 			<?php if($this->canWriteToVolume()): ?>
 			<ul>

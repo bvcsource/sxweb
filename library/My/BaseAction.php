@@ -59,6 +59,42 @@ class My_BaseAction extends Zend_Controller_Action {
     }
 
     /**
+     * Tells if an user has rights to manage a volume.
+     * 
+     * The $volume_acl parameter is the return value of {@link Skylable_AccessSx::getVolumeACL}
+     * 
+     * @param array $volume_acl the volume ACL
+     * @return bool
+     */
+    public function userCanManageVolume($volume_acl) {
+        if (!Zend_Auth::getInstance()->hasIdentity()) {
+            return FALSE;
+        }
+        
+        if (empty($volume_acl) || !is_array($volume_acl)) {
+            return FALSE;
+        }
+        
+        // This preference key is populated upon login
+        $whoami = Zend_Auth::getInstance()->getIdentity()->getPreferences()->get(My_User::PREF_WHO_AM_I);
+
+        if (Zend_Auth::getInstance()->getIdentity()->getRoleId() === My_User::ROLE_ADMIN) {
+            return TRUE;
+        } else {
+            foreach($volume_acl as $acl_info) {
+                if (strcmp($acl_info['user'], $whoami) == 0) {
+                    if (in_array('owner', $acl_info['perms'])) {
+                        return TRUE;
+                    } elseif (in_array('manager', $acl_info['perms'])) {
+                        return TRUE;
+                    }
+                }
+            }
+        }
+        return FALSE;
+    }
+
+    /**
      * Returns the URL to a shared file.
      * 
      * @param string $key the unique file key

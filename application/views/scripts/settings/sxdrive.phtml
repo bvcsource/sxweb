@@ -36,9 +36,6 @@ if (is_numeric($cluster_port)) {
         });
     });
 </script>
-<div id="qr">
-    <p><?php echo $this->translate('QR Code:'); ?></p><div id="qr_code"></div>
-</div>
 <p><?php echo $this->translate('Secret Key:'); ?> <input name="secret_key" type="text" placeholder="<?php echo $this->translate('Secret Key'); ?>" size="70" value="<?php echo $this->escape( Zend_Auth::getInstance()->getIdentity()->getSecretKey() ); ?>"></p>
 <p>
     <a class="styled-button" href="<?php echo $this->url( array('controller' => 'settings', 'action' => 'cluster-config'), 'default', TRUE ); ?>" ><?php echo $this->translate('Download SXDrive Cluster Config');?></a></p>
@@ -48,4 +45,10 @@ if (is_numeric($cluster_port)) {
     <p><a style="margin-right:15px;" href="http://www.skylable.com/download/sxdrive/" onclick="window.open(this.href); return false;"><img src="<?php echo $this->ServerUrl(); ?>/layouts/skylable/images/desktop_app.png"></a>
         <a style="margin-right:15px;" href="http://www.skylable.com/download/sxdrive/android" onclick="window.open(this.href); return false;"><img src="<?php echo $this->ServerUrl(); ?>/layouts/skylable/images/google_play.png"></a>
         <a style="margin-right:15px;" href="http://www.skylable.com/download/sxdrive/ios" onclick="window.open(this.href); return false;"><img src="<?php echo $this->ServerUrl(); ?>/layouts/skylable/images/appstore-button.png"></a></p>
+    <hr/>
+    <div id="qr">
+        <p><?php echo $this->translate('QR Code:'); ?></p><div id="qr_code"></div>
+    </div>
+    <hr/>
+    <p><a class="styled-button" href="<?php echo $this->serverUrl('/settings'); ?>" title="<?php echo $this->translate('Go back to settings...'); ?>"><?php echo $this->translate('Go back to settings...'); ?></a></p>
     </div>
