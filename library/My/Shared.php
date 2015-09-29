@@ -90,17 +90,32 @@ class My_Shared extends Zend_Db_Table_Abstract {
             $this->getAdapter()->delete('shared', array( 'NOW() > expire_at ' ) );
 
             // Adds the new one
-            $db->query('INSERT INTO '.
-                $db->quoteIdentifier('shared').' ('.
-                $db->quoteIdentifier('file_id').', '.
-                $db->quoteIdentifier('user_auth_token').', '.
-                $db->quoteIdentifier('file_path').', '.
-                $db->quoteIdentifier('created_at').', '.
-                $db->quoteIdentifier('expire_at').', '.
-                $db->quoteIdentifier('file_password').') '.
-                ' SELECT @mykey := SHA1(UUID()), ?, ?, NOW(), DATE_ADD(NOW(), INTERVAL ? SECOND), ?',
-                array( strval($user_auth_token), strval($path), $expire, $the_password )
-            );
+            if ($this->avoidExpireTimeOverflow($expire) === FALSE) {
+                $db->query('INSERT INTO '.
+                    $db->quoteIdentifier('shared').' ('.
+                    $db->quoteIdentifier('file_id').', '.
+                    $db->quoteIdentifier('user_auth_token').', '.
+                    $db->quoteIdentifier('file_path').', '.
+                    $db->quoteIdentifier('created_at').', '.
+                    $db->quoteIdentifier('expire_at').', '.
+                    $db->quoteIdentifier('file_password').') '.
+                    ' SELECT @mykey := SHA1(UUID()), ?, ?, NOW(), ' . $db->quote('9999-12-31') . ', ?',
+                    array( strval($user_auth_token), strval($path), $the_password )
+                );
+            } else {
+                $db->query('INSERT INTO '.
+                    $db->quoteIdentifier('shared').' ('.
+                    $db->quoteIdentifier('file_id').', '.
+                    $db->quoteIdentifier('user_auth_token').', '.
+                    $db->quoteIdentifier('file_path').', '.
+                    $db->quoteIdentifier('created_at').', '.
+                    $db->quoteIdentifier('expire_at').', '.
+                    $db->quoteIdentifier('file_password').') '.
+                    ' SELECT @mykey := SHA1(UUID()), ?, ?, NOW(), DATE_ADD(NOW(), INTERVAL ? SECOND), ?',
+                    array( strval($user_auth_token), strval($path), $expire, $the_password )
+                );    
+            }
+            
             $key = $db->fetchOne('SELECT @mykey');
 
             $db->commit();
@@ -113,6 +128,24 @@ class My_Shared extends Zend_Db_Table_Abstract {
             }
             throw $e;
         }
+    }
+
+    /**
+     * Check if the expire time interval will overflow the year 9999 when
+     * added to the current date.
+     * 
+     * Returns FALSE when the date overflows, otherwise return the expire time.
+     * 
+     * @param integer $expire_time expire time in seconds
+     * @return bool|integer
+     */
+    protected function avoidExpireTimeOverflow($expire_time) {
+        $expire_at = new DateTime();
+        $expire_at->add( new DateInterval( 'PT' . strval($expire_time) . 'S' ) );
+        if (intval($expire_at->format('Y')) < 9999) {
+            return $expire_time;
+        } 
+        return FALSE;
     }
 
     /**
@@ -147,7 +180,11 @@ class My_Shared extends Zend_Db_Table_Abstract {
             if (!is_numeric($expire_time)) {
                 return FALSE;
             }
-            $upd['expire_at'] = new Zend_Db_Expr( 'DATE_ADD(NOW(), INTERVAL '.strval($expire_time).' SECOND)' );
+            if ($this->avoidExpireTimeOverflow($expire_time) === FALSE) {
+                $upd['expire_at'] = new Zend_Db_Expr( '9999-12-31' );    
+            } else {
+                $upd['expire_at'] = new Zend_Db_Expr( 'DATE_ADD(NOW(), INTERVAL '.strval($expire_time).' SECOND)' );    
+            }
         }
         
         if (empty($upd)) {

@@ -182,23 +182,16 @@ class Share_IndexController extends My_BaseAction {
             }
          }
          if (array_key_exists('expire_time', $data)) {
-            if (is_numeric($data['expire_time'])) {
-                if (preg_match('/^[1-9]\d{0,10}$/', $data['expire_time']) == 1) {
-                    $expire_time = intval( $data['expire_time'] );
-                } else {
-                    echo Zend_Json::encode(array(
-                        'status' => FALSE,
-                        'error' => 'Invalid expire time (too long or non numeric)'
-                    ));
-                    return FALSE;
-                }
-            } else {
-                echo Zend_Json::encode(array(
-                    'status' => FALSE,
-                    'error' => 'Invalid expire time'
-                ));
-                return FALSE;
-            }
+             $validate_expire_time = new My_ValidateSharedFileExpireTime(My_ValidateSharedFileExpireTime::TIME_IN_SECONDS);
+             if ($validate_expire_time->isValid($data['expire_time'])) {
+                 $expire_time = intval( $data['expire_time'] );
+             } else {
+                 echo Zend_Json::encode(array(
+                     'status' => FALSE,
+                     'error' => 'Invalid expire time (too long or non numeric)'
+                 ));
+                 return FALSE;
+             }
          }
          if (is_null($expire_time)) {
              $expire_time = Zend_Registry::get('skylable')->get('shared_file_expire_time');

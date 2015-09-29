@@ -41,10 +41,51 @@
  * 
  * The expire time is expressed in SECONDS.
  */
-class My_ValidateSharedFileExpireTime extends Zend_Validate_Between {
-    public function __construct()
+class My_ValidateSharedFileExpireTime extends Zend_Validate_Abstract {
+    const
+        // Units of time to use
+        TIME_IN_HOURS = 1,
+        TIME_IN_SECONDS = 2;
+    
+    protected 
+        $_time_unit;
+    
+    public function __construct($time_unit = self::TIME_IN_HOURS)
     {
-        parent::__construct(array('min' => 1, 'max' => PHP_INT_MAX, 'inclusive' => TRUE)); 
+        $this->_time_unit = $time_unit;
     }
+
+    public function isValid($value)
+    {
+        $this->_setValue($value);
+        
+        if (!is_string($value) || !is_numeric($value)) {
+            return FALSE;
+        }
+        // 10 chars is more than sufficient to handle years and seconds
+        if (preg_match('/^[1-9]\d{0,9}$/', $value) == 0) {
+            return FALSE;
+        }
+        
+        if (intval($value) == 0) {
+            return FALSE;
+        }
+
+        // The passed value is numeric, check if added to the current year
+        // passes the year 9999, maximum value for a DATETIME DB field.
+        try {
+            $expire_at = new DateTime();
+            $expire_at->add( new DateInterval( 'PT' . $value . ($this->_time_unit == self::TIME_IN_HOURS ? 'H' : 'S') ) );
+            if (intval($expire_at->format('Y')) < 9999) {
+                return TRUE;
+            }
+        }
+        catch(Exception $e) {
+
+        }
+
+        return FALSE;
+    }
+
 
 }

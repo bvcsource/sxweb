@@ -540,11 +540,6 @@ class AjaxController extends My_BaseAction {
             $password = $this->getRequest()->getParam('share_password');
             $expire_time = $this->getRequest()->getParam('share_expire_time');
             
-            if (is_numeric($expire_time)) {
-                // Converts (or tries to) expire time from HOURS to SECONDS
-                $expire_time *= 3600;
-            }
-            
             $password_check = new My_ValidateSharedFilePassword();
             if ($password_check->isValid($password)) {
                 $confirm_password = $this->getRequest()->getParam('share_password_confirm');
@@ -556,7 +551,7 @@ class AjaxController extends My_BaseAction {
                 $errors = array_merge($errors, $password_check->getMessages());
             }
             
-            $expire_time_check = new My_ValidateSharedFileExpireTime();
+            $expire_time_check = new My_ValidateSharedFileExpireTime( My_ValidateSharedFileExpireTime::TIME_IN_HOURS );
             if (!$expire_time_check->isValid($expire_time)) {
                 $errors[] = $this->getTranslator()->translate('Invalid expire time');
                 $expire_time = '';
@@ -567,7 +562,7 @@ class AjaxController extends My_BaseAction {
                 $this->view->errors = $errors;
                 $this->view->share_path = $path;
                 $this->view->share_file = basename($path);
-                $this->view->share_expire_time = (empty($expire_time) ? $expire_time : $expire_time / 3600); // Convert from seconds to hours 
+                $this->view->share_expire_time = (empty($expire_time) ? '' : $expire_time );  
                 $this->view->share_password = '';
                 $this->getResponse()->setHttpResponseCode(400);
                 $this->render('share-dialog');
@@ -584,13 +579,13 @@ class AjaxController extends My_BaseAction {
              * Update the shared file info, if already exists.
              * */
             if ($sh->fileExists($path, Zend_Auth::getInstance()->getIdentity()->getSecretKey(), $key)) {
-                $ok_up = $sh->updateFile($key, $password, $expire_time);
+                $ok_up = $sh->updateFile($key, $password, $expire_time * 3600); // convert hours to seconds
                 if (!$ok_up) {
                     $this->sendErrorResponse('<p>' . $this->getTranslator()->translate('Failed to create the file share link.').'</p>');
                     return FALSE;
                 }
             } else {
-                $key = $sh->add($path, Zend_Auth::getInstance()->getIdentity()->getSecretKey(), $expire_time, $password );
+                $key = $sh->add($path, Zend_Auth::getInstance()->getIdentity()->getSecretKey(), $expire_time * 3600, $password ); // convert hours to seconds
                 if ($key === FALSE) {
                     $this->sendErrorResponse('<p>' . $this->getTranslator()->translate('Failed to create the file share link.').'</p>');
                     return FALSE;
