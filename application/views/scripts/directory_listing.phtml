@@ -107,7 +107,7 @@ if(isset($this->list)) {
                     <?php endif; ?>
                 </span>
                     <span class="size"><?php echo $this->fileSizeFormat($file['size']); ?></span>
-		        <span class="date"><span><?php echo $file['date']; ?></span>
+		        <span class="date"><span><?php echo $this->dateFormat($file['date']); ?></span>
                         <input name="file_element" type="checkbox" value="<?php echo $this->escape($file['path']); ?>"/>
 		        </span>
                     <a class="ir actions-trigger"></a>

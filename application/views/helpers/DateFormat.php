@@ -38,14 +38,12 @@
 
 
 /**
-* Pretty print byte sizes
+* Localize a date from the "sxls -l" output
 */
-class Zend_View_Helper_FileSizeFormat extends Zend_View_Helper_Abstract {
+class Zend_View_Helper_DateFormat extends Zend_View_Helper_Abstract {
 
-	public function fileSizeFormat($bytes) {
-	    $units = array( 'B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB');
-	    $power = $bytes > 0 ? floor(log($bytes, 1024)) : 0;
-	    // return number_format($bytes / pow(1024, $power), 2, '.', ',') . ' ' . $units[$power];
-        return Zend_Locale_Format::toNumber( $bytes / pow(1024, $power), array('precision' => ($power > 0 ? 2 : 0) ) ). ' ' . $units[$power];
+	public function dateFormat($date) {
+        $d = new Zend_Date($date);
+        return $d->toString(Zend_Date::DATETIME_SHORT);
 	}
 }
