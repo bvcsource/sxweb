@@ -76,6 +76,10 @@ require_once 'Zend/Loader/Autoloader.php';
 Zend_Loader_Autoloader::getInstance()->registerNamespace('My');
 Zend_Loader_Autoloader::getInstance()->registerNamespace('Skylable');
 
+// Prepare the logger - , 'facility' => LOG_DAEMON
+$log = new Zend_Log( new Zend_Log_Writer_Syslog(array('application' => 'sxweb_installer')) );
+Zend_Registry::set('Logger', $log);
+
 // Prepare the translator object
 $translate = new Zend_Translate(
     array(
@@ -135,7 +139,6 @@ $action->dispatch($action_map[$step][2] . 'Action');
 
 if (isset($action->render_the_script)) {
     if ($action->render_the_script) {
-        // echo $action->view->render($action_map[$step][3]);
         echo $action->view->render( $action->getViewScript() );        
     } else {
         // When the action uses render()

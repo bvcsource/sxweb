@@ -196,6 +196,19 @@ class IndexController extends Zend_Controller_Action {
     }
 
     /**
+     * Return the system logger.
+     * 
+     * @return Zend_Log
+     * @throws Zend_Exception
+     */
+    public function getLogger() {
+        if (Zend_Registry::isRegistered('Logger')) {
+            return Zend_Registry::get('Logger');
+        }
+        return NULL;
+    }
+
+    /**
      * Translate the given string.
      * 
      * @param string $str string to translate
@@ -253,7 +266,7 @@ class IndexController extends Zend_Controller_Action {
         if (!@is_writable(INSTALLER_SCRIPT_PATH)) {
             $this->view->installer_not_writable = TRUE;
         }
-        
+        $this->getLogger()->info('Installer started!');
     }
 
     /**
@@ -887,36 +900,38 @@ class IndexController extends Zend_Controller_Action {
                     }
                 }
                 
-                // If you allow password recovery, you must supply a valid admin key
+                
                 $can_proceed = TRUE;
-                if ($values['frm_allow_password_recovery'] == 'y') {
-                    if (strlen($values['frm_admin_key']) == 0) {
-                        
+                
+                // Check the admin key
+                if (strlen($values['frm_admin_key']) == 0) {
+                    // If you allow password recovery, you must supply a valid admin key
+                    if ($values['frm_allow_password_recovery'] == 'y') {
                         $form->getElement('frm_admin_key')->setErrors( array($this->translate('You must supply an admin key')) );
                         $this->view->errors = $form->getMessages();
-                        
+
+                        $can_proceed = FALSE;
+                    }
+                } else {
+                    // Strictly check the admin key
+                    $cluster_cfg = array(
+                        'cluster' => $session->config['cluster'],
+                        'cluster_ip' => $session->config['cluster_ip'],
+                        'cluster_ssl' => $session->config['cluster_ssl'],
+                        'cluster_port' => $session->config['cluster_port']
+                    );
+                    $valid_admin_key = $this->testAdminKey( $values['frm_admin_key'], $cluster_cfg );
+                    if ($valid_admin_key['status'] == FALSE) {
+                        $form->getElement('frm_admin_key')->setErrors( array($valid_admin_key['error']) );
+                        $this->view->errors = $form->getMessages();
+
                         $can_proceed = FALSE;
                     } else {
-                        // Strictly check the admin key
-                        $cluster_cfg = array(
-                            'cluster' => $session->config['cluster'],
-                            'cluster_ip' => $session->config['cluster_ip'],
-                            'cluster_ssl' => $session->config['cluster_ssl'],
-                            'cluster_port' => $session->config['cluster_port']
-                        );
-                        $valid_admin_key = $this->testAdminKey( $values['frm_admin_key'], $cluster_cfg );
-                        if ($valid_admin_key['status'] == FALSE) {
-                            $form->getElement('frm_admin_key')->setErrors( array($valid_admin_key['error']) );
-                            $this->view->errors = $form->getMessages();
-
-                            $can_proceed = FALSE;
-                        } else {
-                            // Register the SXWeb address
-                            $out = $this->registerSXWebAddressIntoSXCluster( $values['frm_admin_key'], $cluster_cfg );
-                            if ($out['status'] == FALSE) {
-                                // Tell us to show a message about this later
-                                $session->register_sxweb_address = TRUE;
-                            }
+                        // Register the SXWeb address
+                        $out = $this->registerSXWebAddressIntoSXCluster( $values['frm_admin_key'], $cluster_cfg );
+                        if ($out['status'] == FALSE) {
+                            // Tell us to show a message about this later
+                            $session->register_sxweb_address = TRUE;
                         }
                     }
                 }
@@ -984,17 +999,17 @@ class IndexController extends Zend_Controller_Action {
         $the_user = new My_User(NULL, '', '', $admin_key);
         $base_dir = My_Utils::mktempdir( $sx_local, 'Skylable_' );
         if ($base_dir === FALSE) {
+            $this->getLogger()->err('Admin key test failed to write to a temporary directory.');
             return array(
                 'status' => FALSE,
-                'error' => $this->translate('Failed the check the admin key.')
+                'error' => $this->translate('Failed to check the admin key.')
             );
         } 
 
         try {
-            $logger = new Zend_Log( new Zend_Log_Writer_Null() );
             $cfg = new Zend_Config($cluster_config);
             
-            $access_sx = new Skylable_AccessSx( $the_user, $base_dir, array( 'user_auth_key' => $admin_key, 'logger' => $logger ), $cfg);
+            $access_sx = new Skylable_AccessSx( $the_user, $base_dir, array( 'user_auth_key' => $admin_key, 'logger' => $this->getLogger() ), $cfg);
             $whoami = $access_sx->whoami();
             My_Utils::deleteDir($base_dir);
 
@@ -1012,7 +1027,7 @@ class IndexController extends Zend_Controller_Action {
         }
         catch (Skylable_AccessSxException $e) {
             My_Utils::deleteDir($base_dir);
-
+            $this->getLogger()->err($e->getMessage());
             return array(
                 'status' => FALSE,
                 'error' => $this->translate($e->getMessage())
@@ -1020,6 +1035,7 @@ class IndexController extends Zend_Controller_Action {
         }
         catch(Exception $e) {
             My_Utils::deleteDir($base_dir);
+            $this->getLogger()->err($e->getMessage());
             return array(
                 'status' => FALSE,
                 'error' => $this->translate($e->getMessage())
@@ -1052,17 +1068,17 @@ class IndexController extends Zend_Controller_Action {
         $the_user = new My_User(NULL, 'admin', '', $admin_key);
         $base_dir = My_Utils::mktempdir( $sx_local, 'Skylable_' );
         if ($base_dir === FALSE) {
+            $this->getLogger()->err('Admin key test failed to write to a temporary directory.');
             return array(
                 'status' => FALSE,
-                'error' => $this->translate('Failed the check the admin key.')
+                'error' => $this->translate('Failed to check the admin key.')
             );
         }
 
         try {
-            $logger = new Zend_Log( new Zend_Log_Writer_Null() );
             $cfg = new Zend_Config($cluster_config);
 
-            $access_sx = new Skylable_AccessSx( $the_user, $base_dir, array( 'user_auth_key' => $admin_key, 'logger' => $logger ), $cfg);
+            $access_sx = new Skylable_AccessSx( $the_user, $base_dir, array( 'user_auth_key' => $admin_key, 'logger' => $this->getLogger() ), $cfg);
             $out = $access_sx->clusterSetMeta('sxweb_address', $session->config['url']);
             My_Utils::deleteDir($base_dir);
 
@@ -1080,6 +1096,7 @@ class IndexController extends Zend_Controller_Action {
         }
         catch (Skylable_AccessSxException $e) {
             My_Utils::deleteDir($base_dir);
+            $this->getLogger()->err($e->getMessage());
 
             return array(
                 'status' => FALSE,
@@ -1088,6 +1105,7 @@ class IndexController extends Zend_Controller_Action {
         }
         catch(Exception $e) {
             My_Utils::deleteDir($base_dir);
+            $this->getLogger()->err($e->getMessage());
             return array(
                 'status' => FALSE,
                 'error' => $this->translate($e->getMessage())
