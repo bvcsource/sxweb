@@ -255,7 +255,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap {
             return $log_res->getLog();
         } else {
             $logger = new Zend_Log();
-            $logger->addWriter(new Zend_Log_Writer_Syslog());
+            $logger->addWriter(new Zend_Log_Writer_Syslog( array('application' => 'sxweb') ));
             return $logger;
         }
     }
