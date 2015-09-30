@@ -58,8 +58,8 @@ class My_ValidateSharedFileExpireTime extends Zend_Validate_Abstract {
     public function isValid($value)
     {
         $this->_setValue($value);
-        
-        if (!is_string($value) || !is_numeric($value)) {
+
+        if (!is_numeric($value)) {
             return FALSE;
         }
         // 10 chars is more than sufficient to handle years and seconds
@@ -81,7 +81,6 @@ class My_ValidateSharedFileExpireTime extends Zend_Validate_Abstract {
             }
         }
         catch(Exception $e) {
-
         }
 
         return FALSE;

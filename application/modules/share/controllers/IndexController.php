@@ -109,7 +109,9 @@ class Share_IndexController extends My_BaseAction {
             ));
             return FALSE;
         }
+         
         $json = $this->getRequest()->getRawBody();
+        $this->getLogger()->debug(__METHOD__.': RAW DATA: '.print_r($json, TRUE));
         try {
             $data = Zend_Json::decode($json, Zend_JSon::TYPE_ARRAY);
             if (is_null($data)) {
@@ -121,6 +123,7 @@ class Share_IndexController extends My_BaseAction {
             }
         }
         catch(Zend_Json_Exception $e) {
+            $this->getLogger()->err(__METHOD__.': RAW DATA parsing error: '.$e->getMessage());
             echo Zend_Json::encode(array(
                 'status' => FALSE,
                 'error' => 'Invalid json string'
@@ -182,6 +185,7 @@ class Share_IndexController extends My_BaseAction {
             }
          }
          if (array_key_exists('expire_time', $data)) {
+             $this->getLogger()->debug(__METHOD__.': expire time: '.print_r($data['expire_time'], TRUE));
              $validate_expire_time = new My_ValidateSharedFileExpireTime(My_ValidateSharedFileExpireTime::TIME_IN_SECONDS);
              if ($validate_expire_time->isValid($data['expire_time'])) {
                  $expire_time = intval( $data['expire_time'] );
