@@ -107,6 +107,7 @@ textarea {
     vertical-align: top
 }
 
+/*
 ::selection {
     text-shadow: none;
 }
@@ -114,6 +115,7 @@ textarea {
 ::-moz-selection {
     text-shadow: none;
 }
+*/
 
 .ir {
     background: url('sprites.png');
@@ -2637,6 +2639,10 @@ a, input, .icon-dl, button, .sort-name span, .sort-size span, .sort-date span, .
     width: 95%;
     float: left;
     background-color: white;
+    word-break: break-all;
+}
+
+.shared_file_url_text {
     word-break: break-all;
 }
 

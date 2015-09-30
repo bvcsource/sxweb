@@ -690,68 +690,23 @@ if (!FileOperations) {
                                             id: 'copytoclipboarddialogbtn',
                                             text: Skylable_Lang['shareCopyToClipboard'],
                                             click: function(e) {
-
+                                                $('#shared_file_url_input').select().focus();
                                             }
                                         },{
                                             text : Skylable_Lang['closeBtn'],
                                             click : function(e) {
                                                 dlg.dialog('close');
+                                                dlg.dialog('destroy');
                                             }
                                         }
                                     ]);
                                     dlg.html(xhr.responseText);
-                                    // Integrate zeroclipboard
-                                    ZeroClipboard.config({
-                                        swfPath: zeroclipboard_swf
-                                    });
-
-                                    // Fix for IE: https://github.com/zeroclipboard/zeroclipboard/blob/master/docs/instructions.md#ie-freezes-when-clicking-a-zeroclipboard-clipped-element-within-a-jquery-ui-modal-dialog
-                                    if (/MSIE|Trident/.test(window.navigator.userAgent)) {
-                                        (function($) {
-                                            var zcClass = '.' + ZeroClipboard.config('containerClass');
-                                            $.widget( 'ui.dialog', $.ui.dialog, {
-                                                _allowInteraction: function( event ) {
-                                                    return this._super(event) || $( event.target ).closest( zcClass ).length;
-                                                }
-                                            } );
-                                        })(window.jQuery);
-                                    }
-                                    
-                                    var the_copy_to_clip_button = document.getElementById('copytoclipboarddialogbtn');
-                                    var clip = new ZeroClipboard( the_copy_to_clip_button );
-                                    clip.on('ready', function(event){
-                                        clip.on("copy", function(e){
-                                            var clipboard = e.clipboardData;
-                                            clipboard.setData("text/plain", $('.sharelink a').text() );
-                                        });
-                                        clip.on("aftercopy", function(e){
-
-                                            $( the_copy_to_clip_button ).button( "option", "label", Skylable_Lang['shareCopiedToClipboard'] );
-                                            window.setTimeout(function(){
-                                                $( the_copy_to_clip_button ).button( "option", "label", Skylable_Lang['shareCopyToClipboard'] );
-                                            }, 3000);
-                                            
-                                        });
-                                    });
-                                    
-                                    clip.on('error', function(event){
-                                        $( the_copy_to_clip_button).button("disable");
-                                        $( the_copy_to_clip_button).hide();
-                                        ZeroClipboard.destroy();
-                                    });
+                                    $('#shared_file_url_input').select().focus();
 
                                 },
                                 error : function(xhr, status) {
                                     if (!FileOperations.expiredUser(dlg, xhr)) {
                                         dlg.html(xhr.responseText);
-                                        /*
-                                        dlg.dialog('option', 'buttons',[{
-                                            text : Skylable_Lang['closeBtn'],
-                                            click : function(e) {
-                                                dlg.dialog('close');
-                                            }
-                                        }]);
-                                        */
                                     }
                                 },
                                 complete : function(xhr, status) {

@@ -1,10 +1,6 @@
-<div>
-	<ul>
-		<li><?php echo $this->translate('Link to the shared file:'); ?></li>
-		<li>
-			<span class="share-file-link sharelink" >
-			<a target="_blank" href="<?php echo $this->escape($this->url);?>"><?php echo $this->escape($this->url);?></a>
-			</span>
-		</li>
-	</ul>
-</div>
+
+<ul>
+	<li><?php echo $this->translate('Link to the shared file:'); ?></li>
+    <li><textarea class="share-file-link shared_file_url_text" id="shared_file_url_input" readonly="readonly"><?php echo $this->escape($this->url);?></textarea></li>
+</ul>
+

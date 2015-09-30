@@ -71,7 +71,6 @@
 <?php endif; ?>
 <?php if($this->canWriteToVolume() || $this->hasReadAccess()): ?>
 	<script src="<?php echo $this->ServerUrl(); ?>/layouts/skylable/js/file_operations.js" type="text/javascript" ></script>
-    <script src="<?php echo $this->ServerUrl(); ?>/js/ZeroClipboard.min.js" type="text/javascript" ></script>
 <?php endif; ?>
 	<script src="<?php echo $this->ServerUrl(); ?>/layouts/skylable/js/autocomplete.js"></script>
 <?php echo $this->headScript(), PHP_EOL, $this->headStyle(); ?>
@@ -131,7 +130,6 @@ var current_path = '<?php echo $this->slashPath( $this->url );?>';
 var current_volume = '<?php echo My_Utils::getRootFromPath($this->url); ?>';
 var maxFileSize =<?php echo Zend_Registry::get('skylable')->get('max_upload_filesize'); ?>;
 var upload_url = '/upload'+url;
-    var zeroclipboard_swf = "<?php echo $this->ServerUrl(); ?>/js/ZeroClipboard.swf";
 </script>
 <div id="dialog"></div>
 <input id="fileupload" type="file" name="files[]" multiple />
