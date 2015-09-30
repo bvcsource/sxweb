@@ -335,8 +335,7 @@ class IndexController extends Zend_Controller_Action {
             'sxmv' => array('1.2', '>='),
             'sxls' => array('1.2', '>='),
             'sxacl' => array('1.2', '>='),
-            'sxrev' => array('1.2', '>='),
-            'sxadm' => array('1.2', '>=')
+            'sxrev' => array('1.2', '>=')
         );
         
         $this->view->sx_commands_search_path = $this->getExecPath();
@@ -1044,9 +1043,9 @@ class IndexController extends Zend_Controller_Action {
     }
 
     /**
-     * 
+     *
      * Store the SXWeb address into the SX Cluster.
-     * 
+     *
      * @param string $admin_key the admin key
      * @param array $cluster_config
      * @return array
@@ -1061,28 +1060,18 @@ class IndexController extends Zend_Controller_Action {
         }
 
         $session = new Zend_Session_Namespace();
-        $sx_local = str_replace('APPLICATION_PATH', SXWEB_APPLICATION_PATH, $session->config['sx_local']);
-        $cluster_config['sx_local'] = $sx_local;
-
-        // Create a fake user into the data/ dir 
-        $the_user = new My_User(NULL, 'admin', '', $admin_key);
-        $base_dir = My_Utils::mktempdir( $sx_local, 'Skylable_' );
-        if ($base_dir === FALSE) {
-            $this->getLogger()->err('Admin key test failed to write to a temporary directory.');
-            return array(
-                'status' => FALSE,
-                'error' => $this->translate('Failed to check the admin key.')
-            );
-        }
 
         try {
             $cfg = new Zend_Config($cluster_config);
-
-            $access_sx = new Skylable_AccessSx( $the_user, $base_dir, array( 'user_auth_key' => $admin_key, 'logger' => $this->getLogger() ), $cfg);
-            $out = $access_sx->clusterSetMeta('sxweb_address', $session->config['url']);
-            My_Utils::deleteDir($base_dir);
-
-            if ($out !== FALSE) {
+            
+            $access_sx_opt = My_Utils::getAccessSxNGOpt( NULL, array(
+                'secret_key' => $admin_key,
+                'config' => $cfg
+            ) ); 
+            $access_sx_opt['logger'] = $this->getLogger();
+            $access_sx = new Skylable_AccessSxNG( $access_sx_opt );
+            
+            if ($access_sx->setClusterMetadata( array( 'sxweb_address' => $session->config['url'] ) )) {
                 return array(
                     'status' => TRUE,
                     'error' => ''
@@ -1095,7 +1084,6 @@ class IndexController extends Zend_Controller_Action {
             }
         }
         catch (Skylable_AccessSxException $e) {
-            My_Utils::deleteDir($base_dir);
             $this->getLogger()->err($e->getMessage());
 
             return array(
@@ -1104,7 +1092,6 @@ class IndexController extends Zend_Controller_Action {
             );
         }
         catch(Exception $e) {
-            My_Utils::deleteDir($base_dir);
             $this->getLogger()->err($e->getMessage());
             return array(
                 'status' => FALSE,

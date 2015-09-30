@@ -76,8 +76,9 @@ require_once 'Zend/Loader/Autoloader.php';
 Zend_Loader_Autoloader::getInstance()->registerNamespace('My');
 Zend_Loader_Autoloader::getInstance()->registerNamespace('Skylable');
 
-// Prepare the logger - , 'facility' => LOG_DAEMON
+// Prepare the logger, 'facility' => LOG_DAEMON
 $log = new Zend_Log( new Zend_Log_Writer_Syslog(array('application' => 'sxweb_installer')) );
+$log->addFilter( new Zend_Log_Filter_Priority( (APPLICATION_ENV == 'development' ? Zend_Log::DEBUG : Zend_Log::WARN) ) );
 Zend_Registry::set('Logger', $log);
 
 // Prepare the translator object

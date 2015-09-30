@@ -72,6 +72,7 @@ class My_Utils {
      * 
      * Valid options:
      * 'secret_key' -  string containing the secret key
+     * 'config' - Zend_Config, use this server config
      * 
      * @param My_User $user
      * @param array $opt
@@ -79,7 +80,11 @@ class My_Utils {
      * @throws Zend_Exception
      */
     public static function getAccessSxNGOpt($user, $opt = array()) {
-        $cfg = Zend_Registry::get('skylable');
+        if (array_key_exists('config', $opt)) {
+            $cfg = $opt['config'];
+        } else {
+            $cfg = Zend_Registry::get('skylable');    
+        }
         
         if (is_object($user)) {
             $secret_key = $user->getSecretKey();

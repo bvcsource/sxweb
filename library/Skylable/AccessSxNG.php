@@ -65,7 +65,12 @@ class Skylable_AccessSxNG {
          */
         $_port = NULL,
         $_secret_key = NULL,
-        $_cluster = NULL;
+        $_cluster = NULL,
+
+        /**
+         * @var Zend_Log
+         */
+        $_logger = NULL;
 
     const
         // Verbs used for REST calls
@@ -85,6 +90,7 @@ class Skylable_AccessSxNG {
      * Other parameters:
      * 'port' - the port number of the cluster
      * 'use_ssl' - boolean, TRUE use SSL (the default), FALSE otherwise
+     * 'logger' - Zend_Log use this logger
      *
      * @param array $options
      */
@@ -111,6 +117,15 @@ class Skylable_AccessSxNG {
         } else {
             $this->_use_ssl = TRUE;
         }
+
+        if (array_key_exists('logger', $options)) {
+            $this->_logger = $options['logger'];
+        } else {
+            $bs = Zend_Controller_Front::getInstance()->getParam('bootstrap');
+            if (is_object($bs)) {
+                $this->_logger = $bs->getResource('log');
+            }
+        }
         
         $this->clear();
     }
@@ -131,7 +146,7 @@ class Skylable_AccessSxNG {
      * @return Zend_Log
      */
     public function getLogger() {
-        return Zend_Controller_Front::getInstance()->getParam('bootstrap')->getResource('log');
+        return $this->_logger;
     }
 
     /**
@@ -208,11 +223,11 @@ class Skylable_AccessSxNG {
         $res = curl_init();
         if ($res !== FALSE) {
             curl_setopt($res, CURLOPT_URL, $params['url']);
-            $this->getLogger()->err(__METHOD__.' URL: ' .var_export($params['url'], TRUE));
+            $this->getLogger()->debug(__METHOD__.' URL: ' .var_export($params['url'], TRUE));
             
             if (!empty($this->_port)) {
                 curl_setopt($res, CURLOPT_PORT, $this->_port);
-                $this->getLogger()->err(__METHOD__.' PORT: ' .var_export($this->_port, TRUE));
+                $this->getLogger()->debug(__METHOD__.' PORT: ' .var_export($this->_port, TRUE));
             }
 
             if (array_key_exists('verb', $params)) {
@@ -229,7 +244,13 @@ class Skylable_AccessSxNG {
                         curl_setopt($res, CURLOPT_HTTPGET, TRUE);
                 }
             } else {
-                curl_setopt($res, CURLOPT_HTTPGET, TRUE);
+                $is_custom = FALSE; // Custom request flag
+                if (array_key_exists('curl-options', $params)) {
+                    $is_custom = array_key_exists(CURLOPT_CUSTOMREQUEST, $params['curl-options']);
+                }
+                if (!$is_custom) {
+                    curl_setopt($res, CURLOPT_HTTPGET, TRUE);    
+                }
             }
 
             curl_setopt($res, CURLOPT_FOLLOWLOCATION, TRUE);
@@ -247,6 +268,8 @@ class Skylable_AccessSxNG {
                 $headers = array_merge($headers, $params['headers']);
             }
 
+            $this->getLogger()->debug(__METHOD__.' HEADERS: ' .var_export($headers, TRUE));
+
             curl_setopt($res, CURLOPT_HTTPHEADER, $headers);
             curl_setopt($res, CURLOPT_RETURNTRANSFER, $return_transfer);
             curl_setopt($res, CURLOPT_HEADERFUNCTION, array($this, 'writeHeader') );
@@ -258,6 +281,7 @@ class Skylable_AccessSxNG {
             if (array_key_exists('curl-options', $params)) {
                 foreach($params['curl-options'] as $curlopt => $value) {
                     curl_setopt($res, $curlopt, $value);
+                    $this->getLogger()->debug(__METHOD__.' CURLOPT: '.$curlopt .print_r($value, TRUE));
                 }
             }
 
@@ -266,6 +290,8 @@ class Skylable_AccessSxNG {
                 $this->_error_no = curl_errno($res);
                 $this->getLogger()->err(__METHOD__.' cURL error: ' .var_export($this->_error, TRUE));
             }
+            $this->getLogger()->debug(__METHOD__.' '.print_r($this->_headers, TRUE));
+            $this->getLogger()->debug(__METHOD__.' '.print_r($this->_body, TRUE));
 
             curl_close($res);
             return ($this->_error_no == 0);
@@ -717,5 +743,122 @@ class Skylable_AccessSxNG {
      */
     protected function isJSON() {
         return (strncmp($this->_response['headers']['content-type'], 'application/json', strlen('application/json')) == 0);
+    }
+
+    /**
+     * Sets cluster metadata.
+     * 
+     * If the $meta parameter is a string, it is used as the key to set, and the $value parameter is the value.
+     * If the $meta parameter is an associative array, use its key,value pairs set the metadata. In this 
+     * case the $value parameter is ignored.
+     * 
+     * @param string|array $meta
+     * @param string $value
+     * @return bool
+     * @throws Skylable_AccessSxException
+     */
+    public function setClusterMetadata($meta, $value = NULL) {
+
+        $date = $this->getRequestDate();
+        if (is_array($meta)) {
+            $meta_arr = array();
+            foreach($meta as $mk => $mv) {
+                $meta_arr[$mk] = bin2hex($mv); 
+            }
+            $json = Zend_Json::encode( array( "clusterMeta" => $meta_arr ) );
+        } else {
+            $json = Zend_Json::encode( array( "clusterMeta" => array( $meta => bin2hex($value) )) );    
+        }
+        
+        if ($this->RESTCall(
+            array(
+                'url' => $this->getBaseURL($this->_cluster).'/.clusterMeta',
+                'date' => $date,
+                'authorization' => $this->getRequestSignature($this->_secret_key, 'PUT', '.clusterMeta', $date, sha1($json)),
+                'headers' => array('Content-Type: application/json'),
+                'content-length' => strlen($json),
+                'curl-options' => array(
+                    CURLOPT_CUSTOMREQUEST => 'PUT',
+                    CURLOPT_POSTFIELDS => $json
+                )
+            )
+        )) {
+
+            if ($this->parseHeaders()) {
+                $this->getLogger()->debug(__METHOD__.print_r($this->_response, TRUE));
+                if ($this->_response['http_code'] == 200 && $this->isJSON()) {
+                    $data = json_decode($this->_body, TRUE);
+                    $this->replyIsError($data);
+                    if ($this->isJobReply($data)) {
+                        // Do the polling to check if the job finished
+                        while(TRUE) {
+                            usleep($data['minPollInterval']);
+                            $date = $this->getRequestDate();
+                            $req = '.results/'.$data['requestId'];
+                            if ($this->RESTCall(
+                                array(
+                                    'url' => $this->getBaseURL($this->_cluster).'/'.$req,
+                                    'date' => $date,
+                                    'authorization' => $this->getRequestSignature($this->_secret_key, 'GET', $req, $date, sha1(''))
+                                )
+                            )) {
+                                if (!$this->parseHeaders()) {
+                                    $this->getLogger()->debug(__METHOD__.': Failed to parse JOB reply headers');
+                                    break;
+                                }
+                                if ($this->_response['http_code'] == 200 && $this->isJSON()) {
+                                    $response_data = json_decode($this->_body, TRUE);
+                                    $this->replyIsError($response_data);
+                                    if (!$this->isJobRequestReply($response_data)) {
+                                        break;
+                                    }
+                                    if ($response_data['requestStatus'] == 'OK') {
+                                        return TRUE;
+                                    } elseif ($response_data['requestStatus'] == 'ERROR') {
+                                        $this->getLogger()->debug(__METHOD__.': JOB reply failed, reason: '.$response_data['requestMessage']);
+                                        break;
+                                    }
+                                } else {
+                                    $this->getLogger()->debug(__METHOD__.': JOB reply (HTTP code: '.$this->_response['http_code'].') has errors or is not JSON');
+                                    break;
+                                }
+                            } else {
+                                break;
+                            }
+                            // Increases the interval between calls
+                            if ($data['minPollInterval'] + 10 < $data['maxPollInterval']) {
+                                $data['minPollInterval'] += 10;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return FALSE;
+    }
+
+    /**
+     * Tells if the parsed JSON reply is of type JOB_PUT or JOB_DELETE.
+     * @param array $reply
+     * @return bool
+     */
+    protected function isJobReply($reply) {
+        if (is_array($reply)) {
+            return (array_key_exists('requestId', $reply) && array_key_exists('minPollInterval', $reply) && array_key_exists('maxPollInterval', $reply) );
+        }
+        return FALSE;
+    }
+
+    /**
+     * Tells if the parsed JSON reply is of a pending JOB request.
+     * 
+     * @param array $reply
+     * @return bool
+     */
+    protected function isJobRequestReply($reply) {
+        if (is_array($reply)) {
+            return (array_key_exists('requestId', $reply) && array_key_exists('requestStatus', $reply) && array_key_exists('requestMessage', $reply) );
+        }
+        return FALSE;
     }
 }
