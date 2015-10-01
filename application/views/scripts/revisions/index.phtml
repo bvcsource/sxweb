@@ -27,7 +27,7 @@
 
         ?>
         <form action="/revs/<?php echo $this->escape($this->sxUrlEncode($this->path)); ?>" method="post" id="revisions_form">
-            <table class="table-revisions">
+            <table class="generic_table">
                 <tr><th colspan="2"><?php echo $this->translate('Rev.');?></th><th><?php echo $this->translate('Date');?></th><th><?php echo $this->translate('Size');?></th><th><?php echo $this->translate('Actions');?></th></tr>
 <?php
                 $is_first = TRUE;
@@ -48,7 +48,7 @@
                 }
 ?>
             </table>
-            <p><?php if (count($this->revisions) > 1) { ?><input type="submit" class="styled-button" name="frm_revs_action" value="<?php echo $this->translate('Restore'); ?>"> <?php } ?><a href="/vol/<?php echo $this->sxUrlEncode($this->file_path); ?>" ><?php echo $this->translate('Cancel'); ?></a></p>
+            <p><?php if (count($this->revisions) > 1) { ?><input type="submit" class="styled-button" name="frm_revs_action" value="<?php echo $this->translate('Restore'); ?>"> <?php } ?><a class="styled-button" href="/vol/<?php echo $this->sxUrlEncode($this->file_path); ?>" ><?php echo $this->translate('Cancel'); ?></a></p>
         </form>
 <?php
     }
