@@ -176,6 +176,7 @@ if (!FileOperations) {
                         text: Skylable_Lang["close"],
                         click: function() {
                             $(this).dialog("close");
+                            $(this).dialog("destroy");
                         }
                     }
                 ] );
@@ -320,6 +321,7 @@ if (!FileOperations) {
                                             FileOperations.updateFileList(function(s){
                                                 $(progressbar).progressbar("option", "value", 100);
                                                 dlg.dialog("close");
+                                                dlg.dialog("destroy");
                                             });
                                         }
                                     },
@@ -344,6 +346,7 @@ if (!FileOperations) {
                         text: Skylable_Lang["close"],
                         click: function() {
                             dlg.dialog("close");
+                            dlg.dialog("destroy");
                         }
                     }
                 ] );
@@ -433,6 +436,7 @@ if (!FileOperations) {
                                             $(progressbar).progressbar('option', 'value', 100);
                                             FileOperations.updateFileList(function(s){
                                                 dlg.dialog('close');
+                                                dlg.dialog("destroy");
                                             });
                                         },
                                         error : function(xhr, status) {
@@ -452,6 +456,7 @@ if (!FileOperations) {
                             text: Skylable_Lang['close'],
                             click : function (ev) {
                                 dlg.dialog("close");
+                                dlg.dialog("destroy");
                             }
                         }
                     ]
@@ -480,6 +485,7 @@ if (!FileOperations) {
                             text: Skylable_Lang['close'],
                             click : function (ev) {
                                 dlg.dialog("close");
+                                dlg.dialog("destroy");
                             }
                         }
                     ]
@@ -543,6 +549,7 @@ if (!FileOperations) {
                             text: Skylable_Lang['no'],
                             click : function (ev) {
                                 dlg.dialog("close");
+                                dlg.dialog("destroy");
                             }
                         }
                     ]
