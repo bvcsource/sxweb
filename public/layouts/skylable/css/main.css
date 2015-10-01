@@ -1502,7 +1502,7 @@ a:hover .icon-bc-settings, .icon-bc-settings:hover {
 .ui-dialog {
     z-index: 99999999 !important;
     padding: 0;
-    width: 700px !important;
+    /* width: 700px !important; */
     background: #e5e5e5;
     border-bottom: 3px solid #3a3d46 !important;
     border-radius: 5px
@@ -1590,40 +1590,6 @@ a:hover .icon-bc-settings, .icon-bc-settings:hover {
     color: #1575c5
 }
 
-.modal-confirmation {
-    position: absolute;
-    top: -50px;
-    right: 60px;
-    font-size: 15px;
-    font-weight: 300;
-    color: #12b01c
-}
-
-.modal-file-name {
-    display: block;
-    padding: 24px 40px !important;
-    position: absolute;
-    top: 0;
-    left: 0;
-    background: #fff;
-    width: 100%;
-    border-top: 1px solid #e5e5e5
-}
-
-.modal-file-name .ir {
-    width: 33px;
-    height: 29px;
-    float: left;
-    margin-top: -8px
-}
-
-.modal-file-name span {
-    display: inline-block;
-    margin-right: 10px;
-    font-weight: 300;
-    color: #3c3c3c
-}
-
 .share-file-link {
     margin-top: 7px;
     padding: 2%;
@@ -1646,70 +1612,6 @@ a:hover .icon-bc-settings, .icon-bc-settings:hover {
 
 #move-file {
     height: 330px !important
-}
-
-.modal-file-list {
-    height: 150px;
-    overflow: hidden;
-    width: 96%;
-    padding: 2%;
-    border: 1px solid #c5c5c5;
-    border-radius: 5px;
-    background: #fff
-}
-
-.modal-file-list a {
-    display: inline-block;
-    width: 100%;
-    height: 34px;
-    margin-left: 20px
-}
-
-.modal-file-list a:hover {
-    background-color: #e3edf6
-}
-
-.modal-file-list a span {
-    color: #3c3c3c;
-    font-weight: 300;
-    margin-top: 5px;
-    float: left
-}
-
-.modal-file-list a span:first-child {
-    width: 33px;
-    height: 29px;
-    float: left;
-    margin: 0 13px 8px 3px
-}
-
-.modal-file-list li {
-    position: relative
-}
-
-.modal-file-list li ul {
-    margin-left: 20px
-}
-
-.modal-file-list li ul {
-    display: none
-}
-
-.modal-file-list a.modal-list-trigger {
-    background-position: -14px -574px;
-    float: left;
-    height: 12px;
-    width: 12px;
-    border: 1px solid #1475c5;
-    border-radius: 2px;
-    position: absolute;
-    top: 10px;
-    left: 0;
-    margin-left: 0
-}
-
-.modal-file-list a.modal-list-trigger.opened {
-    background-position: -54px -574px
 }
 
 #move-file .slimScrollDiv {

@@ -305,6 +305,7 @@ if (!FileRevisions) {
                             click:function(e) {
                                 dlg.dialog('close');
                                 FileRevisions.removePreview();
+                                dlg.dialog('destroy');
                             }
                         }]);
                         dlg.dialog('open');
@@ -326,6 +327,7 @@ if (!FileRevisions) {
                             click:function(e) {
                                 dlg.dialog('close');
                                 FileRevisions.removePreview();
+                                dlg.dialog('destroy');
                             }
                         }]);
                         dlg.dialog('open');
@@ -353,11 +355,13 @@ if (!FileRevisions) {
          */
         getDialog : function(title) {
             var dlg = $('#dialog');
+            
             dlg.dialog({
                 autoOpen: false,
                 modal: true,
                 resizable: true,
                 title: title,
+                width: Skylable_Utils.defaultDialogWidth(),
                 beforeClose: function(ev, ui) {
                     // Avoids closing while AJAX calls
                     if (FileRevisions.is_working) {
@@ -422,6 +426,7 @@ if (!FileRevisions) {
                             click : function (e) {
                                 FileRevisions.is_working = false;
                                 dialog.dialog('close');
+                                dlg.dialog('destroy');
                             }
                         }]
                     });

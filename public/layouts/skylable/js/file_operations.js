@@ -659,6 +659,7 @@ if (!FileOperations) {
                             click : function (e) {
                                 FileOperations.is_working = false;
                                 dialog.dialog('close');
+                                dialog.dialog('destroy');
                             }
                         }]
                     });
@@ -1050,11 +1051,13 @@ if (!FileOperations) {
          */
         getDialog : function(title) {
             var dlg = $('#dialog');
+             
             dlg.dialog({
                 autoOpen: false,
                 modal: true,
                 resizable: true,
                 title: title,
+                width: Skylable_Utils.defaultDialogWidth(),
                 beforeClose: function(ev, ui) {
                     // Avoids closing while AJAX calls
                     if (FileOperations.is_working) {

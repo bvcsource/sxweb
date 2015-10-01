@@ -215,10 +215,12 @@ if (!Skylable_Uploads) {
                                     var dlg = $('<div id="overwrite_confirmation_dlg"><p>'+
                                     Skylable_Utils.nl2br(sprintf(Skylable_Lang.uploadFileAlreadyExistsOverwrite, the_file)) +
                                     '</p></div>').hide().appendTo('body');
+                                    
                                     dlg.dialog({
                                         autoOpen: false,
                                         modal : true,
                                         resizable: true,
+                                        width : Skylable_Utils.defaultDialogWidth(),
                                         title: Skylable_Lang.uploadTitle,
                                         close : function(ev, ui) {
                                             if (dlg_no_means_no) {
@@ -386,6 +388,7 @@ if (!Skylable_Uploads) {
                 modal: true,
                 resizable: true,
                 title: Skylable_Lang.uploadTitle,
+                width : Skylable_Utils.defaultDialogWidth(),
                 closeOnEscape : false,
                 create : function() {
                     // disable the X for closing the window

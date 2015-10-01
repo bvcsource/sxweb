@@ -152,6 +152,24 @@ if (!Skylable_Utils) {
             } else {
                 return str;
             }
+        },
+
+        /**
+         * Return the default dialog window witdh.
+         * 
+         * @returns {*}
+         */
+        defaultDialogWidth : function() {
+            var ww = $(window).width();
+
+            if (ww < 800) {
+                return (ww - 20);
+            } else if (ww > 1024) {
+                return 700;
+            } else {
+                return (ww / 2);
+            }
+            
         }
     }
 }
