@@ -662,7 +662,8 @@ if (!FileOperations) {
         },
 
         /**
-         *
+         * Do the share file action.
+         * 
          * @param ev
          * @param path
          */
@@ -687,12 +688,6 @@ if (!FileOperations) {
                                 success : function(data, status, xhr) {
                                     dlg.dialog('option', 'buttons',[
                                         {
-                                            id: 'copytoclipboarddialogbtn',
-                                            text: Skylable_Lang['shareCopyToClipboard'],
-                                            click: function(e) {
-                                                $('#shared_file_url_input').select().focus();
-                                            }
-                                        },{
                                             text : Skylable_Lang['closeBtn'],
                                             click : function(e) {
                                                 dlg.dialog('close');
