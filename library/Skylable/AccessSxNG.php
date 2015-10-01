@@ -752,6 +752,9 @@ class Skylable_AccessSxNG {
      * If the $meta parameter is an associative array, use its key,value pairs set the metadata. In this 
      * case the $value parameter is ignored.
      * 
+     * IMPORTANT: The API sets all metadata at once, so to alter only one value you should before get 
+     * all the meta, prepare an array of new values then use this array as parameter.
+     * 
      * @param string|array $meta
      * @param string $value
      * @return bool
@@ -829,6 +832,50 @@ class Skylable_AccessSxNG {
                             if ($data['minPollInterval'] + 10 < $data['maxPollInterval']) {
                                 $data['minPollInterval'] += 10;
                             }
+                        }
+                    }
+                }
+            }
+        }
+        return FALSE;
+    }
+
+    /**
+     * Get all defined cluster meta.
+     * 
+     * On success return an associative array of key => value meta.
+     * 
+     * Returns FALSE on failure
+     * 
+     * @return array|boolean
+     * @throws Skylable_AccessSxException
+     */
+    public function getClusterMeta() {
+        $date = $this->getRequestDate();
+        
+        if ($this->RESTCall(
+            array(
+                'url' => $this->getBaseURL($this->_cluster).'/?clusterMeta',
+                'date' => $date,
+                'authorization' => $this->getRequestSignature($this->_secret_key, 'GET', '?clusterMeta', $date, sha1(''))
+            )
+        )) {
+
+            if ($this->parseHeaders()) {
+                if ($this->_response['http_code'] == 200 && $this->isJSON()) {
+                    $data = json_decode($this->_body, TRUE);
+                    $this->replyIsError($data);
+                    if (!is_null($data)) {
+                        if (array_key_exists('clusterMeta', $data)) {
+                            $this->getLogger()->debug(__METHOD__.' '.print_r($data, TRUE));
+                            
+                            foreach($data['clusterMeta'] as $k => $v) {
+                                $data['clusterMeta'][$k] = hex2bin($v);
+                            }
+                            
+                            return $data['clusterMeta'];    
+                        } else {
+                            $this->getLogger()->debug(__METHOD__.' clusterMeta not found.');
                         }
                     }
                 }

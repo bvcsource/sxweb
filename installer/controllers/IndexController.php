@@ -1071,7 +1071,21 @@ class IndexController extends Zend_Controller_Action {
             $access_sx_opt['logger'] = $this->getLogger();
             $access_sx = new Skylable_AccessSxNG( $access_sx_opt );
             
-            if ($access_sx->setClusterMetadata( array( 'sxweb_address' => $session->config['url'] ) )) {
+            $cluster_meta = $access_sx->getClusterMeta();
+            if ($cluster_meta === FALSE) {
+                return array(
+                    'status' => FALSE,
+                    'error' => $this->translate('Failed to set SXWeb meta info.')
+                );
+            }
+            
+            if (!is_array($cluster_meta)) {
+                $cluster_meta = array();
+            }
+
+            $cluster_meta['sxweb_address'] = $session->config['url'];
+
+            if ($access_sx->setClusterMetadata( $cluster_meta )) {
                 return array(
                     'status' => TRUE,
                     'error' => ''
@@ -1082,6 +1096,7 @@ class IndexController extends Zend_Controller_Action {
                     'error' => $this->translate('Failed to set SXWeb meta info.')
                 );
             }
+
         }
         catch (Skylable_AccessSxException $e) {
             $this->getLogger()->err($e->getMessage());
