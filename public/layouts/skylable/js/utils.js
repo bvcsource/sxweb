@@ -167,7 +167,7 @@ if (!Skylable_Utils) {
             } else if (ww > 1024) {
                 return 700;
             } else {
-                return (ww / 2);
+                return ((ww * 2) / 3);
             }
             
         }
