@@ -1536,7 +1536,7 @@ a:hover .icon-bc-settings, .icon-bc-settings:hover {
 
 .ui-dialog-content {
     padding: 1.5em 2.5em 0 !important;
-    overflow: visible !important
+    /* overflow: visible !important */
 }
 
 .ui-dialog .ui-dialog-buttonpane button {
@@ -1583,7 +1583,7 @@ a:hover .icon-bc-settings, .icon-bc-settings:hover {
 .ui-dialog .ui-dialog-buttonpane {
     padding: 0 2.5em 1.5em 1.5em;
     bottom: 0;
-    right: -8px
+    right: -8px;
 }
 
 #dialog span {
@@ -2354,10 +2354,6 @@ a, input, .icon-dl, button, .sort-name span, .sort-size span, .sort-date span, .
         white-space: normal;
     }
 
-    .ui-dialog {
-        width: 80% !important;
-        max-width: 80% !important
-    }
 
     .sidebar-margin {
         margin: 0;
