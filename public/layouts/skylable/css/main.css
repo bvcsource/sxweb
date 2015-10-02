@@ -1598,6 +1598,13 @@ a:hover .icon-bc-settings, .icon-bc-settings:hover {
     border-radius: 4px
 }
 
+.share-file-expire-time {
+    border: 1px solid #1575c5;
+    border-radius: 4px;
+    margin: 0 0 0 10px;
+    padding: 0.4em; 
+}
+
 .create-dir-name {
     margin-top: 9px;
     padding: 2%;
@@ -1617,6 +1624,14 @@ a:hover .icon-bc-settings, .icon-bc-settings:hover {
 #move-file .slimScrollDiv {
     margin-top: 70px !important;
     height: 180px !important
+}
+
+.top-margin {
+    margin: 10px 0 0 0;
+}
+
+.more-top-margin {
+    margin: 20px 0 0 0;
 }
 
 /* Styled form */
