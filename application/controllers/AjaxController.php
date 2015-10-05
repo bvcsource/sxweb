@@ -90,14 +90,14 @@ class AjaxController extends My_BaseAction {
                     echo Zend_Json::encode(array(
                         'status' => TRUE,
                         'error' => '',
-                        'url' => $this->view->serverUrl() . '/vol' . $this->getLastVisitedPath()
+                        'url' => $this->view->serverUrl() . '/vol' . My_Utils::slashPath( $this->getLastVisitedPath() )
                     ));
                 } else {
                     $this->getResponse()->setHttpResponseCode(400);
                     echo Zend_Json::encode(array(
                         'status' => FALSE,
                         'error' => $this->view->translate('Failed to update file list page size.'),
-                        'url' => $this->view->serverUrl() . '/vol' . $this->getLastVisitedPath()
+                        'url' => $this->view->serverUrl() . '/vol' . My_Utils::slashPath( $this->getLastVisitedPath() )
                     ));
                 }
             }
@@ -107,7 +107,7 @@ class AjaxController extends My_BaseAction {
                 echo Zend_Json::encode(array(
                     'status' => FALSE,
                     'error' => $this->view->translate('Internal error. Failed to update file list page size.'),
-                    'url' => $this->view->serverUrl() . '/vol' . $this->getLastVisitedPath()
+                    'url' => $this->view->serverUrl() . '/vol' . My_Utils::slashPath( $this->getLastVisitedPath() )
                 ));
             }
             
@@ -116,7 +116,7 @@ class AjaxController extends My_BaseAction {
             echo Zend_Json::encode(array(
                 'status' => FALSE,
                 'error' => $this->view->translate('Invalid value, failed to update file list page size.'),
-                'url' => $this->view->serverUrl() . '/vol' . $this->getLastVisitedPath()
+                'url' => $this->view->serverUrl() . '/vol' . My_Utils::slashPath( $this->getLastVisitedPath() )
             ));
         }
         
