@@ -66,22 +66,28 @@ Reload the configuration of your web server and then open SXWeb in your browser 
 
 SXWeb requires these PHP extensions to be installed:
 
+ - ctype
+ - cUrl
  - date
  - Dom
- - PDO 
- - PDO_Mysql
- - Openssl
- - cUrl
- - SPL
- - JSon
- - session
- - ctype
+ - gd
  - hash
  - iconv
+ - JSon
  - mbstring
+ - mysqli
+ - Openssl
  - PCRE
+ - PDO 
+ - PDO_Mysql
  - posix
+ - session
+ - simplexml
+ - sockets
+ - SPL
  - xml
+ - xmlreader
+ - xmlwriter
  
 This list could help you resolve extensions requirements: [Zend Framework Requirements](http://framework.zend.com/manual/1.12/en/requirements.introduction.html) 
 
@@ -118,11 +124,12 @@ Assuming that you installed SXWeb under /var/www/sxweb, you can use these comman
     # find /var/www/sxweb -type d -exec chmod 755 {} \;
     # find /var/www/sxweb -type f -exec chmod 644 {} \;
     # chown -R root:root /var/www/sxweb
-    # find /var/www/sxweb/data -type d -exec chmod 700 {} \;
     # mkdir -p /var/www/sxweb/data
+    # find /var/www/sxweb/data -type d -exec chmod 700 {} \;
     # chown -R $WEBSERVER_USER /var/www/sxweb/data
     # chmod 750 /var/www/sxweb/application/configs/
     # chown $WEBSERVER_USER /var/www/sxweb/application/configs/
+    # chown $WEBSERVER_USER /var/www/sxweb/public/install.php
 
 ## APPLICATION
 
