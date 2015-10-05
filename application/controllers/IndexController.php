@@ -170,7 +170,7 @@ class IndexController extends My_BaseAction {
             return $this->render('login');
         }
         catch(Skylable_ConnectionFailedException $e) {
-            $form->addError($this->getTranslator()->translate("The SX Cluster is unreachable, please retry again later or contact your sysadmin."));
+            $form->addError($this->getTranslator()->translate("The SX Cluster is unreachable, please try again later or contact your sysadmin."));
             $this->getLogger()->err(__METHOD__ . ': Exception: '.$e->getMessage() );
             Zend_Session::forgetMe();
             Zend_Auth::getInstance()->clearIdentity();

@@ -244,7 +244,7 @@
 "Failed to change user privileges: user not found.","Failed to change user privileges: user not found."
 "User","User"
 "Privileges","Privileges"
-"The SX Cluster is unreachable, please retry again later or contact your sysadmin.","The SX Cluster is unreachable, please retry again later or contact your sysadmin."
+"The SX Cluster is unreachable, please try again later or contact your sysadmin.","The SX Cluster is unreachable, please try again later or contact your sysadmin."
 "Settings","Settings"
 "Allows you to change your password","Allows you to change your password"
 "Change your password","Change your password"
