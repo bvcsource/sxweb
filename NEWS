@@ -1,3 +1,24 @@
+0.9.0 (Second Beta, major update)
+----------------
+
+Changes in this release include:
+
+  * Allow every user to manage who has access to his volumes, using the 
+    new 'manager' privilege available in Skylable SX 1.2
+  * Allow volume owners to change the number of revisions to keep for
+    files stored in their volumes
+  * Preview files shared from SXWeb before downloading them
+  * Support for running a single SXWeb instance on multiple vhosts
+  * Installer now automatically registers SXWeb with SX Cluster, allows
+    SXDrive to discover and use SXWeb 
+  * Improve handling of large files
+  * Added button to overwrite or skip all existing files, when uploading
+    a whole directory recursively
+  * Dropped the Flash based 'Copy to clipboard' button when sharing links, 
+    in favour of a more client agnostic approach. 
+  * Improved UI for sharing files
+  * Better error checking
+
 0.4.1 (First Beta, minor update)
 ----------------
 
