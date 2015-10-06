@@ -7,25 +7,27 @@ Master: [![Build Status](https://api.travis-ci.org/zendframework/zf1.png?branch=
 RELEASE INFORMATION
 ===================
 
-Zend Framework 1.12.14dev Release.
-Released on MMM DD, YYYY.
+Zend Framework 1.12.16 Release.
+Released on Sep 15, 2015.
 
-IMPORTANT FIXES FOR 1.12.14
+IMPORTANT FIXES FOR 1.12.16
 ---------------------------
 
-This release contains a security fix:
+This release contains security fixes:
 
-- **ZF2015-06**: `ZendXml` runs a heuristic detection for XML Entity Expansion
-  and XML eXternal Entity vectors when under php-fpm, due to issues with threading
-  in libxml preventing using that library's built-in mechanisms for disabling
-  them. However, the heuristic was determined to be faulty when multibyte
-  encodings are used for the XML. This release contains a patch to ensure that the
-  heuristic will work with multibyte encodings.
+- **ZF2015-07**: A number of components, including `Zend_Cloud`,
+  `Zend_Search_Lucene`, and `Zend_Service_WindowsAzure` were creating directories with
+  a liberal umask that could lead to local arbitrary code execution and/or
+  local privilege escalation. This release contains a patch that ensures the
+  directories are created using permissions of 0775 and files using 0664
+  (essentially umask 0002).
 
-  If you use Zend Framework components that utilize DOMDocument or SimpleXML
-  (which includes `Zend\XmlRpc`, `Zend\Soap`, `Zend\Feed`, and several others),
-  and deploy using php-fpm in production (or plan to), we recommend upgrading
-  immediately.
+- **ZF2015-08**: ZF2014-06 uncovered an issue in the sqlsrv adapter provided by
+  the framework whereby null bytes were not filtered correctly when generating
+  SQL. A reporter discovered the same vulnerability is present in our PDO implementation
+  when used with pdo_dblib, and could potentially be applied to other PDO adapters.
+  This release contains a patch to properly escape null bytes used in SQL queries
+  across all PDO adapters shipped with the framework.
 
 See http://framework.zend.com/changelog for full details.
 
