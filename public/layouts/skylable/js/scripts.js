@@ -55,6 +55,8 @@ $(document).ready(function() {
         $("#sidebar").toggleClass("sidebar-opened", 200, 'easeInOutExpo', function(){
             $(".drag-drop-wrap").toggleClass("sidebar-margin", 200, 'easeInOutExpo', addSlimScroll );    
         });
+
+        recalcContentHeight();
        
 	});
 
@@ -77,6 +79,16 @@ $(document).ready(function() {
     $("p.table-title span.date").append('<input style="float: right;" type="checkbox" name="table_title_file_list_select_all">').click(function(e){
         var is_checked = $('p.table-title span.date input[name=table_title_file_list_select_all]').prop('checked');
         $('#main-file-list input[name=file_element]').prop('checked', is_checked );
+    });
+    
+    recalcContentHeight();
+
+
+    $(window).on("resize.window", function(){
+        $('#sidebar .inner-scroll-wrap').slimScroll({ destroy: true });
+        addSlimScroll();
+
+        recalcContentHeight();
     });
     
 });
@@ -106,10 +118,18 @@ function addSlimScroll() {
         allowPageScroll: false,
         disableFadeOut: true
     });
-    
+
+
+    recalcContentHeight();
 }
 
-$(window).resize(function(){
-    $('#sidebar .inner-scroll-wrap').slimScroll({ destroy: true });
-    addSlimScroll();
-});
+/**
+ * Calculate the content height
+ */
+function recalcContentHeight() {
+    var sticked = $('.drag-drop-wrap .sticked');
+    if ($(sticked).is(':visible')) {
+        $('#selectable').css('margin-top', $(sticked).outerHeight());
+    } 
+}
+

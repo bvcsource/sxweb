@@ -58,8 +58,8 @@ if (!FileRevisions) {
          * @param e
          */
         removePreview : function(e) {
-            $(document).unbind('keydown');
-            $(window).unbind('resize');
+            $(document).off("keydown.revisions");
+            $(window).off("resize.revisions");
             $('#preview-overlay, #preview-lightbox, #preview-nav-bar')
                 .fadeOut('slow', function(){
                     $(this).remove();
@@ -206,16 +206,16 @@ if (!FileRevisions) {
             
 
             // Bind the ESC key to close the window
-            $(document).keydown(function(event){
+            $(document).on("keydown.revisions", function(event){
                 if (event.which == 27) {
 
                     FileRevisions.removePreview(event);
 
-                    $(document).unbind('keydown', this);
+                    // $(document).unbind('keydown', this);
                 }
             });
 
-            $(window).resize(function(event){
+            $(window).on("resize.revisions", function(event){
                 var pnb = $('#preview-nav-bar');
                 var lb = $('#preview-lightbox');
                 $(lb).css({

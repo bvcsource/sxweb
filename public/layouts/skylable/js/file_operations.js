@@ -765,8 +765,8 @@ if (!FileOperations) {
          * @param e
          */
         removePreview : function(e) {
-            $(document).unbind('keydown');
-            $(window).unbind('resize');
+            $(document).off("keydown.preview");
+            $(window).off("resize.preview");
             $('#preview-overlay, #preview-lightbox, #preview-nav-bar')
                 .fadeOut('slow', function(){
                     $(this).remove();
@@ -897,16 +897,16 @@ if (!FileOperations) {
             FileOperations.previewShowFile(file_url, file_type);
 
             // Bind the ESC key to close the window
-            $(document).keydown(function(event){
+            $(document).on("keydown.preview", function(event){
                 if (event.which == 27) {
 
                     FileOperations.removePreview(event);
 
-                    $(document).unbind('keydown', this);
+                    // $(document).off('keydown.preview', this);
                 }
             });
 
-            $(window).resize(function(event){
+            $(window).on("resize.preview", function(event){
                 var pnb = $('#preview-nav-bar');
                 var lb = $('#preview-lightbox');
                 $(lb).css({
