@@ -46,7 +46,10 @@
     foreach($this->volume_acl as $acl) {
         if (strcmp($acl['user'], '(all admin users)') != 0) {
             $p = '';
-            foreach($acl['perms'] as $pe) $p .= $pe[0];
+            foreach($acl['perms'] as &$pe) {
+                $p .= $pe[0];
+                $pe = $this->translate($pe);
+            }
             echo '<tr>';
             echo '<td>',$this->escape($acl['user']),'</td>';
             echo '<td>',implode(', ', $acl['perms']),'</td><td><button class="styled-button" data-user="',$this->escape($acl['user']),'" onclick="changeUserPermissions(this); return false;" data-permissions="',$p,'">',$this->translate('Change...'),'</button></td>';

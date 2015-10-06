@@ -251,4 +251,7 @@
 "Go back to settings...","Zurück…"
 "Browse the volume...","Volume durchstöbern…"
 "Download SXDrive config file","SXDrive Konfiguration herunterladen"
-
+"owner","Besitzer"
+"read","Lesen"
+"write","Schreiben"
+"manager","Verwalten"
