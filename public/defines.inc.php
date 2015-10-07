@@ -22,6 +22,12 @@ if (!defined('SXWEB_SEO_DESCRIPTION'))  define('SXWEB_SEO_DESCRIPTION', 'SXWeb i
 // URL for the SX CLI clients
 if (!defined('SXWEB_SX_CLI_CLIENTS_URL')) define('SXWEB_SX_CLI_CLIENTS_URL', 'http://www.skylable.com/download/sx/');
 
+// URL for the Skylable Ltd site 
+if (!defined('SKYLABLE_SITE_URL')) define('SKYLABLE_SITE_URL', 'http://www.skylable.com/');
+
+// The Skylable Ltd string to use in labels
+if (!defined('SKYLABLE_LABEL')) define('SKYLABLE_LABEL', 'Skylable');
+
 // Try to fix the timezone
 $timezone = @date_default_timezone_get();
 if (empty($timezone)) {

@@ -18,7 +18,7 @@
 ?>
 <div class="dialog-box">
     <div class="dialog-box-logo">
-        <a href="http://www.skylable.com" onclick="window.open(this.href); return false;"><span class="dialog-box-logo-icon ir"></span></a><h1><?php echo $this->translate('Login'); ?></h1>
+        <a href="<?php echo $this->escape(SKYLABLE_SITE_URL); ?>" onclick="window.open(this.href); return false;"><span class="dialog-box-logo-icon ir"></span></a><h1><?php echo $this->translate('Login'); ?></h1>
     </div>
     <div class="dialog-box-body">
         <?php echo $this->form('', $this->form->getAttribs()); ?>
@@ -33,8 +33,9 @@
     </div>
     <div class="dialog-box-utils">
         <?php if (My_Utils::passwordRecoveryIsAllowed()): ?>
-            <a href="<?php echo $this->url(array( 'controller' => 'index', 'action' => 'resetpassword' ), 'recover', TRUE, TRUE );  ?>"><?php echo $this->translate('Forgot Your Password?'); ?></a>
+            <a href="<?php echo $this->escape($this->serverUrl('/reset/password')); ?>"><?php echo $this->translate('Forgot Your Password?'); ?></a>
         <?php endif; ?>
+        
     </div>
 
     <?php
@@ -50,6 +51,7 @@
 
     echo $this->render('index/messages.phtml');
     ?>
+    <div class="dialog-box-fixed-footer"><?php printf($this->translate('Powered by %s.'), '<a href="' . $this->escape(SKYLABLE_SITE_URL) . '" onclick="window.open(this.href); return false;">'  .  $this->escape(SKYLABLE_LABEL) . '</a>'); ?></div>
 </div>
 
 

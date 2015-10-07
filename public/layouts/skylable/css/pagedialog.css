@@ -153,6 +153,13 @@
     margin-left: 10px;
 }
 
+.dialog-box-utils {
+    float: left;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
 .dialog-box-utils a {
     color: #8b91a0;
     text-decoration: none;
@@ -173,7 +180,20 @@
     float: right;
 }
 
-@media only screen and (max-width: 480px) {
+.dialog-box .dialog-box-fixed-footer {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    text-align: right;
+    color: #8b91a0;
+}
+
+.dialog-box .dialog-box-fixed-footer a, .dialog-box .dialog-box-fixed-footer a:hover {
+    color: #fff;
+    text-decoration: underline;
+}
+
+@media only screen and (max-width: 480px), only screen and (max-height: 530px) {
 
      .dialog-box {
         width: 100%;
@@ -201,6 +221,15 @@
         padding: 3% 5%;
         position: inherit;
         right: 0;
+    }
+
+    .dialog-box .dialog-box-fixed-footer {
+        position: inherit;
+        float: left;
+        width: 100%;
+        right: auto;
+        bottom: auto;
+        margin: 30px 0 0 0;
     }
     
 }
