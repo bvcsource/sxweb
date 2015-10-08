@@ -65,6 +65,18 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap {
         if (is_string($def_lang)) {
             $locale = new Zend_Locale($def_lang);
             Zend_Registry::set('Zend_Locale', $locale);
+
+            // Attach a default translator to the Zend_Validate subclasses
+            $translator = new Zend_Translate(
+                array(
+                    'adapter' => 'array',
+                    'content' => APPLICATION_PATH . '/../library/Zend/resources/languages',
+                    'locale'  => $def_lang,
+                    'scan' => Zend_Translate::LOCALE_DIRECTORY,
+                    'disableNotices' => TRUE
+                )
+            );
+            Zend_Validate_Abstract::setDefaultTranslator($translator);
         }
         
         $translate = new Zend_Translate(

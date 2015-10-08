@@ -140,6 +140,10 @@ class My_BaseAction extends Zend_Controller_Action {
                 $locale = new Zend_Locale($pref_lang);
                 Zend_Registry::set('Zend_Locale', $locale);
                 $this->getTranslator()->setLocale($locale);
+                
+                if (Zend_Validate_Abstract::hasDefaultTranslator()) {
+                    Zend_Validate_Abstract::getDefaultTranslator()->setLocale($pref_lang);
+                }
             }
         }
     }
