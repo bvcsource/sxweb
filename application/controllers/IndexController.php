@@ -749,7 +749,7 @@ class IndexController extends My_BaseAction {
 
         if (!$validate_email->isValid($the_email)) {
             if (!empty($the_email)) {
-                $this->view->assign('errors', array($this->view->translate('The email is invalid, please check it and retry.')) ); 
+                $this->view->assign('errors', array($this->getTranslator()->translate('The email is invalid, please check it and retry.')) ); 
             }
             return FALSE;
         }
@@ -760,39 +760,19 @@ class IndexController extends My_BaseAction {
         // Check the user existence using the configured SX cluster
         $user_exists = FALSE;
         try {
-            // Create a fake admin user into a temp dir
-            $tempdir = My_Utils::mktempdir( Zend_Registry::get('skylable')->get('sx_local') ,'Skylable_');
-            if ($tempdir === FALSE) {
-                throw new Exception('Failed to create temporary directory');
-            }
-
-            $fake_admin = new My_User(NULL, 'admin', '', Zend_Registry::get('skylable')->get('admin_key'));
-            $access_sx = new Skylable_AccessSx($fake_admin, $tempdir, array( 'user_auth_key' => Zend_Registry::get('skylable')->get('admin_key') ) );
-
-            // Check the user list: only users who have the login equal to the email are "valid".
-            $user_list = $access_sx->userlist();
-            if (is_array($user_list)) {
-                foreach($user_list as $u => $ut) {
-                    // bug #1519 - email must be lowercase
-                    if (strcmp(My_Utils::strtolower($u), $the_email) == 0) {
-                        $user_exists = TRUE;
-                        break;
-                    }
-                }    
-            }
-            
-            My_Utils::deleteDir($tempdir);
+            $access_sx = new Skylable_AccessSxNG(
+                My_Utils::getAccessSxNGOpt(NULL, array(
+                    'secret_key' => Zend_Registry::get('skylable')->get('admin_key')
+                ))
+            );
+            $user_exists = $access_sx->userExists($the_email, $user_role, TRUE);
         }
         catch(Exception $e) {
-            if (isset($tempdir)) {
-                if (@is_dir($tempdir)) {
-                    My_Utils::deleteDir($tempdir);
-                }
-            }
+            $this->getLogger()->err(__METHOD__.': exception: ' . $e->getMessage() );
         }
         
         if (!$user_exists) {
-            $this->view->assign('errors', array($this->view->translate('Failed to send the email, please retry again later.')) );
+            $this->view->assign('errors', array($this->getTranslator()->translate('Failed to send the email, please try again later.')) );
             $this->getLogger()->debug(__METHOD__.': user \''.$the_email.'\' don\'t exists.');
             return FALSE;
         }
@@ -803,11 +783,12 @@ class IndexController extends My_BaseAction {
             $token = $model->generatePasswordResetToken($the_email, $the_email);
             if ($token === FALSE) {
                 // Invalid user
-                $this->view->assign('errors', array($this->view->translate('Failed to send the email, please retry again later.')) );
+                $this->view->assign('errors', array($this->getTranslator()->translate('Failed to send the email, please try again later.')) );
                 $this->getLogger()->err(__METHOD__.': invalid user email request ');
             } else {
                 // Send the email
                 $view = Zend_Layout::getMvcInstance()->getView();
+                
                 $view->hash = $token;
                 $view->url = $this->getSXWebURL();
 
@@ -815,16 +796,16 @@ class IndexController extends My_BaseAction {
 
                     $mail = new Zend_Mail();
                     $html_msg = $view->render("mail.phtml");
-                    $mail->setBodyText( strip_tags( $html_msg ) );
-                    $mail->setBodyHtml( $html_msg );
+                    $mail->setBodyText( strip_tags( $html_msg ), 'utf-8' );
+                    $mail->setBodyHtml( $html_msg, 'utf-8' );
                     $mail->addTo($the_email);
-                    $mail->setSubject($view->translate('SXWeb - Password Reset Request'));
+                    $mail->setSubject($this->getTranslator()->translate('SXWeb - Password Reset Request'));
                     
                     $mail->send( $this->getInvokeArg('bootstrap')->getResource('Mail')->getMail() );
-                    $this->view->assign('notifications', array($this->view->translate('We have sent you an email with a link to follow to reset your password.')) );
+                    $this->view->assign('notifications', array($this->getTranslator()->translate('We have sent you an email with a link to follow to reset your password.')) );
                 }
                 catch(Zend_Mail_Transport_Exception $e) {
-                    $this->view->assign('errors', array($this->view->translate('Failed to send the email, please retry again later.')) );
+                    $this->view->assign('errors', array($this->getTranslator()->translate('Failed to send the email, please try again later.')) );
                     $this->getLogger()->err(__METHOD__.': send mail exception: '.$e->getMessage());
                 }
                 
@@ -833,9 +814,9 @@ class IndexController extends My_BaseAction {
         }
         catch(Exception $e) {
             if ($e->getCode() == My_Accounts::EXCEPTION_RESET_PASSWORD_TOO_MANY_TICKETS) {
-                $this->view->assign('errors', array($this->view->translate('You have requested too many password reset tickets, please wait 24 hours and retry.')) );       
+                $this->view->assign('errors', array($this->getTranslator()->translate('You have requested too many password reset tickets, please wait 24 hours and retry.')) );       
             } else {
-                $this->view->assign('errors', array($this->view->translate('Failed to send the email, please retry again later.')) );    
+                $this->view->assign('errors', array($this->getTranslator()->translate('Failed to send the email, please try again later.')) );    
             }
             
             $this->getLogger()->err(__METHOD__.': exception: '.$e->getMessage());
@@ -876,7 +857,7 @@ class IndexController extends My_BaseAction {
                 $errors = array();
                 if ($check_password->isValid($pwd1)) {
                     if (strcmp($pwd1, $pwd2) != 0) {
-                        $errors[] = 'Invalid passwords, please check and retry.'; 
+                        $errors[] = $this->getTranslator()->translate('Invalid passwords, please check and retry.'); 
                     }
                 } else {
                     $errors = $check_password->getMessages();
@@ -900,16 +881,16 @@ class IndexController extends My_BaseAction {
                             $new_user_key = $access_sx->sxaclUserNewKey($pwd1, $usr);
                             My_Utils::deleteDir($tempdir);
                             if ($new_user_key === FALSE) {
-                                $this->_helper->getHelper('FlashMessenger')->addMessage('Failed to change the user password, please retry.','error');
+                                $this->_helper->getHelper('FlashMessenger')->addMessage($this->getTranslator()->translate('Failed to change the user password, please retry.'),'error');
                                 $this->redirect("/index");
                             } else {
                                 $model->purgePasswordRecoveryToken($hash);
-                                $this->_helper->getHelper('FlashMessenger')->addMessage('Password successfully changed!','info');
+                                $this->_helper->getHelper('FlashMessenger')->addMessage($this->getTranslator()->translate('Password successfully changed!'),'info');
                                 $this->redirect("/login");
                             }
                             
                         } else {
-                            $this->_helper->getHelper('FlashMessenger')->addMessage('Invalid or expired user token, please retry.','error');
+                            $this->_helper->getHelper('FlashMessenger')->addMessage($this->getTranslator()->translate('Invalid or expired user token, please retry.'),'error');
                             $this->redirect("/index");
                         }
                     }
@@ -920,7 +901,7 @@ class IndexController extends My_BaseAction {
                             }
                         }
                         
-                        $this->_helper->getHelper('FlashMessenger')->addMessage('Internal error, please retry again later.','error');
+                        $this->_helper->getHelper('FlashMessenger')->addMessage($this->getTranslator()->translate('Internal error, please retry later.'),'error');
                         $this->getLogger()->err(__METHOD__.': exception: '.$e->getMessage() );
                         $this->redirect("/index");
                     }
@@ -929,7 +910,7 @@ class IndexController extends My_BaseAction {
             } 
 
         } else {
-            $this->_helper->getHelper('FlashMessenger')->addMessage('Invalid reset password hash, please retry.','error');
+            $this->_helper->getHelper('FlashMessenger')->addMessage($this->getTranslator()->translate('Invalid reset password hash, please retry.'),'error');
             $this->redirect("/index");
         }
     }

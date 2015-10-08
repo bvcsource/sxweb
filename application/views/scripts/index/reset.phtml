@@ -1,44 +1,40 @@
-<div class="login-box register">
-	<div class="login-logo">
-		<span class="icon-logo ir"></span><h1>Change password</h1>
+<?php $this->headLink()->appendStylesheet($this->serverUrl() . '/layouts/skylable/css/pagedialog.css'); ?>
+<div class="dialog-box">
+	<div class="dialog-box-logo">
+		<a href="<?php echo $this->escape(SKYLABLE_SITE_URL); ?>" onclick="window.open(this.href); return false;"><span class="dialog-box-logo-icon ir"></span></a><h1><?php echo $this->translate('Change password'); ?></h1>
 	</div>
-<style>
-.change_password {
-height:170px!important;
-}
-.change_password label {
-float:left;
-width:100px;
-}
-.change_password  input[type=password] {
-	width:100%;
-}
-</style>
-<div class="login-form change_password">	
-	<form method="post" action="">
-		<p>
-			<input type="password" value="" name="passwd" placeholder="New password" />
-			<input type="password" value="" name="passwd2" placeholder="Confirm password"/>
-		</p>
-		<p>	
-			<input type ="submit" value="Change!" />
-		</p>
-	</form>
-</div>
-<?php
+	<div class="dialog-box-body">
+		<form action="" method="post">
+			<input type="password" value="" name="passwd" placeholder="<?php echo $this->translate('New Password'); ?>" />
+			<input type="password" value="" name="passwd2" placeholder="<?php echo $this->translate('Confirm Password'); ?>"/>
 
-    if (isset($this->notifications)) {
-        foreach($this->notifications as $notify_msg) { ?>
-            <div class="info notification-fix"><span class="inf" ><span class="icon-failure ir"></span><?php echo $this->escape($notify_msg); ?></span></div>
-        <?php
-        }
-    }
+			<div class="dialog-box-buttons">
+                <a href="<?php echo $this->escape($this->serverUrl()); ?>"><?php echo $this->translate('Cancel'); ?></a>
+                <input type="submit" value="<?php echo $this->translate('Change!'); ?>" />
+			</div>
+		</form>
+	</div>
+	<div class="dialog-box-utils">
+		<!-- <a href="<?php echo $this->escape($this->serverUrl()); ?>"><?php echo $this->translate('Sign in'); ?></a> -->
+	</div>
 
-    if (isset($this->errors)) {
-        foreach($this->errors as $err_msg) { ?>
-            <div class="failure notification-fix"><span class="inf" ><span class="icon-failure ir"></span><?php echo $this->escape($err_msg); ?></span></div>
-        <?php
-        }
-    }
-?>
+	<?php
+
+	if (isset($this->notifications)) {
+		foreach($this->notifications as $notify_msg) { ?>
+			<div class="info notification-fix"><span class="inf" ><span class="icon-failure ir"></span><?php echo $this->escape($notify_msg); ?></span></div>
+			<?php
+		}
+	}
+
+	if (isset($this->errors)) {
+		foreach($this->errors as $err_msg) { ?>
+			<div class="failure notification-fix"><span class="inf" ><span class="icon-failure ir"></span><?php echo $this->escape($err_msg); ?></span></div>
+			<?php
+		}
+	}
+
+	echo $this->render('index/messages.phtml');
+	?>
+	<div class="dialog-box-fixed-footer"><?php printf($this->translate('Powered by %s.'), '<a href="' . $this->escape(SKYLABLE_SITE_URL) . '" onclick="window.open(this.href); return false;">'  .  $this->escape(SKYLABLE_LABEL) . '</a>'); ?></div>
 </div>
