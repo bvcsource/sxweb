@@ -82,10 +82,12 @@ if (!@file_exists(APPLICATION_PATH . '/configs/skylable.ini')) {
 
 // Check for stale install.php file
 if (APPLICATION_ENV !== 'development') {
-    if (@file_exists('./install.php') || @is_readable('./install.php')) {
-        header($_SERVER['SERVER_PROTOCOL'] . ' 500 Internal Server Error', TRUE, 500);
-        include realpath('../library/fixinstall.php');
-        exit();
+    if (!defined('SXWEB_DOCKER_INST')) {
+        if (@file_exists('./install.php') || @is_readable('./install.php')) {
+            header($_SERVER['SERVER_PROTOCOL'] . ' 500 Internal Server Error', TRUE, 500);
+            include realpath('../library/fixinstall.php');
+            exit();
+        }    
     }
 }
 

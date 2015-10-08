@@ -92,7 +92,7 @@ endif;
         <div class="form-group<?php if (isset($this->errors['frm_db_password'])) echo ' has-error'; ?>">
             <label for="frm_db_password" class="col-sm-2 control-label"><?php echo $this->translate('Password'); ?></label>
             <div class="col-sm-10">
-            <input class="form-control" name="frm_db_password" id="frm_db_password" type="password" size="25" value="" />
+            <input class="form-control" name="frm_db_password" id="frm_db_password" type="password" size="25" value="<?php if (defined('SXWEB_DOCKER_INST')) { echo $this->escape($this->frm_db_password); } ?>" />
             <span class="help-block"><?php echo $this->translate('The MySQL password.'); ?></span>
                 </div>
         </div>

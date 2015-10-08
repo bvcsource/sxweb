@@ -149,8 +149,13 @@ class IndexController extends Zend_Controller_Action {
         );
         
         // Parameters to skip
-        $skip_list = array('db.params.username','db.params.password',
-            'db.adapter','db.isDefaultTableAdapter','db.params.charset');
+        if (defined('SXWEB_DOCKER_INST')) {
+            $skip_list = array('db.adapter','db.isDefaultTableAdapter','db.params.charset');
+        } else {
+            $skip_list = array('db.params.username','db.params.password',
+                'db.adapter','db.isDefaultTableAdapter','db.params.charset');    
+        }
+        
         $booleans_values = array(
             'mail.transport.register', 'password_recovery', 'cluster_ssl'
         );
@@ -250,16 +255,28 @@ class IndexController extends Zend_Controller_Action {
         $session = new Zend_Session_Namespace();
         $session->unsetAll();
         $session->config = $this->getBaseConfig();
-
-        $session->steps_registry = array(
-            'step0' => TRUE,
-            'base' => FALSE,
-            'step1' => FALSE,
-            'step2' => FALSE,
-            'step2_initdb' => FALSE,
-            'step3' => FALSE,
-            'step4' => FALSE
-        );
+        
+        if (defined('SXWEB_DOCKER_INST')) {
+            $session->steps_registry = array(
+                'step0' => TRUE,
+                'base' => TRUE,
+                'step1' => TRUE,
+                'step2' => TRUE,
+                'step2_initdb' => TRUE,
+                'step3' => FALSE,
+                'step4' => FALSE
+            );
+        } else {
+            $session->steps_registry = array(
+                'step0' => TRUE,
+                'base' => FALSE,
+                'step1' => FALSE,
+                'step2' => FALSE,
+                'step2_initdb' => FALSE,
+                'step3' => FALSE,
+                'step4' => FALSE
+            );
+        }
         
         // Check if the installer script is modifiable
         @clearstatcache();
@@ -267,6 +284,10 @@ class IndexController extends Zend_Controller_Action {
             $this->view->installer_not_writable = TRUE;
         }
         $this->getLogger()->info('Installer started!');
+
+        if (defined('SXWEB_DOCKER_INST')) {
+            $this->redirect( My_Utils::serverUrl('/install.php?step=step3') );
+        }
     }
 
     /**
@@ -690,7 +711,12 @@ class IndexController extends Zend_Controller_Action {
         $this->view->frm_db_host = $session->config['db.params.host'];
         $this->view->frm_db_port = $session->config['db.params.port'];
         $this->view->frm_db_user = $session->config['db.params.username'];
-        $this->view->frm_db_password = '';
+        if (defined('SXWEB_DOCKER_INST')) { // You are installing into a docker container, get the password
+            $this->view->frm_db_password = $session->config['db.params.password'];
+        } else {
+            $this->view->frm_db_password = '';    
+        }
+        
 
         $form = new Zend_Form();
         $form->addElement( 'text', 'frm_db_name', array(
