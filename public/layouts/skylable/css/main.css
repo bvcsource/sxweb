@@ -179,7 +179,7 @@ h3 {
     margin: 10px 0;
 }
 
-p, input {
+p, input, button {
     font-size: 14px;
     font-weight: 300;
     color: #3c3c3c;
