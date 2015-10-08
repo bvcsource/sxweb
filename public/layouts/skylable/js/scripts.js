@@ -128,8 +128,13 @@ function addSlimScroll() {
  */
 function recalcContentHeight() {
     var sticked = $('.drag-drop-wrap .sticked');
+    var mob_head = $('div.mobile-header');
     if ($(sticked).is(':visible')) {
-        $('#selectable').css('margin-top', $(sticked).outerHeight());
+        if ($(mob_head).is(':visible')) {
+            $('#selectable').css('margin-top', $(sticked).outerHeight() + $(mob_head).outerHeight() );
+        } else {
+            $('#selectable').css('margin-top', $(sticked).outerHeight());    
+        }
     } 
 }
 
