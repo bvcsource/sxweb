@@ -908,4 +908,92 @@ class Skylable_AccessSxNG {
         }
         return FALSE;
     }
+
+    /**
+     * Return the user list of a cluster.
+     * 
+     * Returns an associative array in the form:
+     * array(
+     * 'username' => array(
+     *  'admin' => bool (TRUE if the user is admin, FALSE otherwise)
+     *  ... other key depending on the server reply    
+     * )
+     * )
+     * 
+     * See:  http://docs.skylable.com/docs/list-users
+     * 
+     * @param bool|FALSE $with_quota
+     * @return bool|mixed
+     * @throws Skylable_AccessSxException
+     */
+    public function getUserList($with_quota = FALSE) {
+        $date = $this->getRequestDate();
+        $req = '.users?desc';
+        if ($with_quota) {
+            $req .= '&quota';
+        }
+
+        if ($this->RESTCall(
+            array(
+                'url' => $this->getBaseURL($this->_cluster).'/' . $req,
+                'date' => $date,
+                'authorization' => $this->getRequestSignature($this->_secret_key, 'GET', $req, $date, sha1(''))
+            )
+        )) {
+
+            if ($this->parseHeaders()) {
+                if ($this->_response['http_code'] == 200 && $this->isJSON()) {
+                    $data = json_decode($this->_body, TRUE);
+                    $this->replyIsError($data);
+                    if (!is_null($data)) {
+                        return $data;
+                    }
+                }
+            }
+        }
+        return FALSE;
+    }
+
+    /**
+     * Tells if an user exists on the SX cluster.
+     * 
+     * @param string $username the user name
+     * @param boolean $role TRUE if the user is an admin, FALSE otherwise
+     * @param boolean $ignore_case TRUE ignore case in comparisons, FALSE be case sensitive
+     * @return bool
+     * @throws Skylable_AccessSxException
+     */
+    public function userExists($username, &$role, $ignore_case = FALSE) {
+        if (!is_string($username) || empty($username)) {
+            throw new Skylable_AccessSxException('Invalid user name');
+        }
+        $role = FALSE;
+        $date = $this->getRequestDate();
+        if ($this->RESTCall(
+            array(
+                'url' => $this->getBaseURL($this->_cluster).'/.users',
+                'date' => $date,
+                'authorization' => $this->getRequestSignature($this->_secret_key, 'GET', '.users', $date, sha1(''))
+            )
+        )) {
+
+            if ($this->parseHeaders()) {
+                if ($this->_response['http_code'] == 200 && $this->isJSON()) {
+                    $data = json_decode($this->_body, TRUE);
+                    $this->replyIsError($data);
+                    if (!is_null($data)) {
+                        foreach($data as $k => $v) {
+                            $exists = ($ignore_case ? strcasecmp($k, $username) : strcmp($k, $username) );
+
+                            if ($exists == 0) {
+                                $role = $v['admin'];
+                                return TRUE;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return FALSE;
+    }
 }
