@@ -1035,7 +1035,7 @@ class IndexController extends Zend_Controller_Action {
             $cfg = new Zend_Config($cluster_config);
             
             $access_sx = new Skylable_AccessSx( $the_user, $base_dir, array( 'user_auth_key' => $admin_key, 'logger' => $this->getLogger() ), $cfg);
-            $whoami = $access_sx->whoami();
+            $whoami = $access_sx->getUserRole();
             My_Utils::deleteDir($base_dir);
 
             if ($whoami === 'admin') {
@@ -1549,15 +1549,19 @@ class IndexController extends Zend_Controller_Action {
             $this->view->assign('suggest_sxweb_address_meta','sxadm cluster --set-meta="sxweb_address='.$session->config['url'].'" sx://admin@'.substr($session->config['cluster'], strlen('sx://')));
         }
         
+        // Don't overwrite 'skylable.ini' file if it already exists
+        // unless we are installing into a  Docker container 
         if (@file_exists($skylable_ini_path)) {
-            $this->view->write_success = FALSE;
-            $this->view->reason = $this->translate('Configuration file already exists.');
+            if (!defined('SXWEB_DOCKER_INST')) {
+                $this->view->write_success = FALSE;
+                $this->view->reason = $this->translate('Configuration file already exists.');
 
-            if (!$this->inhibitInstallScript()) {
-                $this->view->installer_not_writable = TRUE;
+                if (!$this->inhibitInstallScript()) {
+                    $this->view->installer_not_writable = TRUE;
+                }
+
+                return FALSE;
             }
-            
-            return FALSE;
         }
    
         if (!@is_writable(APP_CONFIG_BASE_PATH)) {
@@ -1591,6 +1595,9 @@ class IndexController extends Zend_Controller_Action {
      */
     public function inhibitInstallScript() {
         $this->view->new_install_script_name = dirname(INSTALLER_SCRIPT_PATH).'/install.txt';
+        if (APPLICATION_ENV == 'development') { // Don't stress the developer...
+            return TRUE;
+        }
         if (@rename(INSTALLER_SCRIPT_PATH, $this->view->new_install_script_name)) {
             @clearstatcache();
             @flush();
