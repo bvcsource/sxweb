@@ -1015,30 +1015,28 @@ class IndexController extends Zend_Controller_Action {
                'error' => $this->translate('Invalid admin key.')
            );
        }
+       
+        if (!Skylable_AccessSxNG::isAuthToken($admin_key)) {
+           return array(
+               'status' => FALSE,
+               'error' => $this->translate('Invalid admin key.')
+           );
+       } 
         
-        $session = new Zend_Session_Namespace();
-        $sx_local = str_replace('APPLICATION_PATH', SXWEB_APPLICATION_PATH, $session->config['sx_local']);
-        $cluster_config['sx_local'] = $sx_local;
-        
-        // Create a fake user into the data/ dir and test credentials
-        $the_user = new My_User(NULL, '', '', $admin_key);
-        $base_dir = My_Utils::mktempdir( $sx_local, 'Skylable_' );
-        if ($base_dir === FALSE) {
-            $this->getLogger()->err('Admin key test failed to write to a temporary directory.');
-            return array(
-                'status' => FALSE,
-                'error' => $this->translate('Failed to check the admin key.')
-            );
-        } 
+       try {
 
-        try {
             $cfg = new Zend_Config($cluster_config);
-            
-            $access_sx = new Skylable_AccessSx( $the_user, $base_dir, array( 'user_auth_key' => $admin_key, 'logger' => $this->getLogger() ), $cfg);
-            $whoami = $access_sx->getUserRole();
-            My_Utils::deleteDir($base_dir);
 
-            if ($whoami === 'admin') {
+            $access_sx_opt = My_Utils::getAccessSxNGOpt( NULL, array(
+                'secret_key' => $admin_key,
+                'config' => $cfg
+            ) );
+            $access_sx_opt['logger'] = $this->getLogger();
+            $access_sx = new Skylable_AccessSxNG( $access_sx_opt );
+           
+            $user_details = $access_sx->getUserDetails();
+            
+            if ($user_details['admin'] == TRUE) {
                 return array(
                     'status' => TRUE,
                     'error' => ''
@@ -1050,17 +1048,15 @@ class IndexController extends Zend_Controller_Action {
                 );   
             }
         }
-        catch (Skylable_AccessSxException $e) {
-            My_Utils::deleteDir($base_dir);
-            $this->getLogger()->err($e->getMessage());
-            return array(
-                'status' => FALSE,
-                'error' => $this->translate($e->getMessage())
-            );
-        }
+       catch (Skylable_InvalidCredentialsException $e) {
+           $this->getLogger()->err(__METHOD__.': exception: '.$e->getMessage());
+           return array(
+               'status' => FALSE,
+               'error' => $this->translate('Invalid admin key')
+           );
+       }
         catch(Exception $e) {
-            My_Utils::deleteDir($base_dir);
-            $this->getLogger()->err($e->getMessage());
+            $this->getLogger()->err(__METHOD__.': exception: '.$e->getMessage());
             return array(
                 'status' => FALSE,
                 'error' => $this->translate($e->getMessage())
@@ -1124,16 +1120,8 @@ class IndexController extends Zend_Controller_Action {
             }
 
         }
-        catch (Skylable_AccessSxException $e) {
-            $this->getLogger()->err($e->getMessage());
-
-            return array(
-                'status' => FALSE,
-                'error' => $this->translate($e->getMessage())
-            );
-        }
         catch(Exception $e) {
-            $this->getLogger()->err($e->getMessage());
+            $this->getLogger()->err(__METHOD__.': exception: '.$e->getMessage());
             return array(
                 'status' => FALSE,
                 'error' => $this->translate($e->getMessage())
