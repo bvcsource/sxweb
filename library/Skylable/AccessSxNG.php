@@ -39,7 +39,7 @@
  * FIXME: WORK IN PROGRESS
  * TODO: fix content-type header parsing
  *
- * Access the SX cluster using the REST interface.
+ * Access the SX cluster using the RESTful API.
  *
  */
 class Skylable_AccessSxNG {
@@ -166,6 +166,23 @@ class Skylable_AccessSxNG {
         $key = unpack('H40', substr($b, 20, 40));
         $user_key = $key[1];
         return TRUE;
+    }
+
+    /**
+     * Check if a string is an auth token.
+     * 
+     * @param string $token
+     * @return bool
+     */
+    public static function isAuthToken($token) {
+        $b = base64_decode($token, TRUE);
+        if ($b !== FALSE) {
+            if (strlen($b) >= 40) {
+                return TRUE;
+            }
+        }
+        
+        return FALSE;
     }
 
     /**
@@ -299,7 +316,7 @@ class Skylable_AccessSxNG {
         return FALSE;
     }
 
-    public function parseHeaders() {
+    protected function parseHeaders() {
         /**
          * FIXME: This approach will fail with folded lines, but... who cares! 8-)
          */
@@ -339,11 +356,25 @@ class Skylable_AccessSxNG {
 
     }
 
+    /**
+     * Used by cURL to save the request headers into the class.
+     * @param resource $res
+     * @param string $data
+     * @return int
+     * @see RESTCall
+     */
     public function writeHeader($res, $data) {
         $this->_headers .= $data;
         return strlen($data);
     }
 
+    /**
+     * Used by cURL to save the request body into the class.
+     * @param resource $res
+     * @param string $data
+     * @return int
+     * @see RESTCall
+     */
     public function writeBody($res, $data) {
         $this->_body .= $data;
         return strlen($data);
@@ -361,11 +392,20 @@ class Skylable_AccessSxNG {
      * Checks if a JSON reply is an error and throws an exception
      * @param array $reply the parsed JSON reply
      * @throws Skylable_AccessSxException
+     * @throws Skylable_InvalidCredentialsException
+     * @throws Skylable_VolumeNotFoundException
      */
     protected function replyIsError($reply) {
         if (is_array($reply)) {
             if (array_key_exists('ErrorId', $reply)) {
-                throw new Skylable_AccessSxException( (array_key_exists('ErrorMessage', $reply) ? $reply['ErrorMessage'] : 'An error occurred.'), $reply['ErrorId'] );
+                $err_msg = (array_key_exists('ErrorMessage', $reply) ? $reply['ErrorMessage'] : 'An error occurred');
+                if (stripos($err_msg, 'invalid credentials') !== FALSE) {
+                    throw new Skylable_InvalidCredentialsException($err_msg, $reply['ErrorId'] );
+                } elseif (stripos($err_msg, 'no such volume') !== FALSE) {
+                    throw new Skylable_VolumeNotFoundException($err_msg, $reply['ErrorId'] );
+                }
+                
+                throw new Skylable_AccessSxException( $err_msg, $reply['ErrorId'] );
             }
         }
     }
@@ -398,6 +438,8 @@ class Skylable_AccessSxNG {
                             return $this->_node_list;
                         }
                     }
+                } else {
+                    $this->checkReply();
                 }
             }
         }
@@ -432,6 +474,8 @@ class Skylable_AccessSxNG {
                             return $data['nodeList'];
                         }
                     }
+                } else {
+                    $this->checkReply();
                 }
             }
         }
@@ -464,6 +508,8 @@ class Skylable_AccessSxNG {
                     if (!is_null($data)) {
                         return $data;
                     }
+                } else {
+                    $this->checkReply();
                 }
             }
         }
@@ -496,6 +542,8 @@ class Skylable_AccessSxNG {
                             return $volumelist['volumeList'];
                         }
                     }
+                } else {
+                    $this->checkReply();
                 }
             }
         }
@@ -551,6 +599,8 @@ class Skylable_AccessSxNG {
                             if (!is_null($data)) {
                                 return $data;
                             }
+                        } else {
+                            $this->checkReply();
                         }
                     }
                 }
@@ -674,6 +724,8 @@ class Skylable_AccessSxNG {
                             if (!is_null($data)) {
                                 return $data;
                             }
+                        } else {
+                            $this->checkReply();
                         }
                     }
                 }
@@ -715,6 +767,8 @@ class Skylable_AccessSxNG {
                             if (!is_null($data)) {
                                 return $data;
                             }
+                        } else {
+                            $this->checkReply();
                         }
                     }
                 }
@@ -788,7 +842,6 @@ class Skylable_AccessSxNG {
         )) {
 
             if ($this->parseHeaders()) {
-                $this->getLogger()->debug(__METHOD__.print_r($this->_response, TRUE));
                 if ($this->_response['http_code'] == 200 && $this->isJSON()) {
                     $data = json_decode($this->_body, TRUE);
                     $this->replyIsError($data);
@@ -834,6 +887,8 @@ class Skylable_AccessSxNG {
                             }
                         }
                     }
+                } else {
+                    $this->checkReply();
                 }
             }
         }
@@ -867,7 +922,6 @@ class Skylable_AccessSxNG {
                     $this->replyIsError($data);
                     if (!is_null($data)) {
                         if (array_key_exists('clusterMeta', $data)) {
-                            $this->getLogger()->debug(__METHOD__.' '.print_r($data, TRUE));
                             
                             foreach($data['clusterMeta'] as $k => $v) {
                                 $data['clusterMeta'][$k] = hex2bin($v);
@@ -878,6 +932,8 @@ class Skylable_AccessSxNG {
                             $this->getLogger()->debug(__METHOD__.' clusterMeta not found.');
                         }
                     }
+                } else {
+                    $this->checkReply();
                 }
             }
         }
@@ -948,6 +1004,8 @@ class Skylable_AccessSxNG {
                     if (!is_null($data)) {
                         return $data;
                     }
+                } else {
+                    $this->checkReply();
                 }
             }
         }
@@ -991,9 +1049,84 @@ class Skylable_AccessSxNG {
                             }
                         }
                     }
+                } else {
+                    $this->checkReply();
                 }
             }
         }
+        return FALSE;
+    }
+
+    /**
+     * Rerturns the user details.
+     * 
+     * Implements: http://docs.skylable.com/docs/get-user-details.
+     * 
+     * Returns an associative array in the form:
+     * array(
+     * 'name' - string - the user name
+     * 'admin' - boolean - TRUE if the user is an admin
+     * 'userQuota' - integer - the user quota
+     * 'userQuotaUsed' - integer - the user quota already used
+     * 'userDesc' - string - the user description
+     * )
+     * 
+     * @return bool TRUE on success, FALSE on failure
+     * @throws Skylable_AccessSxException
+     */
+    public function getUserDetails() {
+        $date = $this->getRequestDate();
+        if ($this->RESTCall(
+            array(
+                'url' => $this->getBaseURL($this->_cluster).'/.self',
+                'date' => $date,
+                'authorization' => $this->getRequestSignature($this->_secret_key, 'GET', '.self', $date, sha1(''))
+            )
+        )) {
+
+            if ($this->parseHeaders()) {
+                $this->getLogger()->debug(__METHOD__.print_r($this->_response, TRUE));
+                if ($this->_response['http_code'] == 200 && $this->isJSON()) {
+                    $data = json_decode($this->_body, TRUE);
+                    $this->replyIsError($data);
+                    if (!is_null($data)) {
+                        reset($data);
+                        list($username, $user_data) = each($data);
+                        $user_data['name'] = $username;
+                        return $user_data;
+                    }
+                } else {
+                    $this->checkReply();
+                }
+            }
+        }
+        return FALSE;
+    }
+
+    /**
+     * Check is the reply contains fatal errors and throws exceptions.
+     * 
+     * @return bool TRUE if the error is fatal, FALSE otherwise
+     * @see replyIsError
+     */
+    protected function checkReply($throws_exception = TRUE) {
+        if (in_array($this->_response['http_code'], array(404, 408, 429))) {
+            if ($throws_exception) {
+                if ($this->isJSON()) {
+                    $data = json_decode($this->_body, TRUE);
+                    $this->replyIsError($data);
+                }
+            }
+            return FALSE;
+        } elseif (substr(strval($this->_response['http_code']),0,1) == '4') {
+            if ($throws_exception) {
+                if ($this->isJSON()) {
+                    $data = json_decode($this->_body, TRUE);
+                    $this->replyIsError($data);    
+                }
+            }
+            return TRUE;
+        } 
         return FALSE;
     }
 }
