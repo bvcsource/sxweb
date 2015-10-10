@@ -38,6 +38,11 @@ class IndexController extends Zend_Controller_Action {
 
     protected
         /**
+         * This flag tells if we are installing into a Docker container
+         * @var bool
+         */
+        $_installing_into_docker = FALSE,
+        /**
          * The translator.
          * 
          * @var Zend_Translate
@@ -149,7 +154,7 @@ class IndexController extends Zend_Controller_Action {
         );
         
         // Parameters to skip
-        if (defined('SXWEB_DOCKER_INST')) {
+        if ($this->_installing_into_docker) {
             $skip_list = array('db.adapter','db.isDefaultTableAdapter','db.params.charset');
         } else {
             $skip_list = array('db.params.username','db.params.password',
@@ -160,9 +165,16 @@ class IndexController extends Zend_Controller_Action {
             'mail.transport.register', 'password_recovery', 'cluster_ssl'
         );
         
-        // Check for a valid skylable.ini and integrate its configuration
-        if (@file_exists(APP_CONFIG_BASE_PATH . 'skylable.ini')) {
-            $skylable_ini = @parse_ini_file( APP_CONFIG_BASE_PATH . 'skylable.ini', TRUE, INI_SCANNER_RAW );
+        // Select the right configuration file
+        if ($this->_installing_into_docker) {
+            $cfg_file = APP_CONFIG_BASE_PATH . 'skylable_docker.ini';
+        } else {
+            $cfg_file = APP_CONFIG_BASE_PATH . 'skylable.ini';
+        }
+        
+        // Check for a valid configuration file and integrate its configuration
+        if (@file_exists($cfg_file)) {
+            $skylable_ini = @parse_ini_file( $cfg_file, TRUE, INI_SCANNER_RAW );
             if ($skylable_ini !== FALSE) {
                 foreach($skylable_ini as $k => $v) {
                     if (trim($k) == 'production') {
@@ -185,6 +197,13 @@ class IndexController extends Zend_Controller_Action {
 
     public function init() {
         $this->_translator = $this->getTranslator();
+        
+        // Set the docker installation flag
+        if (defined('SXWEB_DOCKER_INST')) {
+            $this->_installing_into_docker = @file_exists(APP_CONFIG_BASE_PATH . 'skylable_docker.ini');  
+        } else {
+            $this->_installing_into_docker = FALSE;
+        } 
     }
 
     /**
@@ -256,7 +275,7 @@ class IndexController extends Zend_Controller_Action {
         $session->unsetAll();
         $session->config = $this->getBaseConfig();
         
-        if (defined('SXWEB_DOCKER_INST')) {
+        if ($this->_installing_into_docker) {
             $session->steps_registry = array(
                 'step0' => TRUE,
                 'base' => TRUE,
@@ -285,7 +304,7 @@ class IndexController extends Zend_Controller_Action {
         }
         $this->getLogger()->info('Installer started!');
 
-        if (defined('SXWEB_DOCKER_INST')) {
+        if ($this->_installing_into_docker) {
             $this->redirect( My_Utils::serverUrl('/install.php?step=step3') );
         }
     }
@@ -711,7 +730,7 @@ class IndexController extends Zend_Controller_Action {
         $this->view->frm_db_host = $session->config['db.params.host'];
         $this->view->frm_db_port = $session->config['db.params.port'];
         $this->view->frm_db_user = $session->config['db.params.username'];
-        if (defined('SXWEB_DOCKER_INST')) { // You are installing into a docker container, get the password
+        if ($this->_installing_into_docker) { // You are installing into a docker container, get the password
             $this->view->frm_db_password = $session->config['db.params.password'];
         } else {
             $this->view->frm_db_password = '';    
@@ -1540,7 +1559,7 @@ class IndexController extends Zend_Controller_Action {
         // Don't overwrite 'skylable.ini' file if it already exists
         // unless we are installing into a  Docker container 
         if (@file_exists($skylable_ini_path)) {
-            if (!defined('SXWEB_DOCKER_INST')) {
+            if (!$this->_installing_into_docker) {
                 $this->view->write_success = FALSE;
                 $this->view->reason = $this->translate('Configuration file already exists.');
 
@@ -1568,6 +1587,12 @@ class IndexController extends Zend_Controller_Action {
             $this->view->reason = $this->translate('Failed to write the file.');
         } else {
             $this->view->write_success = TRUE;
+
+            // Delete the special docker cfg file
+            if ($this->_installing_into_docker) {
+                @unlink( APP_CONFIG_BASE_PATH . 'skylable_docker.ini');
+            }
+            
         }
 
         if (!$this->inhibitInstallScript()) {

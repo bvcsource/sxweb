@@ -67,6 +67,13 @@ set_include_path(implode(PATH_SEPARATOR, array(
     get_include_path(),
 )));
 
+// Are we installing into a Docker container?
+if (defined('SXWEB_DOCKER_INST')) {
+    if (@file_exists(APPLICATION_PATH . '/configs/skylable_docker.ini')) {
+        header('Location: /install.php');
+        exit();
+    }
+}
 
 // Before continuing checks if the application is properly configured
 if (!@file_exists(APPLICATION_PATH . '/configs/skylable.ini')) {
