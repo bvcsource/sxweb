@@ -1,7 +1,7 @@
 <?php
 
 // The application version
-if (!defined('SXWEB_VERSION')) define('SXWEB_VERSION', '0.9.0');
+if (!defined('SXWEB_VERSION')) define('SXWEB_VERSION', '0.9.1');
 
 // URL for version check
 // The string SECS_SINCE_LAST_CHECK is replaced with the current timestamp
