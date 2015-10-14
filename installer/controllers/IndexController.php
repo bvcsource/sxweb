@@ -38,6 +38,11 @@ class IndexController extends Zend_Controller_Action {
 
     protected
         /**
+         * This flag tells if we are installing into a Docker container
+         * @var bool
+         */
+        $_installing_into_docker = FALSE,
+        /**
          * The translator.
          * 
          * @var Zend_Translate
@@ -149,15 +154,27 @@ class IndexController extends Zend_Controller_Action {
         );
         
         // Parameters to skip
-        $skip_list = array('db.params.username','db.params.password',
-            'db.adapter','db.isDefaultTableAdapter','db.params.charset');
+        if ($this->_installing_into_docker) {
+            $skip_list = array('db.adapter','db.isDefaultTableAdapter','db.params.charset');
+        } else {
+            $skip_list = array('db.params.username','db.params.password',
+                'db.adapter','db.isDefaultTableAdapter','db.params.charset');    
+        }
+        
         $booleans_values = array(
             'mail.transport.register', 'password_recovery', 'cluster_ssl'
         );
         
-        // Check for a valid skylable.ini and integrate its configuration
-        if (@file_exists(APP_CONFIG_BASE_PATH . 'skylable.ini')) {
-            $skylable_ini = @parse_ini_file( APP_CONFIG_BASE_PATH . 'skylable.ini', TRUE, INI_SCANNER_RAW );
+        // Select the right configuration file
+        if ($this->_installing_into_docker) {
+            $cfg_file = APP_CONFIG_BASE_PATH . 'skylable_docker.ini';
+        } else {
+            $cfg_file = APP_CONFIG_BASE_PATH . 'skylable.ini';
+        }
+        
+        // Check for a valid configuration file and integrate its configuration
+        if (@file_exists($cfg_file)) {
+            $skylable_ini = @parse_ini_file( $cfg_file, TRUE, INI_SCANNER_RAW );
             if ($skylable_ini !== FALSE) {
                 foreach($skylable_ini as $k => $v) {
                     if (trim($k) == 'production') {
@@ -180,6 +197,13 @@ class IndexController extends Zend_Controller_Action {
 
     public function init() {
         $this->_translator = $this->getTranslator();
+        
+        // Set the docker installation flag
+        if (defined('SXWEB_DOCKER_INST')) {
+            $this->_installing_into_docker = @file_exists(APP_CONFIG_BASE_PATH . 'skylable_docker.ini');  
+        } else {
+            $this->_installing_into_docker = FALSE;
+        } 
     }
 
     /**
@@ -250,16 +274,28 @@ class IndexController extends Zend_Controller_Action {
         $session = new Zend_Session_Namespace();
         $session->unsetAll();
         $session->config = $this->getBaseConfig();
-
-        $session->steps_registry = array(
-            'step0' => TRUE,
-            'base' => FALSE,
-            'step1' => FALSE,
-            'step2' => FALSE,
-            'step2_initdb' => FALSE,
-            'step3' => FALSE,
-            'step4' => FALSE
-        );
+        
+        if ($this->_installing_into_docker) {
+            $session->steps_registry = array(
+                'step0' => TRUE,
+                'base' => TRUE,
+                'step1' => TRUE,
+                'step2' => TRUE,
+                'step2_initdb' => TRUE,
+                'step3' => FALSE,
+                'step4' => FALSE
+            );
+        } else {
+            $session->steps_registry = array(
+                'step0' => TRUE,
+                'base' => FALSE,
+                'step1' => FALSE,
+                'step2' => FALSE,
+                'step2_initdb' => FALSE,
+                'step3' => FALSE,
+                'step4' => FALSE
+            );
+        }
         
         // Check if the installer script is modifiable
         @clearstatcache();
@@ -267,6 +303,10 @@ class IndexController extends Zend_Controller_Action {
             $this->view->installer_not_writable = TRUE;
         }
         $this->getLogger()->info('Installer started!');
+
+        if ($this->_installing_into_docker) {
+            $this->redirect( My_Utils::serverUrl('/install.php?step=step3') );
+        }
     }
 
     /**
@@ -690,7 +730,12 @@ class IndexController extends Zend_Controller_Action {
         $this->view->frm_db_host = $session->config['db.params.host'];
         $this->view->frm_db_port = $session->config['db.params.port'];
         $this->view->frm_db_user = $session->config['db.params.username'];
-        $this->view->frm_db_password = '';
+        if ($this->_installing_into_docker) { // You are installing into a docker container, get the password
+            $this->view->frm_db_password = $session->config['db.params.password'];
+        } else {
+            $this->view->frm_db_password = '';    
+        }
+        
 
         $form = new Zend_Form();
         $form->addElement( 'text', 'frm_db_name', array(
@@ -989,24 +1034,25 @@ class IndexController extends Zend_Controller_Action {
                'error' => $this->translate('Invalid admin key.')
            );
        }
+       
+        if (!Skylable_AccessSxNG::isAuthToken($admin_key)) {
+           return array(
+               'status' => FALSE,
+               'error' => $this->translate('Invalid admin key.')
+           );
+       } 
         
-        $session = new Zend_Session_Namespace();
-        $sx_local = str_replace('APPLICATION_PATH', SXWEB_APPLICATION_PATH, $session->config['sx_local']);
-        $cluster_config['sx_local'] = $sx_local;
-        
-        // Create a fake user into the data/ dir and test credentials
-        $the_user = new My_User(NULL, '', '', $admin_key);
-        $base_dir = My_Utils::mktempdir( $sx_local, 'Skylable_' );
-        if ($base_dir === FALSE) {
-            $this->getLogger()->err('Admin key test failed to write to a temporary directory.');
-            return array(
-                'status' => FALSE,
-                'error' => $this->translate('Failed to check the admin key.')
-            );
-        } 
-
-        try {
+       try {
             $cfg = new Zend_Config($cluster_config);
+            
+            $access_sx_opt = My_Utils::getAccessSxNGOpt( NULL, array(
+                'secret_key' => $admin_key,
+                'config' => $cfg
+            ) );
+            $access_sx_opt['logger'] = $this->getLogger();
+            $access_sx = new Skylable_AccessSxNG( $access_sx_opt );
+            
+            $user_details = $access_sx->getUserDetails();
             
             if ($user_details['admin'] == TRUE) {
                 return array(
@@ -1019,18 +1065,16 @@ class IndexController extends Zend_Controller_Action {
                     'error' => $this->translate('User is not the admin.')
                 );   
             }
-        }
-        catch (Skylable_AccessSxException $e) {
-            My_Utils::deleteDir($base_dir);
-            $this->getLogger()->err($e->getMessage());
-            return array(
-                'status' => FALSE,
-                'error' => $this->translate($e->getMessage())
-            );
-        }
+       }
+       catch (Skylable_InvalidCredentialsException $e) {
+           $this->getLogger()->err(__METHOD__.': exception: '.$e->getMessage());
+           return array(
+               'status' => FALSE,
+               'error' => $this->translate('Invalid admin key')
+           );
+       }
         catch(Exception $e) {
-            My_Utils::deleteDir($base_dir);
-            $this->getLogger()->err($e->getMessage());
+            $this->getLogger()->err(__METHOD__.': exception: '.$e->getMessage());
             return array(
                 'status' => FALSE,
                 'error' => $this->translate($e->getMessage())
@@ -1103,7 +1147,7 @@ class IndexController extends Zend_Controller_Action {
             );
         }
         catch(Exception $e) {
-            $this->getLogger()->err($e->getMessage());
+            $this->getLogger()->err(__METHOD__.': exception: '.$e->getMessage());
             return array(
                 'status' => FALSE,
                 'error' => $this->translate($e->getMessage())
@@ -1519,15 +1563,19 @@ class IndexController extends Zend_Controller_Action {
             $this->view->assign('suggest_sxweb_address_meta','sxadm cluster --set-meta="sxweb_address='.$session->config['url'].'" sx://admin@'.substr($session->config['cluster'], strlen('sx://')));
         }
         
+        // Don't overwrite 'skylable.ini' file if it already exists
+        // unless we are installing into a  Docker container 
         if (@file_exists($skylable_ini_path)) {
-            $this->view->write_success = FALSE;
-            $this->view->reason = $this->translate('Configuration file already exists.');
+            if (!$this->_installing_into_docker) {
+                $this->view->write_success = FALSE;
+                $this->view->reason = $this->translate('Configuration file already exists.');
 
-            if (!$this->inhibitInstallScript()) {
-                $this->view->installer_not_writable = TRUE;
+                if (!$this->inhibitInstallScript()) {
+                    $this->view->installer_not_writable = TRUE;
+                }
+
+                return FALSE;
             }
-            
-            return FALSE;
         }
    
         if (!@is_writable(APP_CONFIG_BASE_PATH)) {
@@ -1546,6 +1594,12 @@ class IndexController extends Zend_Controller_Action {
             $this->view->reason = $this->translate('Failed to write the file.');
         } else {
             $this->view->write_success = TRUE;
+
+            // Delete the special docker cfg file
+            if ($this->_installing_into_docker) {
+                @unlink( APP_CONFIG_BASE_PATH . 'skylable_docker.ini');
+            }
+            
         }
 
         if (!$this->inhibitInstallScript()) {
@@ -1561,6 +1615,9 @@ class IndexController extends Zend_Controller_Action {
      */
     public function inhibitInstallScript() {
         $this->view->new_install_script_name = dirname(INSTALLER_SCRIPT_PATH).'/install.txt';
+        if (APPLICATION_ENV == 'development') { // Don't stress the developer...
+            return TRUE;
+        }
         if (@rename(INSTALLER_SCRIPT_PATH, $this->view->new_install_script_name)) {
             @clearstatcache();
             @flush();
