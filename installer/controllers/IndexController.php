@@ -1008,11 +1008,7 @@ class IndexController extends Zend_Controller_Action {
         try {
             $cfg = new Zend_Config($cluster_config);
             
-            $access_sx = new Skylable_AccessSx( $the_user, $base_dir, array( 'user_auth_key' => $admin_key, 'logger' => $this->getLogger() ), $cfg);
-            $whoami = $access_sx->getUserRole();
-            My_Utils::deleteDir($base_dir);
-
-            if ($whoami == 'admin') {
+            if ($user_details['admin'] == TRUE) {
                 return array(
                     'status' => TRUE,
                     'error' => ''
