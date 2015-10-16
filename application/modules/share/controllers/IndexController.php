@@ -167,12 +167,12 @@ class Share_IndexController extends My_BaseAction {
          if (array_key_exists('password', $data)) {
             if (is_string($data['password'])) {
                 $l = strlen($data['password']);
-                if ($l >= 6 || $l <= 30) {
+                if ($l >= 8 || $l <= 30) {
                     $password = $data['password'];
                 } else {
                     echo Zend_Json::encode(array(
                         'status' => FALSE,
-                        'error' => 'Invalid password (must be at least 6 chars long)'
+                        'error' => 'Invalid password (must be at least 8 chars long)'
                     ));
                     return FALSE;
                 }
