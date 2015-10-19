@@ -76,7 +76,6 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap {
                     'disableNotices' => TRUE
                 )
             );
-            Zend_Validate_Abstract::setDefaultTranslator($translator);
         }
         
         $translate = new Zend_Translate(
@@ -89,6 +88,15 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap {
             )
         );
         Zend_Registry::set('Zend_Translate', $translate);
+        
+        if (isset($translator)) {
+            // Adds the standard zend messages to the translator
+            $translate->getAdapter()->addTranslation( array(
+                'content' => $translator
+            ) );
+        }
+
+        Zend_Validate_Abstract::setDefaultTranslator($translate);
         
         return $translate;
     }
