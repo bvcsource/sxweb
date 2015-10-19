@@ -165,25 +165,18 @@ class Share_IndexController extends My_BaseAction {
          $password = NULL;
          $expire_time = NULL;
          if (array_key_exists('password', $data)) {
-            if (is_string($data['password'])) {
-                $l = strlen($data['password']);
-                if ($l >= 8 || $l <= 30) {
-                    $password = $data['password'];
-                } else {
-                    echo Zend_Json::encode(array(
-                        'status' => FALSE,
-                        'error' => 'Invalid password (must be at least 8 chars long)'
-                    ));
-                    return FALSE;
-                }
+            $validate_password = new My_ValidateSharedFilePassword();
+            if ($validate_password->isValid($data['password'])) {
+                $password = $data['password'];
             } else {
                 echo Zend_Json::encode(array(
                     'status' => FALSE,
-                    'error' => 'Invalid password'
+                    'error' => implode( "\n", $validate_password->getMessages())
                 ));
                 return FALSE;
             }
          }
+         
          if (array_key_exists('expire_time', $data)) {
              $this->getLogger()->debug(__METHOD__.': expire time: '.print_r($data['expire_time'], TRUE));
              $validate_expire_time = new My_ValidateSharedFileExpireTime(My_ValidateSharedFileExpireTime::TIME_IN_SECONDS);

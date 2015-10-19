@@ -36,11 +36,51 @@
 */
 
 /**
- * Validate a shared file password
+ * Validate a shared file password.
+ * 
+ * This validator accepts an empty string: if the string is not empty
+ * it must be at least PASSWORD_MIN_LENGTH char long.
  */
 class My_ValidateSharedFilePassword extends Zend_Validate_StringLength {
 
-    public function __construct() {
-        parent::__construct(array( 'min' => 0, 'max' => 24));
+    protected $_messageTemplates = array(
+        self::INVALID   => "Invalid password: should be between %min% and %max% alphanumeric chars.",
+        self::TOO_SHORT => "Invalid password: is less than %min% characters long",
+        self::TOO_LONG  => "Invalid password: is more than %max% characters long",
+    );
+    
+    const
+        /**
+         * String length defines.
+         */
+        PASSWORD_MIN_LENGTH = 8,
+        PASSWORD_MAX_LENGTH = 30;
+
+    public function __construct($allow_empty_password = TRUE) {
+        parent::__construct(array( 'min' => ($allow_empty_password ? 0 : self::PASSWORD_MIN_LENGTH), 'max' => self::PASSWORD_MAX_LENGTH));
     }
+
+    public function isValid($value) 
+    {
+        $is_valid = parent::isValid($value);
+        
+        if ($is_valid) {
+            // Be compatible with Zend_Validate_StringLength length guessing
+            if ($this->_encoding !== null) {
+                $length = iconv_strlen($value, $this->_encoding);
+            } else {
+                $length = iconv_strlen($value);
+            }
+
+            // If the string is non empty, it must be at least
+            // PASSWORD_MIN_LENGTH chars long.
+            if ($length > 0) {
+                $this->setMin(self::PASSWORD_MIN_LENGTH);
+                return parent::isValid($value);
+            }
+        } 
+        return $is_valid;
+    }
+
+
 }
