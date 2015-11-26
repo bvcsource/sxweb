@@ -3,7 +3,7 @@
 	<?php echo $this->render('index/messages.phtml'); ?>
         <?php echo $this->putMessage(); ?>
 	<div id="search" >
-		<form action="/search,<?php echo $this->escape(My_Utils::getRootFromPath($this->url));?>" method="get" >
+		<form action="<?php echo $this->ServerUrl(); ?>/search,<?php echo $this->escape(My_Utils::getRootFromPath($this->url));?>" method="get" >
 			<input type="submit" class="ir icon-search"  />
 			<input type="search" placeholder="<?php echo $this->translate('Search...'); ?>" class="search" name="q"  />
 		</form>

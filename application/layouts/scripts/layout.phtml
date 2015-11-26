@@ -92,12 +92,12 @@ try {
 }
 ?>
 <div class="mobile-header">
-    <a href="/logout" id="mobile_logout" title="<?php echo $this->translate('Logout'); ?>"><span class="icon-logout ir"></span><span><?php echo $this->translate('Logout'); ?></span></a>
+    <a href="<?php echo $this->ServerUrl(); ?>/logout" id="mobile_logout" title="<?php echo $this->translate('Logout'); ?>"><span class="icon-logout ir"></span><span><?php echo $this->translate('Logout'); ?></span></a>
 	<?php if(!empty($lielm)): ?>
 	<script type="text/javascript">
 	$(function(){
 		$('.volume-select select').change(function(){
-			window.open("/vol/"+$(this).val(),"_parent");
+			window.open("<?php echo $this->ServerUrl(); ?>/vol/"+$(this).val(),"_parent");
 			});
 		});
 	</script>
@@ -129,7 +129,7 @@ var url = '<?php echo $this->sxUrlEncode($this->slashPath( $this->url ));?>';
 var current_path = '<?php echo $this->slashPath( $this->url );?>';
 var current_volume = '<?php echo My_Utils::getRootFromPath($this->url); ?>';
 var maxFileSize =<?php echo Zend_Registry::get('skylable')->get('max_upload_filesize'); ?>;
-var upload_url = '/upload'+url;
+var upload_url = '<?php echo $this->ServerUrl(); ?>/upload'+url;
 </script>
 <div id="dialog"></div>
 <input id="fileupload" type="file" name="files[]" multiple />

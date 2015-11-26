@@ -55,7 +55,7 @@ if ($has_volumes) {
 			?>
 			<ul style="margin-top: 20px;">
 				<li>
-			<a href="/vol/<?php echo $this->escape($vol);?>" class="sidebar-volume-current">
+			<a href="<?php echo $this->ServerUrl(); ?>/vol/<?php echo $this->escape($vol);?>" class="sidebar-volume-current">
 				<span class="icon-volume ir"></span>
 				<span class="sidebar-volume-name"><?php echo $this->escape( $this->cutString($vol, 22) ); ?></span>
 				<span class="sidebar-volume-info"><?php printf($this->translate('Size: %s of %s used'), $vols['usage'], $this->fileSizeFormat($vols['volume_size']) ); ?></span>
@@ -89,7 +89,7 @@ if ($has_volumes):
 		$vol = My_Utils::getRootFromPath($vol_el['path']);
 		?>
 		<li>
-			<a href="/vol/<?php echo $this->escape($vol);?>"<?php echo ($vol == $this->current_volume ? ' class="sidebar-volume-current-plain"' :'');?>>
+			<a href="<?php echo $this->ServerUrl(); ?>/vol/<?php echo $this->escape($vol);?>"<?php echo ($vol == $this->current_volume ? ' class="sidebar-volume-current-plain"' :'');?>>
 				<span class="icon-volume ir"></span>
 				<span class="sidebar-volume-name"><?php echo $this->escape( $this->cutString($vol, 22) ); ?></span>
 				<!-- <span class="sidebar-volume-info"><?php printf($this->translate('Size: %s of %s used'), $vol_el['usage'], $this->fileSizeFormat($vol_el['volume_size']) ); ?></span> -->

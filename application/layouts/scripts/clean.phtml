@@ -109,12 +109,12 @@ if ($this->disable_sidebar == FALSE) {
     }
 ?>
 <div class="mobile-header">
-    <a href="/logout" id="mobile_logout" title="<?php echo $this->translate('Logout'); ?>"><span class="icon-logout ir"></span><span><?php echo $this->translate('Logout'); ?></span></a>
+    <a href="<?php echo $this->ServerUrl(); ?>/logout" id="mobile_logout" title="<?php echo $this->translate('Logout'); ?>"><span class="icon-logout ir"></span><span><?php echo $this->translate('Logout'); ?></span></a>
 	<?php if(!empty($lielm)): ?>
 	<script type="text/javascript">
 	$(function(){
 		$('.volume-select select').change(function(){
-			window.open("/vol/"+$(this).val(),"_parent");
+			window.open("<?php echo $this->ServerUrl(); ?>/vol/"+$(this).val(),"_parent");
 			});
 		});
 	</script>
