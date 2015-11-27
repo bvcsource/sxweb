@@ -11,7 +11,7 @@ $this->headLink()->appendStylesheet($this->ServerUrl()."/layouts/skylable/css/pa
         <p><?php echo $this->translate('Some functionality are removed or not usable.'); ?></p>
         <p><?php echo $this->translate('Please upgrade to a normal version.'); ?></p>
         <div class="dialog-box-buttons">
-            <a class="styled-button" href="/index" title="<?php echo $this->translate('Go to the home page...'); ?>"><?php echo $this->translate('Thank you!'); ?></a>
+            <a class="styled-button" href="<?php echo $this->serverUrl('/index'); ?>" title="<?php echo $this->translate('Go to the home page...'); ?>"><?php echo $this->translate('Thank you!'); ?></a>
         </div>
     </div>
     <?php echo $this->render('index/messages.phtml'); ?>

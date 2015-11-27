@@ -56,7 +56,7 @@
         // For unknown files show a dialog box with a countdown, otherwise a preview window. 
         
         if ($this->file_type !== 'data' ) {
-            echo '<div id="dl_preview_header"><span id="dl_sxweb_logo"><a href="http://www.skylable.com" onclick="window.open(this.href); return false;"><img src="',$this->ServerUrl(),'/img/logo_small.png" width="42" height="28" /></a></span><span class="dl_valigned">';
+            echo '<div id="dl_preview_header"><span id="dl_sxweb_logo"><a href="',$this->escape(SKYLABLE_SITE_URL),'" onclick="window.open(this.href); return false;"><img src="',$this->ServerUrl(),'/img/logo_small.png" width="42" height="28" /></a></span><span class="dl_valigned">';
             printf( $this->translate('File: <b>%s</b>'), $this->escape($this->file) );
             echo '</span> <span class="dl_floatright"><a href="',$this->ServerUrl(), $this->download_url,'?download=1" class="styled-button">',$this->translate('Download the file'),'</a></span></div>';    
         }
@@ -229,7 +229,7 @@
 
         <div class="dialog-box">
             <div class="dialog-box-logo">
-                <a href="http://www.skylable.com" onclick="window.open(this.href); return false;"><span class="dialog-box-logo-icon ir"></span></a><h1><?php echo $this->translate('SXWeb'); ?></h1>
+                <a href="<?php echo $this->escape(SKYLABLE_SITE_URL); ?>" onclick="window.open(this.href); return false;"><span class="dialog-box-logo-icon ir"></span></a><h1><?php echo $this->translate('SXWeb'); ?></h1>
             </div>
             <div class="dialog-box-body">
                 <p><?php printf( $this->translate('Start downloading file: <b>%s</b>?'), $this->escape($this->file) ); ?></p>

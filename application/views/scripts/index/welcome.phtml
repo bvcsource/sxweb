@@ -137,9 +137,9 @@ $this->headLink(array(
             <p><?php printf($this->translate('This web interface safely stores your data in the <b>Skylable S<sup>X</sup></b> cluster running at %s.'), $this->escape(Zend_Registry::get('skylable')->get('cluster'))); ?><br><br>
             <?php echo $this->translate('You can access your data anywhere, anytime using this web interface or one of the following applications:'); ?></p>
         </div>
-        <a style="margin-right:15px;" href="http://www.skylable.com/download/sxdrive/" onclick="window.open(this.href); return false;"><img src="<?php echo $this->ServerUrl(); ?>/layouts/skylable/images/desktop_app.png"></a>
-        <a style="margin-right:15px;" href="http://www.skylable.com/download/sxdrive/android" onclick="window.open(this.href); return false;"><img src="<?php echo $this->ServerUrl(); ?>/layouts/skylable/images/google_play.png"></a>
-        <a style="margin-right:15px;" href="http://www.skylable.com/download/sxdrive/ios" onclick="window.open(this.href); return false;"><img src="<?php echo $this->ServerUrl(); ?>/layouts/skylable/images/appstore-button.png"></a><br/><br/>
+        <a style="margin-right:15px;" href="<?php echo $this->escape(SKYLABLE_SXDRIVE_DESKTOP); ?>" onclick="window.open(this.href); return false;"><img src="<?php echo $this->ServerUrl(); ?>/layouts/skylable/images/desktop_app.png"></a>
+        <a style="margin-right:15px;" href="<?php echo $this->escape(SKYLABLE_SXDRIVE_ANDROID); ?>" onclick="window.open(this.href); return false;"><img src="<?php echo $this->ServerUrl(); ?>/layouts/skylable/images/google_play.png"></a>
+        <a style="margin-right:15px;" href="<?php echo $this->escape(SKYLABLE_SXDRIVE_IOS); ?>" onclick="window.open(this.href); return false;"><img src="<?php echo $this->ServerUrl(); ?>/layouts/skylable/images/appstore-button.png"></a><br/><br/>
         <div style="font-weight: normal; text-align: right;padding-right: 40px;">
             <form class="styled-form"><label class="inline"><input class="dismissbox" type="checkbox" name="dont_show_welcome" value="yes"> <?php echo $this->translate('Do not display again'); ?></label> <button id="welcome-dismiss" class="no-margin" type="button"><?php echo $this->translate('Great, thanks!'); ?></button></form>
         </div>

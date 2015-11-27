@@ -3,7 +3,7 @@
         <?php echo $this->render('index/messages.phtml'); ?>
         <?php echo $this->putMessage(); ?>
         <div id="search">
-            <form action="/search,<?php echo $this->escape($this->volume); ?>" method="get">
+            <form action="<?php echo $this->serverUrl(); ?>/search,<?php echo $this->escape($this->volume); ?>" method="get">
                 <input type="submit" class="ir icon-search"/>
                 <input type="search" placeholder="<?php echo $this->translate('Search...'); ?>" class="search" name="q"
                        value="<?php echo $this->escape($this->query_str); ?>"/>
@@ -70,12 +70,12 @@
     <?php if ($this->hasReadAccess()) {
         $file_type = My_Utils::getFileType($name);
         if ($file_type != 'data') { ?>
-            <a href="/open/<?php echo $this->escape($this->volume . '/' . $file); ?>" class="elmpreview"
+            <a href="<?php echo $this->serverUrl(); ?>/open/<?php echo $this->escape($this->volume . '/' . $file); ?>" class="elmpreview"
                title="<?php echo $this->escape($name); ?>"
-               data-fileurl="/open/<?php echo $this->escape($this->volume . '/' . $file); ?>"
+               data-fileurl="<?php echo $this->serverUrl(); ?>/open/<?php echo $this->escape($this->volume . '/' . $file); ?>"
                data-filetype="<?php echo $file_type ?>"><span><?php echo $this->escape($this->cutString($name, 50)); ?></span></a>
         <?php } else { ?>
-            <a href="/open/<?php echo $this->escape($this->volume . '/' . $file); ?>"
+            <a href="<?php echo $this->serverUrl(); ?>/open/<?php echo $this->escape($this->volume . '/' . $file); ?>"
                title="<?php echo $this->escape($name); ?>"><span><?php echo $this->escape($this->cutString($name, 50)); ?></span></a>
         <?php
         }
@@ -88,9 +88,9 @@
 </span>
                         <span class="folder-name">
                             <?php if ($this->hasReadAccess()): ?>
-                            <a href="/open/<?php echo $this->escape($this->volume . '/' . $file); ?>" 
+                            <a href="<?php echo $this->serverUrl(); ?>/open/<?php echo $this->escape($this->volume . '/' . $file); ?>" 
                                title="<?php echo $this->translate('Download the file'); ?>"><?php echo $this->translate('Download'); ?></a> | 
-                            <a href="/vol<?php echo $this->escape(My_Utils::slashPath($this->volume) . $this->sxUrlEncode($the_dir_name)); ?>"
+                            <a href="<?php echo $this->serverUrl(); ?>/vol<?php echo $this->escape(My_Utils::slashPath($this->volume) . $this->sxUrlEncode($the_dir_name)); ?>"
                                 title="<?php echo $this->escape(sprintf($this->translate('Open folder: %s'), $the_dir_name)); ?>"><?php echo $this->translate('Open Folder'); ?></a>
                         <?php endif; ?>
                         </span>

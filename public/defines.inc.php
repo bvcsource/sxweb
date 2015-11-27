@@ -28,6 +28,11 @@ if (!defined('SKYLABLE_SITE_URL')) define('SKYLABLE_SITE_URL', 'http://www.skyla
 // The Skylable Ltd string to use in labels
 if (!defined('SKYLABLE_LABEL')) define('SKYLABLE_LABEL', 'Skylable');
 
+// SXDrive URLs
+if (!defined('SKYLABLE_SXDRIVE_DESKTOP')) define('SKYLABLE_SXDRIVE_DESKTOP', 'http://www.sxdrive.io/download/#sxdrive-desktop');
+if (!defined('SKYLABLE_SXDRIVE_IOS')) define('SKYLABLE_SXDRIVE_IOS', 'http://www.sxdrive.io/download/#sxdrive-mobile');
+if (!defined('SKYLABLE_SXDRIVE_ANDROID')) define('SKYLABLE_SXDRIVE_ANDROID', 'http://www.sxdrive.io/download/#sxdrive-mobile');
+
 // Try to fix the timezone
 $timezone = @date_default_timezone_get();
 if (empty($timezone)) {
