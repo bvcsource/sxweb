@@ -267,7 +267,7 @@
 "We have sent you an email with a link to follow to reset your password.","Ti abbiamo inviato una email contenente un link da seguire per reimpostare la tua password."
 "Change password","Cambia la password"   
 "Change!","Cambia!"
-"Invalid password: should be between %min% and %max% alphanumeric chars.","Password non valida: deve essere composta da %min% a %max% caratteri alfanumerici."
+"Invalid password: should be between %min% and %max% alphanumeric chars.","Password non valida: deve essere composta da %min% e %max% caratteri alfanumerici."
 "Invalid password: is less than %min% characters long","Password non valida: è più corta di %min% caratteri"
 "Invalid password: is more than %max% characters long","Password non valida: è più lunga di %max% caratteri"
 "Invalid passwords, please check and retry.","Password non valide, si prega di controllare e riprovare."
