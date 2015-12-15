@@ -43,6 +43,6 @@
 class My_ValidateUserLogin extends Zend_Validate {
     public function __construct() {
         $this->addValidator( new Zend_Validate_StringLength(array( 'min' => 1, 'max' => 255 )), TRUE );
-        $this->addValidator( new Zend_Validate_Regex('/^([\pL\w.@\-]){1,255}$/u'), TRUE);
+        $this->addValidator( new Zend_Validate_Regex('/^([\pL\w.@\-+;:]){1,255}$/u'), TRUE);
     }
 }
