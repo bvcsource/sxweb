@@ -77,8 +77,11 @@ db.params.dbname = "sxweb"
 db.params.charset = "utf8"
 
 ; Email
+; Transport type, usually "smtp"
 mail.transport.type = "smtp"
+; Local client hostname or IP
 mail.transport.name = "example.com"
+; Remote SMTP hostname or IP
 mail.transport.host = "localhost"
 ; Valid values are ssl and tls
 ;mail.transport.ssl = ""
