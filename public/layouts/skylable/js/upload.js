@@ -596,9 +596,20 @@ $(document).ready(function(){
                 }
 
                 console.log('Error: ' + err_msg);
+                console.log('Reply box length: ' + reply_box.length);
+                console.log('Has upload dialog: ' + (Skylable_Uploads.hasUploadDialog() ? 'Y' : 'N'));
 
                 // Shows an error dialog if needed
-                if (reply_box.length == 0) {
+                if (reply_box.length == 0 || !Skylable_Uploads.hasUploadDialog()) {
+                    /**
+                     * Remove the previous dialog, if any.
+                     */
+
+                    if (Skylable_Uploads.hasUploadDialog()) {
+                        Skylable_Uploads.dlg.dialog('close');
+                        Skylable_Uploads.dlg.dialog('destroy');
+                    }
+
                     Skylable_Uploads.dlg = $('#dialog');
 
                     Skylable_Uploads.dlg.dialog({
@@ -626,6 +637,7 @@ $(document).ready(function(){
 
                     Skylable_Uploads.dlg.dialog('open');
                     reply_box = $('#dialog #files');
+                    console.log('FAIL: showing dialog.');
                 } 
                 
                 reply_box.append('<p class="upload_error">' + sprintf(Skylable_Lang.uploadError , err_msg ) + '</p>');    
