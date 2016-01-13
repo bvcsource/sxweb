@@ -511,19 +511,23 @@ class AjaxController extends My_BaseAction {
             return FALSE;
         }
 
+        $sxshare_address = Zend_Registry::get('skylable')->get('sxshare_address');
+
         if (is_null($this->getRequest()->getParam('create'))) {
-            // Check if the file is already shared
-            try {
-                $my_shared = new My_Shared();
-                $shared_file_key = '';
-                if ($my_shared->fileExists($path, Zend_Auth::getInstance()->getIdentity()->getSecretKey(), $shared_file_key)) {
-                    $this->view->file_already_shared = TRUE;
+            // Check if the file is already shared; if sxshare address is set, skip the check
+            if (!isset($sxshare_address)) {
+                try {
+                    $my_shared = new My_Shared();
+                    $shared_file_key = '';
+                    if ($my_shared->fileExists($path, Zend_Auth::getInstance()->getIdentity()->getSecretKey(), $shared_file_key)) {
+                        $this->view->file_already_shared = TRUE;
+                    }
                 }
-            }
-            catch(Exception $e) {
-                $this->getLogger()->debug(__METHOD__.': exception: '.$e->getMessage());
-                $this->sendErrorResponse('<p>',$this->getTranslator()->translate('Internal error. Can\'t proceed.'),'</p>', 500);
-                return FALSE;
+                catch(Exception $e) {
+                    $this->getLogger()->debug(__METHOD__.': exception: '.$e->getMessage());
+                    $this->sendErrorResponse('<p>',$this->getTranslator()->translate('Internal error. Can\'t proceed.'),'</p>', 500);
+                    return FALSE;
+                }
             }
             
             // First step: show the dialog
@@ -572,28 +576,60 @@ class AjaxController extends My_BaseAction {
         
 
         try {
-            $sh = new My_Shared();
-            $key = '';
-            
-            /*
-             * Update the shared file info, if already exists.
-             * */
-            if ($sh->fileExists($path, Zend_Auth::getInstance()->getIdentity()->getSecretKey(), $key)) {
-                $ok_up = $sh->updateFile($key, $password, $expire_time * 3600); // convert hours to seconds
-                if (!$ok_up) {
+            if (isset($sxshare_address)) {
+                $url = $sxshare_address;
+                $data = array(
+                    'access_key' => Zend_Auth::getInstance()->getIdentity()->getSecretKey(),
+                    'path' => $path,
+                    'expire_time' => $expire_time * 3600, // convert hours to seconds
+                    'password' => $password,
+                );
+                $options = array(
+                    'http' => array(
+                        'header'  => "Content-type: application/x-www-form-urlencoded\r\n",
+                        'method'  => 'POST',
+                        'content' => http_build_query($data),
+                    ),
+                );
+
+                $context = stream_context_create($options);
+                $result = file_get_contents($url, false, $context);
+                if ($result === FALSE) {
                     $this->sendErrorResponse('<p>' . $this->getTranslator()->translate('Failed to create the file share link.').'</p>');
                     return FALSE;
                 }
+                $decoded_result = json_decode($result);
+                if ($result->status === FALSE) {
+                    $this->sendErrorResponse('<p>' . $this->getTranslator()->translate('Failed to create the file share link.').'</p>');
+                    return FALSE;
+                }
+
+                $this->_helper->viewRenderer->setNoRender(FALSE);
+                $this->view->url = $decoded_result->publink;
             } else {
-                $key = $sh->add($path, Zend_Auth::getInstance()->getIdentity()->getSecretKey(), $expire_time * 3600, $password ); // convert hours to seconds
-                if ($key === FALSE) {
-                    $this->sendErrorResponse('<p>' . $this->getTranslator()->translate('Failed to create the file share link.').'</p>');
-                    return FALSE;
+                $sh = new My_Shared();
+                $key = '';
+
+                /*
+                 * Update the shared file info, if already exists.
+                 * */
+                if ($sh->fileExists($path, Zend_Auth::getInstance()->getIdentity()->getSecretKey(), $key)) {
+                    $ok_up = $sh->updateFile($key, $password, $expire_time * 3600); // convert hours to seconds
+                    if (!$ok_up) {
+                        $this->sendErrorResponse('<p>' . $this->getTranslator()->translate('Failed to create the file share link.').'</p>');
+                        return FALSE;
+                    }
+                } else {
+                    $key = $sh->add($path, Zend_Auth::getInstance()->getIdentity()->getSecretKey(), $expire_time * 3600, $password ); // convert hours to seconds
+                    if ($key === FALSE) {
+                        $this->sendErrorResponse('<p>' . $this->getTranslator()->translate('Failed to create the file share link.').'</p>');
+                        return FALSE;
+                    }
                 }
+                $this->_helper->viewRenderer->setNoRender(FALSE);
+                $this->view->url = $this->getSharedFileURL($key, $path);
             }
-            
-            $this->_helper->viewRenderer->setNoRender(FALSE);
-            $this->view->url = $this->getSharedFileURL($key, $path);
+
         } catch (My_NotUniqueException $e) {
             $this->getLogger()->err(__METHOD__.': exception: '.$e->getMessage());
             $this->sendErrorResponse('<p>' . $this->getTranslator()->translate('Failed to create the file share link.').'</p>');

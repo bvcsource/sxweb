@@ -17,6 +17,10 @@ cluster_ssl = true
 ; Base URL used to generate other URLS, ie the shared file URL
 ; url = "https://sxweb.example.com"
 
+; URL of an SXShare API entry point
+; if set, SXShare will be used to share files instead of an internal mechanism
+;sxshare_address = "https://sxshare.example.com/.sxshare/api/share"
+
 ; Main directory 
 local = APPLICATION_PATH "/../"
 
