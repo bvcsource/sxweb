@@ -1964,7 +1964,7 @@ class Skylable_AccessSx {
     public function whoami() {
         $this->_last_error_log = '';
         if (!$this->isInitialized()) {
-            return FALSE;
+#            return FALSE;
         }
 
         $ret = $this->executeShellCommand('sxacl whoami '.

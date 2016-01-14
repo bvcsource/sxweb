@@ -131,11 +131,12 @@ class IndexController extends My_BaseAction {
                     $this->getUserModel()->createAccount( $user );
                 }
 
-
                 // Sets who you are on the SX server: from version 1.1 of SX server
                 // is the same as the login name
-                $user->getPreferences()->set(My_User::PREF_WHO_AM_I, $values['frm_login']);
-                $this->getLogger()->debug('You are: '.var_export($values['frm_login'], TRUE));
+                // ... unless you use sxauthd
+                $whoami = $access_sx->whoami();
+                $user->getPreferences()->set(My_User::PREF_WHO_AM_I, $whoami);
+                $this->getLogger()->debug('You are: '.$whoami);
                 
                 // Get the user role
                 $access_sx->setUser($user);
