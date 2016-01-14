@@ -547,20 +547,31 @@ class Skylable_AccessSx {
             @unlink($tmp_file);
             return FALSE;
         }
-        
+
         if ($has_auth_key) {
             $sxinit_cmd .= ' --key -a '.My_utils::escapeshellarg($tmp_file);
         } else {
             $sxinit_cmd .= ' -p '.My_utils::escapeshellarg($tmp_file);
         }
+        $use_sxauthd = $this->_config->get('use_sxauthd', FALSE);
         if (isset($params['login'])) {
-            $cluster = 'sx://'.$params['login'] . '@' . parse_url($cluster, PHP_URL_HOST);
+            if ($use_sxauthd === FALSE) {
+                $cluster_proto = 'sx://';
+            } else {
+                # no proto for sxauthd (it uses https)
+                $cluster_proto = '';
+            }
+            $cluster_host = parse_url($cluster, PHP_URL_HOST);
+            $cluster = $cluster_proto . $params['login'] . '@' . $cluster_host;
         }
         /*
         if (!$has_auth_key) {
             $cluster = 'sx://'.$params['login'] . '@' . parse_url($cluster, PHP_URL_HOST);
         }
-        */
+         */
+        if ($use_sxauthd !== FALSE) {
+            $sxinit_cmd .= ' --sxauthd';
+        }
         $sxinit_cmd .= ' '.My_utils::escapeshellarg($cluster);
 
         try {
@@ -572,6 +583,13 @@ class Skylable_AccessSx {
                 $this->_last_error_log, NULL, array($this, 'parseErrors'));
             @unlink($tmp_file);
             if ($exitcode == 0) {
+                if ($use_sxauthd !== FALSE) {
+                    $dir=$this->_base_dir.'/'.$cluster_host.'/auth';
+                    $src=$dir.'/default';
+                    $dst=$dir.'/'.$params['login'];
+                    $this->getLogger()->debug(__METHOD__.': renaming '.$src.' -> '.$dst);
+                    return rename($src,$dst);
+                }
                 return TRUE;
             } else {
                 $this->checkForErrors($this->_last_error_log, TRUE);
