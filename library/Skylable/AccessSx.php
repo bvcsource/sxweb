@@ -988,7 +988,7 @@ class Skylable_AccessSx {
      * @see parseCommandOutputCallback
      */
     private function parseVolumeACL($data_line, &$data, &$ret) {
-        if (($p = strpos($data_line, ':')) !== FALSE) {
+        if (($p = strrpos($data_line, ':')) !== FALSE) {
             $e = array('user' => substr($data_line, 0, $p), 'perms' => array());
             if (preg_match_all('/(\s*(\w+))/', substr($data_line, $p), $matches) > 0) {
                 $e['perms'] = $matches[2];
