@@ -40,6 +40,7 @@ if(isset($this->list)) {
     if (is_array($this->list) || ($this->list instanceof Iterator) ) {
         $can_write_to_volume = $this->canWriteToVolume();
         $has_read_access = $this->hasReadAccess();
+        $sxshare_address = Zend_Registry::get('skylable')->get('sxshare_address');
         
         
         foreach ($this->list as $file) {
@@ -62,10 +63,10 @@ if(isset($this->list)) {
                         <input name="file_element" type="checkbox" value="<?php echo $this->escape($file['path']); ?>"/>
                     <?php endif; ?>
 		        </span>
-                    <?php if (($has_read_access and !$volume_is_encrypted) or $can_write_to_volume): ?>
+                    <?php if (($has_read_access and !$volume_is_encrypted and $sxshare_address) or $can_write_to_volume): ?>
                         <a class="ir actions-trigger"></a>
                         <ul class="actions">
-                        <?php if ($has_read_access and !$volume_is_encrypted): ?>
+                        <?php if ($has_read_access and !$volume_is_encrypted and $sxshare_address): ?>
                             <li><a href="javascript:void(0)"
                                    class="elmshare"><?php echo $this->translate('Create Link'); ?></a></li>
                         <?php endif; ?>
