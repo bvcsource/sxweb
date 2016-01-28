@@ -58,7 +58,7 @@ if (!Skylable_Lang) {
 
         // --------- Share window
         shareTitle : "Udostępnij plik",
-        shareDirTitle : "Share directory",
+        shareDirTitle : "Udostępnij katalog",
         shareMsg : "Czy na pewno chcesz udostępnić ten plik?",
         shareCopyToClipboard: "Kopiuj do schowka",
         shareCopiedToClipboard: "Skopiowano do schowka!",
