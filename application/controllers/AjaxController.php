@@ -482,12 +482,24 @@ class AjaxController extends My_BaseAction {
 
         $this->getLogger()->debug(__METHOD__.': path is: '.print_r($path, TRUE) );
 
+        $sxshare_address = Zend_Registry::get('skylable')->get('sxshare_address');
+
         try {
             $access_sx = new Skylable_AccessSxNG( My_Utils::getAccessSxNGOpt( Zend_Auth::getInstance()->getIdentity() ) );
-            $validate_path = new My_ValidateSxPath( $access_sx, My_ValidateSxPath::FILE_TYPE_FILE );
-            if (!$validate_path->isValid($path)) {
-                $this->sendErrorResponse('<p>'.$this->getTranslator()->translate('File not found or invalid.').'</p>');
-                return FALSE;
+            if (isset($sxshare_address)) {
+                # if sxshare_address is set, both files and dirs can be shared - therefore we need to use two validators
+                $validate_path_file = new My_ValidateSxPath( $access_sx, My_ValidateSxPath::FILE_TYPE_FILE );
+                $validate_path_dir = new My_ValidateSxPath( $access_sx, My_ValidateSxPath::FILE_TYPE_DIR );
+                if (!$validate_path_file->isValid($path) and !$validate_path_dir->isValid($path)) {
+                    $this->sendErrorResponse('<p>'.$this->getTranslator()->translate('File not found or invalid.').'</p>');
+                    return FALSE;
+                }
+            } else {
+                $validate_path = new My_ValidateSxPath( $access_sx, My_ValidateSxPath::FILE_TYPE_FILE );
+                if (!$validate_path->isValid($path)) {
+                    $this->sendErrorResponse('<p>'.$this->getTranslator()->translate('File not found or invalid.').'</p>');
+                    return FALSE;
+                }
             }
 
             /*
@@ -510,8 +522,6 @@ class AjaxController extends My_BaseAction {
             $this->sendErrorResponse('<p>',$this->getTranslator()->translate('Internal error. Can\'t proceed.'),'</p>', 500);
             return FALSE;
         }
-
-        $sxshare_address = Zend_Registry::get('skylable')->get('sxshare_address');
 
         if (is_null($this->getRequest()->getParam('create'))) {
             // Check if the file is already shared; if sxshare address is set, skip the check
