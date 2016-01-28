@@ -61,6 +61,7 @@ if (!Skylable_Lang) {
 
         // --------- Share window
         shareTitle : "Поделиться файлом",
+        shareDirTitle : "Share directory",
         shareMsg : "Вы уверены, что хотите поделиться файлом?",
         shareCopyToClipboard: "Скопировать в буфер",
         shareCopiedToClipboard: "Скопировано в буфер!",

@@ -494,6 +494,9 @@ class AjaxController extends My_BaseAction {
                     $this->sendErrorResponse('<p>'.$this->getTranslator()->translate('File not found or invalid.').'</p>');
                     return FALSE;
                 }
+                if ($validate_path_dir->isValid($path)) {
+                    $this->view->is_directory = TRUE;
+                }
             } else {
                 $validate_path = new My_ValidateSxPath( $access_sx, My_ValidateSxPath::FILE_TYPE_FILE );
                 if (!$validate_path->isValid($path)) {

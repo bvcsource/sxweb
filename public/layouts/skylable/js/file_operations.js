@@ -676,7 +676,10 @@ if (!FileOperations) {
          * @param path
          */
         shareFile : function(ev, path) {
-            var dlg = FileOperations.getDialog(Skylable_Lang['shareTitle']);
+            var shareTitle = 'shareTitle';
+            if (path.match('/$'))
+                shareTitle = 'shareDirTitle';
+            var dlg = FileOperations.getDialog(Skylable_Lang[shareTitle]);
             dlg.dialog('option', 'buttons', [
                 {
                   text: Skylable_Lang['yesBtn'],

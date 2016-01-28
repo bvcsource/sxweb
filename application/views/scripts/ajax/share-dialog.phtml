@@ -10,7 +10,7 @@
     }
 ?>
 <ul>
-    <li><?php printf($this->translate('File: <span>%s</span>'), $this->share_file); ?><input type="hidden" name="path" value="<?php echo $this->escape($this->share_path); ?>" /></li>
+    <li><?php printf($this->translate($this->is_directory ? 'Directory: <span>%s</span>' : 'File: <span>%s</span>'), $this->share_file); ?><input type="hidden" name="path" value="<?php echo $this->escape($this->share_path); ?>" /></li>
 
     <li class="top-margin"><label><?php echo $this->translate('Expire Time:'); ?></label><?php 
         // Times are in hours
@@ -25,5 +25,5 @@
     <li class="top-margin"><label><?php printf($this->translate('Password (Leave empty if none. Max allowed length is %d characters.)'), 24); ?></label><input class="share-file-link" type="password" name="share_password" value="" placeholder="<?php echo $this->translate('Password'); ?>" /></li>
     <li><input class="share-file-link" type="password" name="share_password_confirm" value="" placeholder="<?php echo $this->translate('Confirm Password'); ?>" /></li>
     
-    <li class="more-top-margin"><?php echo $this->translate('Are you sure you want to share the file?'); ?></li>
+    <li class="more-top-margin"><?php echo $this->translate($this->is_directory ? 'Are you sure you want to share the directory?' : 'Are you sure you want to share the file?'); ?></li>
 </ul>

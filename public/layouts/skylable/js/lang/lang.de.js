@@ -58,6 +58,7 @@ if (!Skylable_Lang) {
 
         // --------- Share window
         shareTitle : "Datei teilen",
+        shareDirTitle : "Share directory",
         shareMsg : "Bist Du sicher, dass Du die Datei teilen möchtest?",
         shareCopyToClipboard: "In Zwischenablage kopieren",
         shareCopiedToClipboard: "In Zwischenablage kopiert!",
