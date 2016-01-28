@@ -47,6 +47,7 @@
 "Great, thanks!","Super, danke!"
 "Name:","Name:"
 "Link to the shared file:","Link zu geteilter Datei:"
+"Link to the shared directory:",""
 "There are errors!","Es sind Fehler aufgetreten!"
 "File: <span>%s</span>","Datei: <span>%s</span>"
 "Directory: <span>%s</span>",""

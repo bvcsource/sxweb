@@ -1,6 +1,6 @@
 
 <ul>
-	<li><?php echo $this->translate('Link to the shared file:'); ?></li>
+	<li><?php echo $this->translate($this->is_directory ? 'Link to the shared directory:' : 'Link to the shared file:'); ?></li>
     <li><textarea class="share-file-link shared_file_url_text" id="shared_file_url_input" readonly="readonly"><?php echo $this->escape($this->url);?></textarea></li>
 </ul>
 
