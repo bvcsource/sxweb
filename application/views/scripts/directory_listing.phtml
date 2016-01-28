@@ -62,18 +62,24 @@ if(isset($this->list)) {
                         <input name="file_element" type="checkbox" value="<?php echo $this->escape($file['path']); ?>"/>
                     <?php endif; ?>
 		        </span>
-                    <?php if ($can_write_to_volume): ?>
+                    <?php if (($has_read_access and !$volume_is_encrypted) or $can_write_to_volume): ?>
                         <a class="ir actions-trigger"></a>
                         <ul class="actions">
+                        <?php if ($has_read_access and !$volume_is_encrypted): ?>
                             <li><a href="javascript:void(0)"
-                                   class="elmrename"><?php echo $this->translate('Rename'); ?></a>
-                            </li>
-                            <li><a href="javascript:void(0)" class="elmcopy"><?php echo $this->translate('Copy'); ?></a>
-                            </li>
-                            <li><a href="javascript:void(0)" class="elmmove"><?php echo $this->translate('Move'); ?></a>
-                            </li>
-                            <li><a href="javascript:void(0)"
-                                   class="elmdelete delete"><?php echo $this->translate('Delete'); ?></a></li>
+                                   class="elmshare"><?php echo $this->translate('Create Link'); ?></a></li>
+                        <?php endif; ?>
+                        <?php if ($can_write_to_volume): ?>
+                                <li><a href="javascript:void(0)"
+                                       class="elmrename"><?php echo $this->translate('Rename'); ?></a>
+                                </li>
+                                <li><a href="javascript:void(0)" class="elmcopy"><?php echo $this->translate('Copy'); ?></a>
+                                </li>
+                                <li><a href="javascript:void(0)" class="elmmove"><?php echo $this->translate('Move'); ?></a>
+                                </li>
+                                <li><a href="javascript:void(0)"
+                                       class="elmdelete delete"><?php echo $this->translate('Delete'); ?></a></li>
+                        <?php endif; ?>
                         </ul>
                     <?php endif; ?>
                 </li>
