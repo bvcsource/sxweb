@@ -59,9 +59,7 @@ if(isset($this->list)) {
                     <span class="size"></span>
 		        <span class="date">
 			        <span>--</span>
-                    <?php if ($can_write_to_volume): ?>
                         <input name="file_element" type="checkbox" value="<?php echo $this->escape($file['path']); ?>"/>
-                    <?php endif; ?>
 		        </span>
                     <?php if (($has_read_access and !$volume_is_encrypted and $sxshare_address) or $can_write_to_volume): ?>
                         <a class="ir actions-trigger"></a>
