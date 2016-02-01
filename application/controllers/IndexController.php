@@ -577,6 +577,10 @@ class IndexController extends My_BaseAction {
                 $this->view->show_welcome_window = FALSE;
             }
 
+            // Check if the url of a current view points to a volume; pass the check result to the view
+            $volume_url = "/" . My_Utils::getRootFromPath($path) . "/";
+            $this->view->current_is_volume = $this->view->url === $volume_url;
+
         }
         catch (Skylable_InvalidCredentialsException $e) {
             $this->invalidCredentialsExceptionHandler(__METHOD__, $e, $access_sx);
