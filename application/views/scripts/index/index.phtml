@@ -1,3 +1,7 @@
+<?php
+	$sxshare_address = Zend_Registry::get('skylable')->get('sxshare_address');
+	$volume_is_encrypted = $this->volumeIsEncrypted( My_Utils::getRootFromPath( $this->url ) );
+?>
 <div class="sticked">
 	<div class="wrap">
 	<?php echo $this->render('index/messages.phtml'); ?>
@@ -22,6 +26,11 @@
 			<?php endif; ?>
 		</div>
 		<div class="default-actions">
+			<?php if($sxshare_address and !$volume_is_encrypted): ?>
+			<a id="sharedir">
+				<span><?php echo $this->translate('Share Folder'); ?></span>
+			</a>
+			<?php endif; ?>
 			<?php if($this->canWriteToVolume()): ?>
 			<a class="add-folder create-trigger" id="createdir" >
 				<span class="icon-add-folder ir"></span>

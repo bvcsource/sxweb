@@ -764,6 +764,14 @@ if (!FileOperations) {
         },
 
         /**
+         * Do the share file action on a current dir.
+         * @param ev
+         */
+        shareCurrentDir : function(ev) {
+            FileOperations.shareFile(ev, current_path);
+        },
+
+        /**
          * Close and remove the preview lightbox
          * @param e
          */
@@ -1041,6 +1049,7 @@ if (!FileOperations) {
          * Assigns event handlers on the entire page
          */
         assignHandlers : function() {
+            $('a#sharedir').click(this.shareCurrentDir);
             $('a#createdir').click(this.createDir);
             $('a#actioncopy').click(this.copy);
             $('a#actionmove').click(this.move);
