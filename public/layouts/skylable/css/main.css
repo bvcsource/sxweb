@@ -1299,6 +1299,15 @@ span.inverted {
     margin-right: 14px
 }
 
+.icon-share-folder {
+    background-position: -130px -129px;
+    height: 24px;
+    width: 24px;
+    border: none;
+    display: inline-block;
+    margin-right: 14px
+}
+
 .icon-dl {
     background-position: -98px -505px;
     display: inline-block;
@@ -1412,6 +1421,10 @@ a:hover .icon-logout {
 
 a:hover .icon-add-folder {
     background-position: -8px -409px;
+}
+
+a:hover .icon-share-folder {
+    background-position: -130px -169px;
 }
 
 a:hover .icon-dl {
