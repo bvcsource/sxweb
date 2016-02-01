@@ -27,7 +27,8 @@
 		</div>
 		<div class="default-actions">
 			<?php if($sxshare_address and !$volume_is_encrypted and !$this->current_is_volume): ?>
-			<a id="sharedir">
+			<a class="share-folder" id="sharedir">
+				<span class="icon-add-folder ir"></span>
 				<span><?php echo $this->translate('Share Folder'); ?></span>
 			</a>
 			<?php endif; ?>

@@ -940,7 +940,7 @@ a.sidebar-volume-current .icon-volume {
     margin-top: 20px;
 }
 
-.add-folder {
+.add-folder, .share-folder {
     /* width: 115px; */
     color: #3c3c3c;
     padding: 10px 10px 2px 10px;
@@ -949,7 +949,7 @@ a.sidebar-volume-current .icon-volume {
     border: 1px solid #fff
 }
 
-.add-folder:hover {
+.add-folder:hover, .share-folder:hover {
     color: #0077c1;
     background: #fff;
     border-color: #1475c5
@@ -971,7 +971,7 @@ a.sidebar-volume-current .icon-volume {
     color: #fff
 }
 
-.add-folder span:last-child, .upload span:last-child {
+.add-folder span:last-child, .upload span:last-child, .share-folder span:last-child {
     display: inline-block;
     margin-top: 1px;
     float: right
