@@ -374,6 +374,7 @@ class IndexController extends Zend_Controller_Action {
             'sxrm' => array('1.2', '>='),
             'sxmv' => array('1.2', '>='),
             'sxls' => array('1.2', '>='),
+            'sxcat' => array('1.2', '>='),
             'sxacl' => array('1.2', '>='),
             'sxrev' => array('1.2', '>=')
         );
