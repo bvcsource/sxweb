@@ -612,7 +612,7 @@ class AjaxController extends My_BaseAction {
                     return FALSE;
                 }
                 $decoded_result = json_decode($result);
-                if ($result->status === FALSE) {
+                if ($decoded_result->status === FALSE) {
                     $this->sendErrorResponse('<p>' . $this->getTranslator()->translate('Failed to create the file share link.').'</p>');
                     return FALSE;
                 }
