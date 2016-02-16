@@ -452,8 +452,11 @@ class UploadHandler {
         $validate_path = new My_ValidateSxPath($access_sx_ng, My_ValidateSxPath::FILE_TYPE_DIR);
 
         if (!$validate_path->isValid($the_path)) {
-            $file->error = 'Invalid destination path.';
-            return FALSE;
+            // Allow file upload to a nonexistent directory
+            if (!in_array($validate_path::MSG_NOT_FOUND, $validate_path->getErrors())) {
+                $file->error = 'Invalid destination path.';
+                return FALSE;
+            }
         }
         $this->options['sxurl'] = My_Utils::slashPath($the_path);
 
