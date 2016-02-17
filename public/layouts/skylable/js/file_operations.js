@@ -688,6 +688,10 @@ if (!FileOperations) {
                         send_data += '&share_password=' + $('input[name=share_password]').val();
                         send_data += '&share_password_confirm=' + $('input[name=share_password_confirm]').val();
                         send_data += '&share_expire_time=' + $('select[name=share_expire_time]').val();
+                        var share_confirm = $('input[name=share_confirm]');
+                        if (share_confirm.prop("checked")) {
+                            send_data += '&share_confirm=' + share_confirm.val();
+                        }
                         
                         $.ajax({
                                 type:"POST",

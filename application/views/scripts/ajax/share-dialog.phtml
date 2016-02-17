@@ -24,6 +24,12 @@
 
     <li class="top-margin"><label><?php printf($this->translate('Password (Leave empty if none. Max allowed length is %d characters.)'), 24); ?></label><input class="share-file-link" type="password" name="share_password" value="" placeholder="<?php echo $this->translate('Password'); ?>" /></li>
     <li><input class="share-file-link" type="password" name="share_password_confirm" value="" placeholder="<?php echo $this->translate('Confirm Password'); ?>" /></li>
+
+    <?php if($this->current_is_volume): ?>
+    <li class="more-top-margin">
+        <label for="confirm"><input type="checkbox" name="share_confirm" value="yes" id="confirm"><strong><?php echo $this->translate('I know what I\'m doing.'); ?></strong></label>
+    </li>
+    <?php endif; ?>
     
     <li class="more-top-margin"><?php echo $this->translate($this->is_directory ? 'Are you sure you want to share the directory?' : 'Are you sure you want to share the file?'); ?></li>
 </ul>

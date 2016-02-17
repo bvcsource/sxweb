@@ -505,6 +505,10 @@ class AjaxController extends My_BaseAction {
                 }
             }
 
+            // Check if the path points to a volume; pass the check result to the view
+            $volume_path = "/" . My_Utils::getRootFromPath($path) . "/";
+            $current_is_volume = $path === $volume_path;
+
             /*
              * Sharing from encrypted volumes is not possible.
              */
@@ -549,6 +553,7 @@ class AjaxController extends My_BaseAction {
             $this->view->share_file = basename($path);
             $this->view->share_expire_time = Zend_Registry::get('skylable')->get('shared_file_expire_time') / 3600; // Convert to hours
             $this->view->share_password = '';
+            $this->view->current_is_volume = $current_is_volume;
             $this->render('share-dialog');
             return TRUE;
         } else {
@@ -556,6 +561,11 @@ class AjaxController extends My_BaseAction {
             $errors = array();
             $password = $this->getRequest()->getParam('share_password');
             $expire_time = $this->getRequest()->getParam('share_expire_time');
+            $share_confirm = $this->getRequest()->getParam('share_confirm');
+
+            if ($current_is_volume and !($share_confirm === 'yes')) {
+                $errors[] = $this->getTranslator()->translate('Cannot share the top directory of the volume without confirmation.');
+            }
             
             $password_check = new My_ValidateSharedFilePassword();
             if ($password_check->isValid($password)) {
@@ -581,6 +591,7 @@ class AjaxController extends My_BaseAction {
                 $this->view->share_file = basename($path);
                 $this->view->share_expire_time = (empty($expire_time) ? '' : $expire_time );  
                 $this->view->share_password = '';
+                $this->view->current_is_volume = $current_is_volume;
                 $this->getResponse()->setHttpResponseCode(400);
                 $this->render('share-dialog');
                 return TRUE;
