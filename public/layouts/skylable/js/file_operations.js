@@ -683,6 +683,7 @@ if (!FileOperations) {
             dlg.dialog('option', 'buttons', [
                 {
                   text: Skylable_Lang['yesBtn'],
+                  id: 'yesBtn',
                     click: function(e) {
                         var send_data = 'path='+encodeURIComponent( path ) + '&create=y';
                         send_data += '&share_password=' + $('input[name=share_password]').val();
