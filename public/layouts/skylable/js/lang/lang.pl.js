@@ -63,6 +63,7 @@ if (!Skylable_Lang) {
         shareCopyToClipboard: "Kopiuj do schowka",
         shareCopiedToClipboard: "Skopiowano do schowka!",
         shareFile : 'Plik: ',
+	shareBtn : 'Udostępnij',
 
         // -------- Preview
         previewErrorTitle : 'Błąd podglądu!',

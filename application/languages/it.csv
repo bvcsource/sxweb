@@ -59,8 +59,6 @@
 "Two Weeks","Due settimane"
 "One Month","Un mese"
 "Never Expire","Non scade mai"
-"Are you sure you want to share the file?","Sei sicuro di voler condividere il file?"
-"Are you sure you want to share the directory?",""
 "Sharing the top directory of the volume will grant access to the whole volume and is irrevocable until the expiration period is over. Select the checkbox below to confirm that you want to share the top directory.",""
 "I know what I'm doing.",""
 "Cannot share the top directory of the volume without confirmation.",""

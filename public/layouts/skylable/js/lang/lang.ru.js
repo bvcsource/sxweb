@@ -66,6 +66,7 @@ if (!Skylable_Lang) {
         shareCopyToClipboard: "Скопировать в буфер",
         shareCopiedToClipboard: "Скопировано в буфер!",
         shareFile : 'Файл: ',
+	shareBtn : 'Share',
 
         // -------- Preview
         previewErrorTitle : 'Ошибка предпросмотра!',

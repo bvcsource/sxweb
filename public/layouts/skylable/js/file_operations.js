@@ -682,8 +682,8 @@ if (!FileOperations) {
             var dlg = FileOperations.getDialog(Skylable_Lang[shareTitle]);
             dlg.dialog('option', 'buttons', [
                 {
-                  text: Skylable_Lang['yesBtn'],
-                  id: 'yesBtn',
+                  text: Skylable_Lang['shareBtn'],
+                  id: 'shareBtn',
                     click: function(e) {
                         var send_data = 'path='+encodeURIComponent( path ) + '&create=y';
                         send_data += '&share_password=' + $('input[name=share_password]').val();
@@ -728,7 +728,7 @@ if (!FileOperations) {
                     }
                 },
                     {
-                        text: Skylable_Lang['noBtn'],
+                        text: Skylable_Lang['cancelBtn'],
                         click: function(e) {
                             dlg.dialog('close');
                             dlg.dialog('destroy');

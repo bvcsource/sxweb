@@ -33,14 +33,12 @@
         <label for="confirm"><input type="checkbox" name="share_confirm" value="yes" id="confirm"><strong><?php echo $this->translate('I know what I\'m doing.'); ?></strong></label>
     </li>
     <?php endif; ?>
-    
-    <li class="more-top-margin"><?php echo $this->translate($this->is_directory ? 'Are you sure you want to share the directory?' : 'Are you sure you want to share the file?'); ?></li>
 </ul>
 
 <script>
     var $dialogbox = $('.ui-dialog'),
         $checkbox = $dialogbox.find('#confirm'),
-        $button = $dialogbox.find('#yesBtn');
+        $button = $dialogbox.find('#shareBtn');
 
     if ($checkbox.length) {
         $button.button('disable');

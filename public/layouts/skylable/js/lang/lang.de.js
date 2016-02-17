@@ -63,6 +63,7 @@ if (!Skylable_Lang) {
         shareCopyToClipboard: "In Zwischenablage kopieren",
         shareCopiedToClipboard: "In Zwischenablage kopiert!",
         shareFile : 'Datei: ',
+	shareBtn : 'Share',
 
         // -------- Preview
         previewErrorTitle : 'Vorschaufehler!',
