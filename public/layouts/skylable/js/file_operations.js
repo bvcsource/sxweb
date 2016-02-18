@@ -693,6 +693,10 @@ if (!FileOperations) {
                         if (share_confirm.prop("checked")) {
                             send_data += '&share_confirm=' + share_confirm.val();
                         }
+                        var notify = $('input[name=notify]');
+                        if (notify.prop("checked")) {
+                            send_data += '&notify=' + notify.val();
+                        }
                         
                         $.ajax({
                                 type:"POST",
