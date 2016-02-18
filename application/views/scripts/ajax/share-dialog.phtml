@@ -27,7 +27,7 @@
 
     <?php if($this->sxshare_is_used): ?>
     <li class="top-margin">
-        <label for="notify"><input type="checkbox" name="notify" value="<?php echo Zend_Auth::getInstance()->getIdentity()->getEmail() ?>" id="notify"><?php echo $this->translate("Receive email notifications about registered share downloads."); ?></label>
+        <label for="notify"><input type="checkbox" name="notify" value="<?php echo Zend_Auth::getInstance()->getIdentity()->getEmail() ?>" id="notify"><?php echo $this->translate("Notify me"); ?></label>
     </li>
     <?php endif; ?>
 
