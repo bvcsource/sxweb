@@ -156,15 +156,17 @@ class IndexController extends My_BaseAction {
             }
         }
         catch(Skylable_InvalidCredentialsException $e) {
+            $client_ip = $this->getRequest()->getClientIp();
             $form->addError($this->getTranslator()->translate("Username or password are wrong, please retry."));
-            $this->getLogger()->err(__METHOD__ . ': Exception: '.$e->getMessage() );
+            $this->getLogger()->err('From IP '.$client_ip.': ' . __METHOD__ . ': Exception: '.$e->getMessage() );
             Zend_Session::forgetMe();
             Zend_Auth::getInstance()->clearIdentity();
             return $this->render('login');
         }
         catch(Skylable_InvalidPasswordException $e) {
+            $client_ip = $this->getRequest()->getClientIp();
             $form->addError($this->getTranslator()->translate("Username or password are wrong, please retry."));
-            $this->getLogger()->err(__METHOD__ . ': Exception: '.$e->getMessage() );
+            $this->getLogger()->err('From IP '.$client_ip.': ' . __METHOD__ . ': Exception: '.$e->getMessage() );
             Zend_Session::forgetMe();
             Zend_Auth::getInstance()->clearIdentity();
             return $this->render('login');
