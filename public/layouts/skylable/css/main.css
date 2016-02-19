@@ -1568,7 +1568,7 @@ a:hover .icon-bc-settings, .icon-bc-settings:hover {
     border-color: #1575c5 !important
 }
 
-.ui-dialog .ui-dialog-buttonpane button:first-child {
+.ui-dialog .ui-dialog-buttonpane button:first-child, .ui-dialog .ui-dialog-buttonpane button.ui-state-disabled:first-child:hover {
     background: #1575c5 !important;
     color: #fff !important;
     border-color: #1575c5 !important

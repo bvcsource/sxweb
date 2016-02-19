@@ -63,6 +63,7 @@ if (!Skylable_Lang) {
         shareCopyToClipboard: "Copia nella clipboard",
         shareCopiedToClipboard: "Copiato nella clipboard!",
         shareFile : 'File: ',
+	shareBtn : 'Share',
 
         // -------- Preview
         previewErrorTitle : 'Errore nell\'anteprima!',

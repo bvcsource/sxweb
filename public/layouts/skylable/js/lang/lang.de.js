@@ -57,12 +57,13 @@ if (!Skylable_Lang) {
         deleteNoFiles: "Keine Dateien ausgewählt",
 
         // --------- Share window
-        shareTitle : "Datei teilen",
-        shareDirTitle : "Share directory",
-        shareMsg : "Bist Du sicher, dass Du die Datei teilen möchtest?",
+        shareTitle : "Datei freigeben",
+        shareDirTitle : "Verzeichnis freigeben",
+        shareMsg : "Bist Du sicher, dass Du die Datei freigeben möchtest?",
         shareCopyToClipboard: "In Zwischenablage kopieren",
         shareCopiedToClipboard: "In Zwischenablage kopiert!",
         shareFile : 'Datei: ',
+		shareBtn : 'Freigeben',
 
         // -------- Preview
         previewErrorTitle : 'Vorschaufehler!',
@@ -113,6 +114,5 @@ if (!Skylable_Lang) {
         managevolumePrivRead : "Lesen",
         managevolumePrivWrite : "Schreiben",
         managevolumePrivManager : "Verwalten"
-        
     }
 }

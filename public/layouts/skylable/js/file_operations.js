@@ -682,12 +682,21 @@ if (!FileOperations) {
             var dlg = FileOperations.getDialog(Skylable_Lang[shareTitle]);
             dlg.dialog('option', 'buttons', [
                 {
-                  text: Skylable_Lang['yesBtn'],
+                  text: Skylable_Lang['shareBtn'],
+                  id: 'shareBtn',
                     click: function(e) {
                         var send_data = 'path='+encodeURIComponent( path ) + '&create=y';
                         send_data += '&share_password=' + $('input[name=share_password]').val();
                         send_data += '&share_password_confirm=' + $('input[name=share_password_confirm]').val();
                         send_data += '&share_expire_time=' + $('select[name=share_expire_time]').val();
+                        var share_confirm = $('input[name=share_confirm]');
+                        if (share_confirm.prop("checked")) {
+                            send_data += '&share_confirm=' + share_confirm.val();
+                        }
+                        var notify = $('input[name=notify]');
+                        if (notify.prop("checked")) {
+                            send_data += '&notify=' + notify.val();
+                        }
                         
                         $.ajax({
                                 type:"POST",
@@ -723,7 +732,7 @@ if (!FileOperations) {
                     }
                 },
                     {
-                        text: Skylable_Lang['noBtn'],
+                        text: Skylable_Lang['cancelBtn'],
                         click: function(e) {
                             dlg.dialog('close');
                             dlg.dialog('destroy');
