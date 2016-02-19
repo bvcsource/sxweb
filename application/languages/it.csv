@@ -60,7 +60,7 @@
 "One Month","Un mese"
 "Never Expire","Non scade mai"
 "Notify me","Avvisami"
-"Sharing the top directory of the volume will grant access to the whole volume and is irrevocable until the expiration period is over. Select the checkbox below to confirm that you want to share the top directory.","Condividendo la root directory darai accesso all'intero volume fino allo scadere del link. Seleziona la casella qui sotto per confermare che vuoi condividere la root directory."
+"Sharing the top directory of the volume will grant access to the whole volume and is irrevocable until the validity period is over. Select the checkbox below to confirm that you want to share the top directory.","Condividendo la root directory darai accesso all'intero volume fino allo scadere del link. Seleziona la casella qui sotto per confermare che vuoi condividere la root directory."
 "I know what I'm doing.","So quel che faccio"
 "Cannot share the top directory of the volume without confirmation.","Non posso condividere la root directory del volume senza la conferma."
 "Downloading...","Scaricamento in corso…"

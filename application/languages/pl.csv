@@ -60,7 +60,7 @@
 "One Month","Jeden miesiąc"
 "Never Expire","Nigdy nie wygasa"
 "Notify me","Powiadom mnie"
-"Sharing the top directory of the volume will grant access to the whole volume and is irrevocable until the expiration period is over. Select the checkbox below to confirm that you want to share the top directory.","Udostępnienie głównego katalogu woluminu umożliwi dostęp do całej zawartości woluminu i jest nieodwracalne do końca okresu ważności. Zaznacz poniższe pole, aby potwierdzić, że chcesz udostępnić katalog główny."
+"Sharing the top directory of the volume will grant access to the whole volume and is irrevocable until the validity period is over. Select the checkbox below to confirm that you want to share the top directory.","Udostępnienie głównego katalogu woluminu umożliwi dostęp do całej zawartości woluminu i jest nieodwracalne do końca okresu ważności. Zaznacz poniższe pole, aby potwierdzić, że chcesz udostępnić katalog główny."
 "I know what I'm doing.","Wiem, co robię."
 "Cannot share the top directory of the volume without confirmation.","Nie można udostępnić bez potwierdzenia głównego katalogu woluminu."
 "Downloading...","Pobieranie..."
