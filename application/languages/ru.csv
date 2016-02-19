@@ -262,7 +262,6 @@
 "read","Читать"
 "write","Записывать"
 "manager","Управление"
-"Powered by %s.","При поддержке %s."
 "The email is invalid, please check it and retry.","Некорректный емейл, проверьте его и повторите."
 "Failed to send the email, please try again later.","Не удалось отправить письмо. Попробуйте снова чуть позже."
 "SXWeb - Password Reset Request","SXWeb - запрос сброса пароля"

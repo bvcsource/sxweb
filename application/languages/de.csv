@@ -261,7 +261,6 @@
 "read","Lesen"
 "write","Schreiben"
 "manager","Verwalten"
-"Powered by %s.","Powered by %s."
 "The email is invalid, please check it and retry.","Die E-Mail-Adresse ist ungültig, bitte überprüfe sie und versuche es erneut."
 "Failed to send the email, please try again later.","Die E-Mail konnte nicht gesendet werden, bitte versuche es später erneut."
 "SXWeb - Password Reset Request","SXWeb - Anfrage zum Passwort zurücksetzen"
