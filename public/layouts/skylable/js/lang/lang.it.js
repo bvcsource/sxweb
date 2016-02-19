@@ -58,12 +58,12 @@ if (!Skylable_Lang) {
 
         // --------- Share window
         shareTitle : "Condividi file",
-        shareDirTitle : "Share directory",
+        shareDirTitle : "Condividi directory",
         shareMsg : "Sei sicuro di voler condividere il file?",
         shareCopyToClipboard: "Copia nella clipboard",
         shareCopiedToClipboard: "Copiato nella clipboard!",
         shareFile : 'File: ',
-	shareBtn : 'Share',
+	shareBtn : 'Condividi',
 
         // -------- Preview
         previewErrorTitle : 'Errore nell\'anteprima!',
