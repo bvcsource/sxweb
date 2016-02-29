@@ -2,8 +2,8 @@
 
 ## GETTING STARTED
 
-Copy all SXWeb files to a new directory, e.g. /var/www/sxweb and create a new virtual host in your web server configuration. 
-Make sure the document root points to the public/ sub-directory, i.e. /var/www/sxweb/public.
+Copy all SXWeb files to a new directory, e.g. `/var/www/sxweb` and create a new virtual host in your web server configuration.
+Make sure the document root points to the `public/` sub-directory, i.e. `/var/www/sxweb/public`.
 
 If you are using Apache, adapt this example:
 
@@ -30,7 +30,7 @@ Make sure that mod_rewrite is enabled:
 
     # a2enmod rewrite
 
-If you are using nginx and php-fpm, create a new server { } section following this example:
+If you are using nginx and php-fpm, create a new `server { }` section following this example:
 
     server {
         listen 443;
@@ -56,11 +56,13 @@ If you are using nginx and php-fpm, create a new server { } section following th
         }
     }
 
-Make sure that php-fpm is running and listening on 127.0.0.1:9000.
+Make sure that php-fpm is running and listening on `127.0.0.1:9000`.
 
 If you are using a different web server, refer to the documentation of the web server or contact us for assistance.
 
-Reload the configuration of your web server and then open SXWeb in your browser to start the installer: https://sxweb.foo.com
+Additionally, check if the php-related entries in `/etc/mime.types` are commented. If they are, uncomment them.
+
+Reload the configuration of your web server and then open SXWeb in your browser to start the installer: `https://sxweb.foo.com`
 
 ### REQUIRED PHP EXTENSIONS
 
@@ -107,7 +109,7 @@ To run SXWeb you need a MySQL database and a MySQL account. If you have root acc
     mysql> CREATE DATABASE sxweb;
     mysql> GRANT ALL ON sxweb.* TO sxweb@'%' IDENTIFIED BY 'mypass';
 
-Replace 'mypass' with a strong password. When running the web installer, you will be prompted to enter this password and the DB schema will be automatically created.
+Replace `mypass` with a strong password. When running the web installer, you will be prompted to enter this password and the DB schema will be automatically created.
 
 Database schemas are stored in the `sql/` directory. This directory also contains the files to update the database schema when upgrading to a newer version of SXWeb. Normally you don't need to use these files, they will be automatically applied for you by the web installer.
 
@@ -117,9 +119,9 @@ All data used by SXWeb usually resides into the `data/` directory. This director
 
 By default the `data/` directory will hold logs, session data, user data and temporary file uploads: make sure you have sufficient disk space available.
 
-The directory ``application/configs/` holds all the application configuration files and should be writable by the web server, but this is not mandatory: you can simply create the needed files here, but they must be readable by the web server and the PHP module.
+The directory `application/configs/` holds all the application configuration files and should be writable by the web server, but this is not mandatory: you can simply create the needed files here, but they must be readable by the web server and the PHP module.
 
-Assuming that you installed SXWeb under /var/www/sxweb, you can use these commands to fix the permissions, after replacing $WEBSERVER_USER with the user under which PHP executes the scripts (check phpinfo() output when in doubt):
+Assuming that you installed SXWeb under `/var/www/sxweb`, you can use these commands to fix the permissions, after replacing `$WEBSERVER_USER` with the user under which PHP executes the scripts (check `phpinfo()` output when in doubt):
 
     # find /var/www/sxweb -type d -exec chmod 755 {} \;
     # find /var/www/sxweb -type f -exec chmod 644 {} \;
@@ -156,7 +158,7 @@ Check `/var/log/audit.log` and if required run:
 
     # chcon -Rt httpd_sys_content_t /path/to/sxweb
 
-SXWeb needs to write to the data/ subdirectory. Make sure it is writable by the user under which the webserver 
+SXWeb needs to write to the `data/` subdirectory. Make sure it is writable by the user under which the webserver
 is running and also verify that SELinux is not blocking write access to it:
 
     # chcon -R -h -t httpd_sys_script_rw_t /path/to/sxweb/data
