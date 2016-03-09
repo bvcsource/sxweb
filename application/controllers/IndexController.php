@@ -435,6 +435,7 @@ class IndexController extends My_BaseAction {
 
                         $volume_password = $this->getRequest()->getParam('frm_vol_set_password');
                         $volume_cpassword = $this->getRequest()->getParam('frm_vol_set_cpassword');
+                        $encrypt_filenames = (bool) $this->getRequest()->getParam('frm_vol_encrypt_filenames');
 
                         $show_password_form = TRUE;
                         if ($this->getRequest()->isPost() && !is_null($volume_password)) {
@@ -445,7 +446,7 @@ class IndexController extends My_BaseAction {
                                 } else {
                                     // Tries to set the volume password
                                     try {
-                                        if ($access_sx->volumeSetPassword($volume, $volume_password) ) {
+                                        if ($access_sx->volumeSetPassword($volume, $volume_password, $encrypt_filenames) ) {
                                             $show_password_form = FALSE;
                                         } else {
                                             $logger->debug(__METHOD__.': set volume password errors: '.print_r($access_sx->getLastErrorLog(), TRUE));

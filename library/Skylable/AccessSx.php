@@ -1373,12 +1373,13 @@ class Skylable_AccessSx {
      * 
      * @param string $volume the volume name
      * @param string $password the plain password
+     * @param string $encrypt_filenames boolean determining whether filenames should be encrypted
      * @return bool TRUE on success, FALSE on failure
      * @throws Exception
      * @throws Skylable_AccessSxException
      * @throws Skylable_InvalidPasswordException
      */
-    public function volumeSetPassword($volume, $password) {
+    public function volumeSetPassword($volume, $password, $encrypt_filenames = FALSE) {
         if (empty($volume) || !is_string($password) || !is_string($volume)) {
             return FALSE;
         }
@@ -1394,7 +1395,7 @@ class Skylable_AccessSx {
         $tmp_file = @tempnam($this->_base_dir, 'sxtmp_');
         try {
             if ($tmp_file !== FALSE) {
-                $ret = $this->put($tmp_file, $volume.'/'.self::NEWDIR_FILENAME, FALSE, $password.PHP_EOL.$password.PHP_EOL);
+                $ret = $this->put($tmp_file, $volume.'/'.self::NEWDIR_FILENAME, FALSE, ($encrypt_filenames ? 'y' : 'n').PHP_EOL.$password.PHP_EOL.$password.PHP_EOL);
                 @unlink($tmp_file);
                 if ($ret === TRUE) {
                     return TRUE;
