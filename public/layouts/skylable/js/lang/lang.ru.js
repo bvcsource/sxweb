@@ -61,12 +61,12 @@ if (!Skylable_Lang) {
 
         // --------- Share window
         shareTitle : "Поделиться файлом",
-        shareDirTitle : "Share directory",
+        shareDirTitle : "Поделиться каталогом",
         shareMsg : "Вы уверены, что хотите поделиться файлом?",
         shareCopyToClipboard: "Скопировать в буфер",
         shareCopiedToClipboard: "Скопировано в буфер!",
         shareFile : 'Файл: ',
-	shareBtn : 'Share',
+        shareBtn : 'Поделиться',
 
         // -------- Preview
         previewErrorTitle : 'Ошибка предпросмотра!',
