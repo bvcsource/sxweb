@@ -1,3 +1,14 @@
+0.9.1 (Second Beta, minor update)
+----------------
+
+Changes in this release include:
+
+  * Allow to use SXShare instead of SXWeb internal mechanism for sharing files
+    and directories
+  * When SXShare is used for sharing, optionally notify users via email when
+    their shared links are accessed
+  * Add support for the new version of AES256 filter shipped with SX 2.0+
+
 0.9.0 (Second Beta, major update)
 ----------------
 
