@@ -55,45 +55,66 @@ class IndexController extends My_BaseAction {
 
         // Sets the simple layout
         $this->_helper->layout->setLayout('simple');
-        
+
         // Initializes the login form
         $form = new Application_Form_Login();
         $form->setAction('/index/login')->setMethod('post');
-        
+
         $this->view->assign('form', $form);
-        
+
         $form->setDecorators(array(
             'FormElements',
             'FormErrors',
             'Form'
         ));
-        
-        // If the form is not launched, shows it blank
-        if (!$this->getRequest()->isPost()) {
-            return $this->render("login");
-        }
-        
-        
-        // If the form is not valid, shows errors
-        if (!$form->isValid($_POST)) {
-            return $this->render('login');
-        }
-        
-        // Validate and authenticate the user
-        $values = $form->getValues();
-        
-        // Check if we should remember the user
-        $remember_me = $this->getRequest()->getParam('frm_remember_me');
-        if ($remember_me === 'yes') {
-            $this->getLogger()->debug(__METHOD__ . ' - Remembering the user');
-            Zend_Session::rememberMe( Zend_Registry::get('skylable')->get('remember_me_cookie_seconds') );
+
+        $cookie_auth_key = base64_decode(Zend_Registry::get('skylable')->get('cookie_auth_key'));
+        $authenticate_by_cookie = isset($cookie_auth_key) && isset($_COOKIE['sxweb_login']);
+        if ($authenticate_by_cookie) {
+            list($login, $cookie_ts, $remote_signature) = explode('|', $_COOKIE['sxweb_login'], 3);
+            $signature = hash_hmac(
+                "sha256",
+                $login . $cookie_ts,
+                $cookie_auth_key
+            );
+            if (md5($signature) !== md5($remote_signature)) {
+                $form->addError($this->getTranslator()->translate("Internal error, please retry later."));
+                $this->getLogger()->err(__METHOD__ . ": Exception: Invalid authentication cookie HMAC signature." );
+                Zend_Session::forgetMe();
+                Zend_Auth::getInstance()->clearIdentity();
+                return $this->render('login');
+            }
+
+            $values = array();
+            $values['frm_login'] = $login;
+
         } else {
-            Zend_Session::forgetMe();
+            // If the form is not launched, shows it blank
+            if (!$this->getRequest()->isPost()) {
+                return $this->render("login");
+            }
+
+            // If the form is not valid, shows errors
+            if (!$form->isValid($_POST)) {
+                return $this->render('login');
+            }
+
+            // Validate and authenticate the user
+            $values = $form->getValues();
+
+            // Check if we should remember the user
+            $remember_me = $this->getRequest()->getParam('frm_remember_me');
+            if ($remember_me === 'yes') {
+                $this->getLogger()->debug(__METHOD__ . ' - Remembering the user');
+                Zend_Session::rememberMe( Zend_Registry::get('skylable')->get('remember_me_cookie_seconds') );
+            } else {
+                Zend_Session::forgetMe();
+            }
         }
-        
+
         // Force the login to be lower case
         $values['frm_login'] = strtolower($values['frm_login']);
-        
+
         try {
             // If the login is an email, use it
             $the_email = '';
@@ -108,7 +129,24 @@ class IndexController extends My_BaseAction {
             // Check user credentials using sxinit
             // Note: the login is an email
             $user = new My_User(NULL, $values['frm_login'], $the_email, '', My_User::ROLE_REGISTERED);
-            $access_sx = new Skylable_AccessSx( $user, NULL, array( 'password' => $values['frm_password'], 'initialize' => FALSE ) );
+
+            if ($authenticate_by_cookie) {
+                // Create a fake admin user into a temp dir
+                $tempdir = My_Utils::mktempdir( Zend_Registry::get('skylable')->get('sx_local') ,'Skylable_');
+                if ($tempdir === FALSE) {
+                   throw new Exception('Failed to create temporary directory');
+                }
+
+                $fake_admin = new My_User(NULL, 'admin', '', Zend_Registry::get('skylable')->get('admin_key'));
+                $fake_admin_access_sx = new Skylable_AccessSx($fake_admin, $tempdir, array( 'user_auth_key' => Zend_Registry::get('skylable')->get('admin_key') ) );
+                $user_secret_key = $fake_admin_access_sx->sxaclUserGetKey($values['frm_login']);
+
+                $access_sx = new Skylable_AccessSx( $user, NULL, array( 'user_auth_key' => $user_secret_key, 'initialize' => FALSE ) );
+
+            } else {
+                $access_sx = new Skylable_AccessSx( $user, NULL, array( 'password' => $values['frm_password'], 'initialize' => FALSE ) );
+            }
+
             $init_ok = $access_sx->initialize(TRUE);
             if ($init_ok) {
                 $user_secret_key = $access_sx->getLocalUserSecretKey();
@@ -149,6 +187,9 @@ class IndexController extends My_BaseAction {
                 
                 // Finally save the user into session
                 Zend_Auth::getInstance()->getStorage()->write($user);
+                if ($authenticate_by_cookie) {
+                    return $this->redirect('/');
+                }
             } else {
                 // Assume there are wrong credentials...
                 $form->addError($this->getTranslator()->translate("Username or password are wrong, please retry."));

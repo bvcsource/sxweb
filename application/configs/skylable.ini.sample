@@ -27,6 +27,11 @@ local = APPLICATION_PATH "/../"
 ; SX data dir: local directory where SX commands data will be stored
 sx_local = APPLICATION_PATH "/../data/sx" 
 
+; Base64-encoded 256-bit cookie authentication key
+; if set, and 'sxweb_login' cookie is present, SXWeb will attempt to derive the cookie
+; signature using this key
+; cookie_auth_key = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+
 ; Download limits
 ; maximum concurrent downloads per logged user
 downloads = 5

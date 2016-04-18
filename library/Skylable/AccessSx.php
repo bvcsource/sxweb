@@ -2120,6 +2120,38 @@ class Skylable_AccessSx {
         return FALSE;
     }
 
+    public function sxaclUserGetKey($username = '') {
+        $this->_last_error_log = '';
+        if (strlen($username) == 0) {
+            $username = $this->_user->getLogin();
+        }
+
+        $auth_file = tempnam($this->getBaseDir(), 'sxacl_auth_');
+        if ($auth_file === FALSE) {
+            $this->getLogger()->debug(__METHOD__.': failed to create auth file into: ' . $this->getBaseDir());
+            throw new Skylable_AccessSxException('Failed to create temporary data file.');
+        }
+
+        $ret = $this->executeShellCommand('sxacl usergetkey '.
+            '-c '.My_utils::escapeshellarg($this->_base_dir).' '.
+            '-a '.My_Utils::escapeshellarg( $auth_file ). ' '.
+            My_utils::escapeshellarg( $username ).' '.
+            My_utils::escapeshellarg( $this->_cluster_string ),
+            '', $out, $exit_code, $this->_last_error_log, NULL, array($this, 'parseErrors'));
+        if ($exit_code == 0) {
+            $new_user_key = @file_get_contents($auth_file);
+            @unlink($auth_file);
+            if ($new_user_key !== FALSE) {
+                return $new_user_key;
+            }
+        } else {
+            @unlink($auth_file);
+        }
+
+        $this->checkForErrors($this->_last_error_log, TRUE);
+        return FALSE;
+    }
+
     /**
      * Lists revisions for a given file.
      * 
