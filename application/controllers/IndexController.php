@@ -77,7 +77,7 @@ class IndexController extends My_BaseAction {
                 $cookie_auth_expire_time = 86400;
             }
 
-            list($login, $cookie_ts, $remote_signature) = explode('|', $_COOKIE['sxweb_login'], 3);
+            list($remote_signature, $cookie_ts, $login) = explode('|', $_COOKIE['sxweb_login'], 3);
             $signature = hash_hmac(
                 "sha256",
                 $login . $cookie_ts,
