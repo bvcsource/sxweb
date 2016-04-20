@@ -71,15 +71,34 @@ class IndexController extends My_BaseAction {
         $cookie_auth_key = base64_decode(Zend_Registry::get('skylable')->get('cookie_auth_key'));
         $authenticate_by_cookie = isset($cookie_auth_key) && isset($_COOKIE['sxweb_login']);
         if ($authenticate_by_cookie) {
+            $ts = time();
+            $cookie_auth_expire_time = Zend_Registry::get('skylable')->get('cookie_auth_expire_time');
+            if (!isset($cookie_auth_expire_time)) {
+                $cookie_auth_expire_time = 86400;
+            }
+
             list($login, $cookie_ts, $remote_signature) = explode('|', $_COOKIE['sxweb_login'], 3);
             $signature = hash_hmac(
                 "sha256",
                 $login . $cookie_ts,
                 $cookie_auth_key
             );
+            $time_difference = $ts - intval($cookie_ts);
+
+            $err_msg = "Exception: Unknown problem.";
             if (md5($signature) !== md5($remote_signature)) {
+                $err_msg = "Exception: Invalid authentication cookie HMAC signature.";
+            } elseif ($time_difference < 0) {
+                $err_msg = "Exception: Invalid authentication cookie timestamp.";
+            } elseif ($time_difference > $cookie_auth_expire_time) {
+                $err_msg = "Exception: The authentication cookie has expired.";
+            } else {
+                $err_msg = "";
+            }
+
+            if ($err_msg) {
                 $form->addError($this->getTranslator()->translate("Internal error, please retry later."));
-                $this->getLogger()->err(__METHOD__ . ": Exception: Invalid authentication cookie HMAC signature." );
+                $this->getLogger()->err(__METHOD__ . ": " . $err_msg);
                 Zend_Session::forgetMe();
                 Zend_Auth::getInstance()->clearIdentity();
                 return $this->render('login');

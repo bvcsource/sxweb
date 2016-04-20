@@ -32,6 +32,9 @@ sx_local = APPLICATION_PATH "/../data/sx"
 ; signature using this key
 ; cookie_auth_key = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
 
+; Expiration time of authentication cookie
+cookie_auth_expire_time = 86400
+
 ; Download limits
 ; maximum concurrent downloads per logged user
 downloads = 5
