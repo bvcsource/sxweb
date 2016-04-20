@@ -86,7 +86,7 @@ class IndexController extends My_BaseAction {
             $time_difference = $ts - intval($cookie_ts);
 
             $err_msg = "Exception: Unknown problem.";
-            if (md5($signature) !== md5($remote_signature)) {
+            if (!My_Utils::hash_compare($signature, $remote_signature)) {
                 $err_msg = "Exception: Invalid authentication cookie HMAC signature.";
             } elseif ($time_difference < 0) {
                 $err_msg = "Exception: Invalid authentication cookie timestamp.";

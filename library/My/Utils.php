@@ -902,4 +902,28 @@ class My_Utils {
         } 
         return strtolower($str);
     }
+
+    /**
+     * Compare given hashes character by character.
+     *
+     * @param string $a
+     * @param string $b
+     * @return bool
+     */
+    public static function hash_compare($a, $b) {
+        if (!is_string($a) || !is_string($b)) {
+            return FALSE;
+        }
+
+        $len = strlen($a);
+        if ($len !== strlen($b)) {
+            return FALSE;
+        }
+
+        $status = 0;
+        for ($i = 0; $i < $len; $i++) {
+            $status |= ord($a[$i]) ^ ord($b[$i]);
+        }
+        return $status === 0;
+    }
 }
