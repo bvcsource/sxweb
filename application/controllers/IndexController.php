@@ -68,12 +68,15 @@ class IndexController extends My_BaseAction {
             'Form'
         ));
 
-        $cookie_auth_key = base64_decode(Zend_Registry::get('skylable')->get('cookie_auth_key'));
-        $authenticate_by_cookie = isset($cookie_auth_key) && isset($_COOKIE['sxweb_login']);
+        $encoded_cookie_auth_key = Zend_Registry::get('skylable')->get('cookie_auth_key');
+        $authenticate_by_cookie = isset($encoded_cookie_auth_key) && isset($_COOKIE['sxweb_login']);
         if ($authenticate_by_cookie) {
             $ts = time();
+            $cookie_auth_key = base64_decode($encoded_cookie_auth_key);
             $cookie_auth_expire_time = Zend_Registry::get('skylable')->get('cookie_auth_expire_time');
-            if (!isset($cookie_auth_expire_time)) {
+            if (isset($cookie_auth_expire_time)) {
+                $cookie_auth_expire_time = intval($cookie_auth_expire_time);
+            } else {
                 $cookie_auth_expire_time = 86400;
             }
 
