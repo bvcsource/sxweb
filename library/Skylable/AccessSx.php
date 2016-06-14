@@ -553,14 +553,25 @@ class Skylable_AccessSx {
         } else {
             $sxinit_cmd .= ' -p '.My_utils::escapeshellarg($tmp_file);
         }
+        $use_sxauthd = $this->_config->get('use_sxauthd', FALSE);
         if (isset($params['login'])) {
-            $cluster = 'sx://'.$params['login'] . '@' . parse_url($cluster, PHP_URL_HOST);
+            if ($use_sxauthd === FALSE) {
+                $cluster_proto = 'sx://';
+            } else {
+                # no proto for sxauthd (it uses https)
+                $cluster_proto = '';
+            }
+            $cluster_host = parse_url($cluster, PHP_URL_HOST);
+            $cluster = $cluster_proto . $params['login'] . '@' . $cluster_host;
         }
         /*
         if (!$has_auth_key) {
             $cluster = 'sx://'.$params['login'] . '@' . parse_url($cluster, PHP_URL_HOST);
         }
         */
+        if ($use_sxauthd !== FALSE) {
+            $sxinit_cmd .= ' --sxauthd';
+        }
         $sxinit_cmd .= ' '.My_utils::escapeshellarg($cluster);
 
         try {
@@ -626,7 +637,14 @@ class Skylable_AccessSx {
             (is_array($path) ? implode(' ', $path) : $path),
             '', $output, $exitcode, $this->_last_error_log, NULL, array($this, 'parseErrors') );
         if ($exitcode == 0) {
-            return TRUE;
+                if ($use_sxauthd !== FALSE) {
+                    $dir=$this->_base_dir.'/'.$cluster_host.'/auth';
+                    $src=$dir.'/default';
+                    $dst=$dir.'/'.$params['login'];
+                    $this->getLogger()->debug(__METHOD__.': renaming '.$src.' -> '.$dst);
+                    return rename($src,$dst);
+                }
+                return TRUE;
         }
 
         return FALSE;
@@ -988,7 +1006,7 @@ class Skylable_AccessSx {
      * @see parseCommandOutputCallback
      */
     private function parseVolumeACL($data_line, &$data, &$ret) {
-        if (($p = strpos($data_line, ':')) !== FALSE) {
+        if (($p = strrpos($data_line, ':')) !== FALSE) {
             $e = array('user' => substr($data_line, 0, $p), 'perms' => array());
             if (preg_match_all('/(\s*(\w+))/', substr($data_line, $p), $matches) > 0) {
                 $e['perms'] = $matches[2];
@@ -1389,7 +1407,7 @@ class Skylable_AccessSx {
         }
 
         if (!$this->isInitialized()) {
-            return FALSE;
+            #return FALSE;
         }
 
         $tmp_file = @tempnam($this->_base_dir, 'sxtmp_');

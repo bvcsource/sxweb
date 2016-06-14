@@ -94,7 +94,8 @@ class My_Utils {
         
         $out = array( 
             'secret_key' => $secret_key, 
-            'cluster' => parse_url($cfg->get('cluster'), PHP_URL_HOST) 
+            'cluster' => parse_url($cfg->get('cluster'), PHP_URL_HOST),
+            'use_sxauthd' => $cfg->get('use_sxauthd', FALSE)
         );
 
         $cluster_ssl = $cfg->get('cluster_ssl', TRUE);

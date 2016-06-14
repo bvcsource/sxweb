@@ -275,7 +275,8 @@ class Skylable_AccessSxNG {
 
             $headers = array(
                 'Date: '.$params['date'],
-                'Authorization: SKY '.$params['authorization']
+                'Authorization: SKY '.$params['authorization'],
+                'SX-Cluster-Name: '.$this->_cluster
             );
             if (array_key_exists('content-length', $params)) {
                 $headers[] = 'Content-Length: '.strval($params['content-length']);
