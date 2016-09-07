@@ -1143,6 +1143,17 @@ class Skylable_AccessSx {
         DOWNLOAD_DISPOSITION_ATTACHMENT = 'attachment';
 
     /**
+     * Send content disposition
+     *
+     * @param string $disposition
+     * @param string $name
+     */
+    protected static function SendDisposition($disposition, $name) {
+        $fname = rawurlencode($name);
+        header("Content-Disposition: $disposition; filename=\"$fname\"; filename*=UTF-8''$fname;");
+    }
+
+    /**
      * Send a file to the browser.
      *
      * @param array $file_data
@@ -1177,7 +1188,7 @@ class Skylable_AccessSx {
             $this->getLogger()->debug(__METHOD__ . ': File has zero size, skipping shell command use.');
             header("Cache-Control: no-cache, must-revalidate");
             header("Pragma: no-cache");
-            header("Content-Disposition: ".$disposition."; filename=\"".rawurlencode(basename($file_data['path'])).'"');
+            Skylable_AccessSx::SendDisposition($disposition, basename($file_data['path']));
             header("Content-Type: ".My_Utils::getFileMIME($file_data['path']));
             header("Content-Length: ".strval( $file_data['size'] ));
             header('Content-Transfer-Encoding: binary');
@@ -1231,7 +1242,7 @@ class Skylable_AccessSx {
                     $this->getLogger()->debug(__METHOD__.': Sending file...');
                     header("Cache-Control: no-cache, must-revalidate");
                     header("Pragma: no-cache");
-                    header("Content-Disposition: ".$disposition."; filename=\"".rawurlencode(basename($file_data['path'])).'"');
+                    Skylable_AccessSx::SendDisposition($disposition, basename($file_data['path']));
                     header("Content-Type: ".My_Utils::getFileMIME($file_data['path']));
                     // This fixes problems with zcomp volumes
                     // header("Content-Length: ".strval( $file_data['size'] ));
@@ -2281,7 +2292,7 @@ class Skylable_AccessSx {
             $this->getLogger()->debug(__METHOD__ . ': File has zero size, skipping shell command use.');
             header("Cache-Control: no-cache, must-revalidate");
             header("Pragma: no-cache");
-            header("Content-Disposition: ".$disposition."; filename=\"".rawurlencode(basename($file_data['path'])).'"');
+            Skylable_AccessSx::SendDisposition($disposition, basename($file_data['path']));
             header("Content-Type: ".My_Utils::getFileMIME($file_data['path']));
             header("Content-Length: ".strval( $file_data['size'] ));
             header('Content-Transfer-Encoding: binary');
@@ -2337,7 +2348,7 @@ class Skylable_AccessSx {
                     $this->getLogger()->debug(__METHOD__.': Sending file...');
                     header("Cache-Control: no-cache, must-revalidate");
                     header("Pragma: no-cache");
-                    header("Content-Disposition: ".$disposition."; filename=\"".rawurlencode(basename($file_data['path'])).'"');
+                    Skylable_AccessSx::SendDisposition($disposition, basename($file_data['path']));
                     header("Content-Type: ".My_Utils::getFileMIME($file_data['path']));
                     // This fixes problems with zcomp volumes 
                     // header("Content-Length: ".strval( $file_data['size'] ));
